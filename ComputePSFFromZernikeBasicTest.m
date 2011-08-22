@@ -151,10 +151,10 @@ theWavelength = 550;
 sizeOfFieldPixels = 201;
 sizeOfFieldMM = 16.212;
 measpupilMM = 6;
-calcpupilMM = 6;
+calcpupilMM = 3;
 defocusDiopters = 0;
 theZernikeCoeffs = load('sampleZernikeCoeffs.txt');
-DOSCE = 1;
+DOSCE = 0;
 if (DOSCE)
     sceParams = GetStilesCrawfordParams(theWavelength,'berendshot');
 else
