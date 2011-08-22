@@ -1,18 +1,7 @@
 % WavefrontOpticsToolbox
 %
-% To do list:
-%
-%     i) Write routines for getting Williams et al PSFs and compare.
-%     iv) Compare what these generate to Marimont and Wandell chromatic aberration computations.
-%     vi) Could try to find a functional form to produce good approximations to the PSF estimates
-%     for different accommodative states, so as to have a compact and convenient way to do these
-%     types of calculations in the future.
-%
 % Calling routines
 %   ComputePSFFromZernikeBasicTest -       Basic test that underlying Zernike routines behave sensibly.
-%   GenerateRawPSFs -                      Generate big files of PSFs for observers/focusWls from zernike data
-%   Get552MonoPSF -                        Get the average PSF for 552 nm in best focus, compare to literature
-%   GetLMSPSFs -                           Get average PSFs seen by L, M, and S cones for various accommodation optimzations
 %
 % Helper routines
 %   AverageOpticalPSFs -                   Average passed PSFs

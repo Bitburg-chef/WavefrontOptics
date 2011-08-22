@@ -1,5 +1,5 @@
 function [psf,arcminperpix,strehl,sceFrac,areapix,areapixapod] = ComputePSFFromZernike(zcoeffs,measpupilMM,calcpupilMM,wls,nominalFocusWl,defocusDiopters,sizeOfFieldPixels,sizeOfFieldMM,sceParams)
-% [psf,arcminperpix,strehl,sceFrac.areapix,areapixapod] = ComputePSFFromZernike(zcoeffs,measpupilMM,calcpupilMM,wls,nominalFocusWl,defocusDiopters,sizeOfFieldPixels,sizeOfFieldMM,[sceParams])
+% [psf,arcminperpix,strehl,sceFrac,areapix,areapixapod] = ComputePSFFromZernike(zcoeffs,measpupilMM,calcpupilMM,wls,nominalFocusWl,defocusDiopters,sizeOfFieldPixels,sizeOfFieldMM,[sceParams])
 %
 % Computes the monochromatic psf over the calculated pupil size for 10 orders of Zernike
 % coeffcients specified to the OSA standard. Includes SCE (Stiles-Crawford Effect) if specified.
@@ -21,14 +21,12 @@ function [psf,arcminperpix,strehl,sceFrac,areapix,areapixapod] = ComputePSFFromZ
 % Outputs
 %   psf -               Calcuated polychromatic psf. Third dimension of returned matrix indexes wavelength.                      
 %   arcminperpix -      Arc minutes per pixel for returned psfs.
-%   strehl -            Strehl ratio of psf at each wavelength.
+%   strehl -            Strehl ratio of psf at each wavelength.  If SCE correction is specified, the returned
+%                       strehl ratio is to the diffraction limited psf with the same SCE assumed.
 %   sceFrac -           Fraction of light actually absorbed when SCE is taken into account, at each wavelength.
 %   areapix -           Number of pixels within the computed pupil aperture at each wavelength
 %   areapixapod -       Number of pixels within the computed pupil aperture at each wavelength,
 %                       multiplied by the Stiles-Crawford aopdization.
-%
-% Note: If SCE is included the returned polychromatic psfs will generally integrate to a number
-% smaller than 1, this reflects light assumed not to have been caught and guided by the receptors.
 %
 % Note: These calculations only account for lognitudinal chromatic aberration (LCA), and do not
 % incoporate transverse chromatic aberration (TCA).
@@ -37,9 +35,9 @@ function [psf,arcminperpix,strehl,sceFrac,areapix,areapixapod] = ComputePSFFromZ
 % the output monochromatic and polychromatic PSFs will be
 % limited only by diffraction and longitudinal chromatic aberration (and the SCE if specified). 
 %
-% See also: ComputePupilFunctionFromZernike, GetStilesCrawfordParams.
+% See also: ComputeLMSPSFFromZernike, ComputePupilFunctionFromZernike, GetStilesCrawfordParams, GetDefocusFromWavelengthDifference
 %
-% Code provided by Heidi Hofer.
+% Based on code provided by Heidi Hofer.
 %
 % 8/20/11 dhb      Rename function and pull out of supplied routine. Reformat comments.
 
