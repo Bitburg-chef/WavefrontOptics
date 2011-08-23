@@ -1,7 +1,10 @@
 % ComputePSFFromZernikeBasicTest
 %
-% Performs basic test of the routines that compute polychromatic PSFs from
+% Performs basic test of the routines that compute monochromatic PSFs from
 % Zernike coefficients.
+%
+% See also: ComputePSFFromZernike, ComputePupilFunctionFromZernike, GetStilesCrawfordParams, GetDefocusFromWavelengthDifference
+
 %
 % 8/21/11  dhb  Wrote it, based on code provided by Heidi Hofer.
 
