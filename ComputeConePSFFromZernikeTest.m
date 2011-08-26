@@ -62,15 +62,15 @@ spsfd = CenterPSF(conepsfd(:,:,3));
 if (CIRCULARLYAVERAGE)
     lpsf = CircularlyAveragePSF(lpsf);
     mpsf = CircularlyAveragePSF(mpsf);
-    spsf = CircularlyAveragePSF(spsf); 
-    lpsfd = CircularlyAveragePSF(lpsfd); 
-    mpsfd = CircularlyAveragePSF(mpsfd); 
+    spsf = CircularlyAveragePSF(spsf);
+    lpsfd = CircularlyAveragePSF(lpsfd);
+    mpsfd = CircularlyAveragePSF(mpsfd);
     spsfd = CircularlyAveragePSF(spsfd);
 end
 whichRow = floor(sizeOfFieldPixels/2) + 1;
 
 % Make a plot through the peak of the returned PSFs.
-figure; clf;
+theFig = figure; clf;
 position = get(gcf,'Position');
 position(3) = 1600;
 set(gcf,'Position',position);
@@ -83,7 +83,11 @@ plot(arcminutes(index),onedLPSF(index),'r','LineWidth',2);
 plot(arcminutes(index),onedLPSFD(index),'k','LineWidth',4);
 xlabel('Arc Minutes');
 ylabel('PSF');
-title('L cone PSF');
+if (CIRCULARLYAVERAGE)
+    title('Circularized L cone PSF');
+else
+    title('L cone PSF');
+end
 
 subplot(1,3,2); hold on
 onedMPSF = mpsf(whichRow,:);
@@ -94,7 +98,11 @@ plot(arcminutes(index),onedMPSF(index),'g','LineWidth',2);
 plot(arcminutes(index),onedMPSFD(index),'k','LineWidth',4);
 xlabel('Arc Minutes');
 ylabel('PSF');
-title('M cone PSF');
+if (CIRCULARLYAVERAGE)
+    title('Circularized M cone PSF');
+else
+    title('M cone PSF');
+end
 
 subplot(1,3,3); hold on
 onedSPSF = spsf(whichRow,:);
@@ -105,7 +113,11 @@ plot(arcminutes(index),onedSPSF(index),'b','LineWidth',2);
 plot(arcminutes(index),onedSPSFD(index),'k','LineWidth',4);
 xlabel('Arc Minutes');
 ylabel('PSF');
-title('S cone PSF');
+if (CIRCULARLYAVERAGE)
+    title('Circularized S cone PSF');
+else
+    title('S cone PSF');
+end
 drawnow;
 
 %% TEST2.  Optimize focus and add to the plot.
@@ -122,17 +134,19 @@ spsfo = CenterPSF(conepsfo(:,:,3));
 if (CIRCULARLYAVERAGE)
     lpsfo = CircularlyAveragePSF(lpsfo);
     mpsfo = CircularlyAveragePSF(mpsfo);
-    spsfo = CircularlyAveragePSF(spsfo); 
+    spsfo = CircularlyAveragePSF(spsfo);
 end
 onedLPSFo = lpsfo(whichRow,:);
 onedMPSFo = mpsfo(whichRow,:);
 onedSPSFo = spsfo(whichRow,:);
+figure(theFig);
 subplot(1,3,1);
 plot(arcminutes(index),onedLPSFo(index),'r','LineWidth',4);
 subplot(1,3,2); hold on
 plot(arcminutes(index),onedMPSFo(index),'g','LineWidth',4);
 subplot(1,3,3); hold on
 plot(arcminutes(index),onedSPSFo(index),'b','LineWidth',4);
+drawnow;
 
 
 
