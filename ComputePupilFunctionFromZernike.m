@@ -71,7 +71,7 @@ if (nargin < 7 || isempty(sceParams))
 else
     xo=sceParams.xo;
     yo=sceParams.yo;
-    index = sceParams.wavelengths/1000 == wlInUM;
+    index = find(sceParams.wavelengths/1000 == wlInUM);
     if (length(index) ~= 1)
         error('Pased wavelength not contained in sceParams');
     end
