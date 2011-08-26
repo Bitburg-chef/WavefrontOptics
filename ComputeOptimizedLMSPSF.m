@@ -1,7 +1,7 @@
 function [conepsf,arcminperpix,defocusDiopters] = ...
-    ComputeOptimizedLMSPsfs(coneWeights,criterionFraction,wls,T_cones,weightingSpectrum,zcoeffs,measpupilMM,calcpupilMM,nominalFocusWl,sizeOfFieldPixels,sizeOfFieldMM,sceParams)
+    ComputeOptimizedConePSF(coneWeights,criterionFraction,wls,T_cones,weightingSpectrum,zcoeffs,measpupilMM,calcpupilMM,nominalFocusWl,sizeOfFieldPixels,sizeOfFieldMM,sceParams)
 % [conepsf,arcminperpix,defocusDiopters] = ...
-%    ComputeOptimizedLMSPsfs(criterion,wls,T_cones,weightingSpectrum,zcoeffs,measpupilMM,calcpupilMM,nominalFocusWl,sizeOfFieldPixels,sizeOfFieldMM,sceParams)
+%    ComputeOptimizedConePSF(criterion,wls,T_cones,weightingSpectrum,zcoeffs,measpupilMM,calcpupilMM,nominalFocusWl,sizeOfFieldPixels,sizeOfFieldMM,sceParams)
 %
 % Optimize the PSF seen by the cones, given the cone sensitivities, a weighting spectral power distribution, and a criterion.  Optimization is performed on
 % the defocus parameter, relative to a specified nominal focus wavelength.
@@ -15,7 +15,7 @@ function [conepsf,arcminperpix,defocusDiopters] = ...
 % 8/26/11  dhb  Wrote it.
              
 options = optimset('fmincon');
-options = optimset(options,'Diagnostics','off','Display','iter','LargeScale','off','Algorithm','active-set');
+options = optimset(options,'Diagnostics','off','Display','off','LargeScale','off','Algorithm','active-set');
 if (IsCluster && matlabpool('size') > 1)
     options = optimset(options,'UseParallel','always');
 end
@@ -35,7 +35,7 @@ defocusDiopters = x;
     function [f,conepsf,arcminperpix,critRadius] = InlineMinFunction(x)
         defocusDiopters = x;
         [conepsf, arcminperpix] = ...
-            ComputeLMSPSFFromZernike(wls,T_cones,weightingSpectrum,zcoeffs,measpupilMM,calcpupilMM,nominalFocusWl,defocusDiopters,...
+            ComputeConePSFFromZernike(wls,T_cones,weightingSpectrum,zcoeffs,measpupilMM,calcpupilMM,nominalFocusWl,defocusDiopters,...
             sizeOfFieldPixels,sizeOfFieldMM,sceParams);
         nCones = size(T_cones,1);
         f = 0;

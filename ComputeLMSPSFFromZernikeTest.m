@@ -1,9 +1,9 @@
-% ComputeLMSPSFFromZernikeTest
+% ComputeConePSFFromZernikeTest
 %
 % Performs basic test of the routines that compute L, M, and S cone PSFs from
 % Zernike coefficients.
 %
-% See also: ComputeLMSPSFFromZernike, ComputePSFFromZernike, ComputePupilFunctionFromZernike,
+% See also: ComputeConePSFFromZernike, ComputePSFFromZernike, ComputePupilFunctionFromZernike,
 %   GetStilesCrawfordParams, GetDefocusFromWavelengthDifference
 %
 % The circular averaging is not a good idea for a single subject, but if you want
@@ -50,9 +50,9 @@ CIRCULARLYAVERAGE = 1;
 
 % Compute LMS psfs both for a subject and diffraction limited
 [conepsf,arcminperpix] = ...
-    ComputeLMSPSFFromZernike(wls,T_cones,weightingSpectrum,zcoeffs,measpupilMM,calcpupilMM,nominalFocusWl,defocusDiopters,sizeOfFieldPixels,sizeOfFieldMM,sceParams);
+    ComputeConePSFFromZernike(wls,T_cones,weightingSpectrum,zcoeffs,measpupilMM,calcpupilMM,nominalFocusWl,defocusDiopters,sizeOfFieldPixels,sizeOfFieldMM,sceParams);
 [conepsfd,arcminperpix] = ...
-    ComputeLMSPSFFromZernike(wls,T_cones,weightingSpectrum,diffracZcoeffs,measpupilMM,calcpupilMM,nominalFocusWl,defocusDiopters,sizeOfFieldPixels,sizeOfFieldMM,sceParams);
+    ComputeConePSFFromZernike(wls,T_cones,weightingSpectrum,diffracZcoeffs,measpupilMM,calcpupilMM,nominalFocusWl,defocusDiopters,sizeOfFieldPixels,sizeOfFieldMM,sceParams);
 lpsf = CenterPSF(conepsf(:,:,1));
 mpsf = CenterPSF(conepsf(:,:,2));
 spsf = CenterPSF(conepsf(:,:,3));
