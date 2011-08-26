@@ -5,7 +5,7 @@ function [psf,arcminperpix,strehl,sceFrac,areapix,areapixapod] = ComputePSFFromZ
 % coeffcients specified to the OSA standard. Includes SCE (Stiles-Crawford Effect) if specified.
 %
 % The psfs at each wavelength are scaled so that each sums to unity.  If SCE is specified,
-% you can multiply by sceFrac at that wavelength to get the fraction of light absorbed.
+% you can multiply by sceFrac at that wavelength to incorporate the fraction of light absorbed.
 %
 % Inputs - see comment in ComputePupilFunctionFromZernike for more details.
 %   zcoeffs -           Zernike coefficients.
@@ -106,7 +106,7 @@ for wl = 1:length(wls)
     psf(:,:,wl) = real(fftshift(int));
     
     % Get strehl ratio, based on Heidi's code
-    strehl(wl) = max(max(psf(:,:,wl)./(areapixapod^2)));
+    strehl(wl) = max(max(psf(:,:,wl)))./(areapixapod(wl)^2);
     
     % Scale so that psf sums to unity before SCE.  
     % The variable sceFrac tells you how much light

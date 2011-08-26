@@ -1,7 +1,8 @@
 % WavefrontOpticsToolbox
 %
 % Calling routines
-%   ComputePSFFromZernikeBasicTest -       Basic test that underlying Zernike routines behave sensibly.
+%   ComputeLMSPSFFromZernikeTest -         Test the LMS psf routines.
+%   ComputePSFFromZernikeTest -            Basic test that underlying Zernike monochromatic psf routines behave sensibly.
 %
 % Helper routines
 %   AverageOpticalPSFs -                   Average passed PSFs

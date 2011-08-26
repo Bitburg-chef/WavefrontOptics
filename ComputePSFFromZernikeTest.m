@@ -1,4 +1,4 @@
-% ComputePSFFromZernikeBasicTest
+% ComputePSFFromZernikeTest
 %
 % Performs basic test of the routines that compute monochromatic PSFs from
 % Zernike coefficients.
@@ -112,6 +112,7 @@ title(sprintf('Effect of defocus, +/- %0.1f nm',wavelengthOffset));
 %% TEST3.  Include the Stiles-Crawford effect.
 %
 % Note from DHB.  I'm not sure here what the effect should look like,
+% given that we're using a diffraction limited pupil,
 % so this mostly just demonstrates that the code runs.
 nominalFocusWavelength = 550;
 theWavelength = 550;
@@ -145,7 +146,8 @@ title(sprintf('SCE, returned strehl %0.3f, direct from non-SCE diffrac %0.3f, fr
 % The computed PSFs are recentered, with their maximum in the center, so that we
 % see the real peak when we take the 1D slice.
 %
-% This also optimizes the defocus to maximize the strehl ratio for each subject.
+% This also optimizes the defocus to maximize the strehl ratio for each subject,
+% so you can see the (large) effect of doing that.
 %
 % Note from DHB.  Again, I don't know if these are correct, but at least you can see
 % that you get a wide range of answers by using different subjects' data.
@@ -206,7 +208,6 @@ for i = 1:9
     strehlDirect3 = max(bestPSF3(:))/max(diffracPSF1(:));
     strehlDirect3SCE = max(bestPSF3(:))/max(diffracPSF2(:));
 
-      
     xlabel('Arc Minutes');
     ylabel('PSF');
     title(sprintf('Subject %d, strehl %0.2f (no defocus), %0.2f (defocus of %0.2f D)',i,strehl2,bestStrehl,bestDefocusDiopters));
@@ -217,8 +218,8 @@ for i = 1:9
     else
         fprintf('Subject %i, no SCE correction\n',i);
     end
-    fprintf('\tNo defocus: direct strehl with diffrac %0.3f, direct strehl with SCE diffrac %0.2f, returned, %0.2f\n',strehlDirect2,strehlDirect2SCE,strehl2);
-    fprintf('\twith defocus: direct strehl with diffrac %0.3f, direct strehl with SCE diffrac %0.2f, returned, %0.2f\n',strehlDirect3,strehlDirect3SCE,bestStrehl);
+    fprintf('\tNo defocus: direct strehl with diffrac %0.3f, direct strehl with SCE diffrac %0.3f, returned, %0.3f\n',strehlDirect2,strehlDirect2SCE,strehl2);
+    fprintf('\twith defocus: direct strehl with diffrac %0.3f, direct strehl with SCE diffrac %0.3f, returned, %0.3f\n',strehlDirect3,strehlDirect3SCE,bestStrehl);
         
 end
 
