@@ -13,6 +13,8 @@ function [conepsf,arcminperpix,defocusDiopters] = ...
 % of the total mass of the PSF seen by each cone.  The smaller this radius, the better.
 %
 % 8/26/11  dhb  Wrote it.
+% 8/29/11  dhb  Don't need to center or circularly average here.
+%          dhb  Print warning if optimal value is at search bound.
              
 options = optimset('fmincon');
 options = optimset(options,'Diagnostics','off','Display','off','LargeScale','off','Algorithm','active-set');
@@ -21,8 +23,9 @@ if (IsCluster && matlabpool('size') > 1)
 end
 
 % Initial defocus and bounds (diopters)
+diopterBound = 4;
 x0 = 0;
-vlb = -4;
+vlb = -diopterBound;
 vub = -vlb;
 
 % Optimize focus
@@ -31,6 +34,9 @@ x = fmincon(@InlineMinFunction,x0,[],[],[],[],vlb,vub,[],options);
 % Set up return values
 defocusDiopters = x;
 [f,conepsf,arcminperpix] = InlineMinFunction(defocusDiopters);
+if (abs(defocusDiopters) >= diopterBound)
+    fprintf('WARNING: defocus found in ComputeOptimizedConePSF is at search limit of %0.1f diopters\n',diopterBound)
+end
 
     function [f,conepsf,arcminperpix,critRadius] = InlineMinFunction(x)
         defocusDiopters = x;
@@ -40,8 +46,8 @@ defocusDiopters = x;
         nCones = size(T_cones,1);
         f = 0;
         for j = 1:nCones
-            temppsf = CircularlyAveragePSF(CenterPSF(conepsf(:,:,j)));
-            critRadius(j) = FindPSFCriterionRadius(temppsf,criterionFraction);
+            %temppsf = CircularlyAveragePSF(CenterPSF(conepsf(:,:,j)));
+            critRadius(j) = FindPSFCriterionRadius(conepsf(:,:,j),criterionFraction);
             f = f + coneWeights(j)*critRadius(j);
         end
             
