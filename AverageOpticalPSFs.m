@@ -1,7 +1,9 @@
 function [averagePSF] = AverageOpticalPSFs(inputPSFs)
 % [averagePSF] = AverageOpticalPSFs(inputPSFs)
 %
-% Produces an average of passed optical point spread functions.  Output is circularly symmetric.  Average in sf domain and transform back.
+% Produces an average of passed optical point spread functions.
+% Input is a cell array of PSFs.
+% Average in sf domain and transform back.
 %
 % 7/19/07  dhb  Wrote it.
 
