@@ -27,7 +27,7 @@ load spd_D65
 weightingSpectrum = SplineSpd(S_D65,spd_D65,S);
 
 % Specify datafile for Zernike coefficients
-zernikeFile = 'sampleZernikeCoeffs.txt'
+zernikeFile = 'sampleZernikeCoeffs.txt';
 measpupilMM = 6;
 
 % Parameters
@@ -51,8 +51,8 @@ coneWeights = [1 1 0];
 criterionFraction = 0.9;
 
 % Read coefficients and optimze PSF for each observer
-zcoeffs = theZernikeCoeffs(:,whichSubject);
-for i = 1:size(zcoeffs,2)
+for i = 1:size(theZernikeCoeffs,2)
+    zcoeffs = theZernikeCoeffs(:,i);
     [conepsfo,arcminperpixel(i),defocusDiopters(i)] = ...
         ComputeOptimizedConePSF(coneWeights,criterionFraction,wls,T_cones,weightingSpectrum,zcoeffs,measpupilMM,calcpupilMM,nominalFocusWl,...
         sizeOfFieldPixels,sizeOfFieldMM,sceParams);
