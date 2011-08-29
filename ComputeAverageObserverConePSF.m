@@ -10,10 +10,7 @@
 %   ComputePSFFromZernikeTest, ComputePSFFromZernike, ComputePupilFunctionFromZernike,
 %   GetStilesCrawfordParams, GetDefocusFromWavelengthDifference
 %
-% The circular averaging is not a good idea for a single subject, but if you want
-% to obtain an average over subjects it seems like a good idea.
-%
-% 8/21/11  dhb  Wrote it.
+% 8/29/11  dhb  Wrote it.
 
 %% Clear
 clear; close all;
