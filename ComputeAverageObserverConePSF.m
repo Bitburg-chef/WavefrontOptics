@@ -35,6 +35,7 @@ sizeOfFieldMM = 16.212;
 diffracZcoeffs = zeros(65,1);
 theZernikeCoeffs = load(zernikeFile);
 calcpupilMM = 3;
+whichRow = floor(sizeOfFieldPixels/2) + 1;
 
 plotLimit = 2;
 DOSCE = 0;
@@ -60,11 +61,11 @@ end
 
 % Get optimized diffrac limited PSF
 [conepsfd,arcminperpixeld,defocusDioptersd] = ...
-        ComputeOptimizedConePSF(coneWeights,criterionFraction,wls,T_cones,weightingSpectrum,diffracZcoeffs,measpupilMM,calcpupilMM,nominalFocusWl,...
-        sizeOfFieldPixels,sizeOfFieldMM,sceParams);
-    lpsfd = CenterPSF(conepsfd(:,:,1));
-    mpsfd = CenterPSF(conepsfd(:,:,2));
-    spsfd = CenterPSF(conepsfd(:,:,3));
+    ComputeOptimizedConePSF(coneWeights,criterionFraction,wls,T_cones,weightingSpectrum,diffracZcoeffs,measpupilMM,calcpupilMM,nominalFocusWl,...
+    sizeOfFieldPixels,sizeOfFieldMM,sceParams);
+lpsfd = CenterPSF(conepsfd(:,:,1));
+mpsfd = CenterPSF(conepsfd(:,:,2));
+spsfd = CenterPSF(conepsfd(:,:,3));
 
 % Get average LMS PSFs
 avglpsfo = AverageOpticalPSFs(lpsfo);
@@ -84,6 +85,9 @@ onedSPSFo = avgspsfo(whichRow,:);
 onedLPSFd = lpsfd(whichRow,:);
 onedMPSFd = mpsfd(whichRow,:);
 onedSPSFd = spsfd(whichRow,:);
+
+arcminutes = arcminperpixel(1)*((1:sizeOfFieldPixels)-whichRow);
+index = find(abs(arcminutes) < plotLimit);
 figure; clf;
 subplot(1,3,1); hold on
 plot(arcminutes(index),onedLPSFo(index),'r','LineWidth',4);
