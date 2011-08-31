@@ -14,7 +14,7 @@ clear; close all;
 %% TEST1: The Zernike code should return the diffraction limited PSF if we pass
 % all zeros as the coefficients.  So the first test is whether this works,
 % when we compare to what we get when we produce the diffraction limited
-% PSF using analytic formulae implemented in the PTF routine AiryPattern.
+% PSF using analytic formulae implemented in the PTB routine AiryPattern.
 %
 % This appears to work correctly.
 theWavelength = 650;
@@ -83,6 +83,13 @@ title(sprintf('Diffraction limited, %0.1f mm pupil, %0.f nm',calcpupilMM+pupilOf
 % behavior, again for the diffaction limited case.
 %
 % Note from DHB.  The psfs do get broader, and they take on multiple peaks.  Is this right?  I don't know.
+%
+% Note from HH: The PSF should start to take on multiple peaks
+% (ringing, etc should still be radially symmetric) with change in
+% defocus, so this looks right.  At some point defocus will be large
+% enough that you'll run into sampling problems.  You could check this
+% by starting with very high sampling density and decreasing until just
+% before the point where you start to see issues. 
 nominalFocusWavelength = 550;
 theWavelength = 550;
 wavelengthOffset = 50;
@@ -112,8 +119,10 @@ title(sprintf('Effect of defocus, +/- %0.1f nm',wavelengthOffset));
 %% TEST3.  Include the Stiles-Crawford effect.
 %
 % Note from DHB.  I'm not sure here what the effect should look like,
-% given that we're using a diffraction limited pupil,
-% so this mostly just demonstrates that the code runs.
+% given that we're using a diffraction limited pupil, so this mostly just
+% demonstrates that the code runs.
+%
+% Note from HH: This looks about right.
 nominalFocusWavelength = 550;
 theWavelength = 550;
 sizeOfFieldPixels = 201;
@@ -151,6 +160,19 @@ title(sprintf('SCE, returned strehl %0.3f, direct from non-SCE diffrac %0.3f, fr
 %
 % Note from DHB.  Again, I don't know if these are correct, but at least you can see
 % that you get a wide range of answers by using different subjects' data.
+%
+% Note from HH: Surprised by the the large changes with the 3mm pupil
+% between zero defocus and that required to optimize the strehl.   Ran
+% it with calcpupil of 6mm (since already had lots of calculations done
+% for these subjects at this size) and with or without the SCE the
+% values of defocus required to optimize the monochromatic strehl
+% matched my calculations- at least within the resolution of your
+% routine, so I guess the 3mm result is just what happens.  Not exactly
+% and independent test, but at least verifies that these routines
+% produce the same result as my original function. 
+%
+% Note from HH: For real calculations, using a defocus increment smaller
+% than 0.25 Diopters would be wise.
 nominalFocusWavelength = 550;
 theWavelength = 550;
 sizeOfFieldPixels = 201;

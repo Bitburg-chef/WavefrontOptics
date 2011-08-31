@@ -33,7 +33,15 @@ function [psf,arcminperpix,strehl,sceFrac,areapix,areapixapod] = ComputePSFFromZ
 %
 % Note: If this function is called with a zcoeffs vector that is composed of only zeros 
 % the output monochromatic and polychromatic PSFs will be
-% limited only by diffraction and longitudinal chromatic aberration (and the SCE if specified). 
+% limited only by diffraction and longitudinal chromatic aberration (and the SCE if specified).
+%
+% Note: For better or worse, there are three ways that defocus can be
+% specified to this routine.  First, the value of the 4th zernike
+% coefficient is included.  Then, a value is computed based on the
+% differencebetween nominalFocusWl and the wavelength for which
+% the PSF is being computed. Finally, the value of defocusDiopters is 
+% added in directly.  Although these are redundant, it is often most
+% convenient to think in terms of one of the three ways.
 %
 % See also: ComputeLMSPSFFromZernike, ComputePupilFunctionFromZernike, GetStilesCrawfordParams, GetDefocusFromWavelengthDifference
 %

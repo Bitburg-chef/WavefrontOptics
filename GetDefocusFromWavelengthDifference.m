@@ -1,5 +1,5 @@
-function [microns,diopters] = GetDefocusFromWavelenthDifference(wls,nominalFocusWl,defocusDiopters,measpupilMM)
-% [microns,diopters] = GetDefocusFromWavelenthDifference(wls,nominalFocusWl,,defocusDiopters,measpupilMM)
+function [microns,diopters] = GetDefocusFromWavelengthDifference(wls,nominalFocusWl,defocusDiopters,measpupilMM)
+% [microns,diopters] = GetDefocusFromWavelengthDifference(wls,nominalFocusWl,,defocusDiopters,measpupilMM)
 %
 % Get the defocus in microns/diopters, from the wavelength of nominal focus
 % and the desired wavelengths.
