@@ -3,8 +3,8 @@
 % Performs basic test of the routines that compute L, M, and S cone PSFs from
 % Zernike coefficients.
 %
-% See also: ComputeConePSFFromZernike, ComputePSFFromZernike, ComputePupilFunctionFromZernike,
-%   GetStilesCrawfordParams, GetDefocusFromWavelengthDifference
+% See also: wvfComputeConePSFFromZernike, wvfComputePSFFromZernike, wvfComputePupilFunctionFromZernike,
+%   wvfGetStilesCrawfordParams, wvfGetDefocusFromWavelengthDifference
 %
 % The circular averaging is not a good idea for a single subject, but if you want
 % to obtain an average over subjects it seems like a good idea.
@@ -42,17 +42,17 @@ calcpupilMM = 3;
 plotLimit = 2;
 DOSCE = 0;
 if (DOSCE)
-    sceParams = GetStilesCrawfordParams(wls,'berendshot');
+    sceParams = wvfGetStilesCrawfordParams(wls,'berendshot');
 else
-    sceParams = GetStilesCrawfordParams(wls,'none');
+    sceParams = wvfGetStilesCrawfordParams(wls,'none');
 end
 CIRCULARLYAVERAGE = 1;
 
 % Compute LMS psfs both for a subject and diffraction limited
 [conepsf,arcminperpix] = ...
-    ComputeConePSFFromZernike(wls,T_cones,weightingSpectrum,zcoeffs,measpupilMM,calcpupilMM,nominalFocusWl,defocusDiopters,sizeOfFieldPixels,sizeOfFieldMM,sceParams);
+    wvfComputeConePSFFromZernike(wls,T_cones,weightingSpectrum,zcoeffs,measpupilMM,calcpupilMM,nominalFocusWl,defocusDiopters,sizeOfFieldPixels,sizeOfFieldMM,sceParams);
 [conepsfd,arcminperpix] = ...
-    ComputeConePSFFromZernike(wls,T_cones,weightingSpectrum,diffracZcoeffs,measpupilMM,calcpupilMM,nominalFocusWl,defocusDiopters,sizeOfFieldPixels,sizeOfFieldMM,sceParams);
+    wvfComputeConePSFFromZernike(wls,T_cones,weightingSpectrum,diffracZcoeffs,measpupilMM,calcpupilMM,nominalFocusWl,defocusDiopters,sizeOfFieldPixels,sizeOfFieldMM,sceParams);
 lpsf = CenterPSF(conepsf(:,:,1));
 mpsf = CenterPSF(conepsf(:,:,2));
 spsf = CenterPSF(conepsf(:,:,3));
@@ -126,7 +126,7 @@ drawnow;
 coneWeights = [1 1 0];
 criterionFraction = 0.9;
 [conepsfo,arcminperpixel,defocusDiopters] = ...
-    ComputeOptimizedConePSF(coneWeights,criterionFraction,wls,T_cones,weightingSpectrum,zcoeffs,measpupilMM,calcpupilMM,nominalFocusWl,...
+    wvfComputeOptimizedConePSF(coneWeights,criterionFraction,wls,T_cones,weightingSpectrum,zcoeffs,measpupilMM,calcpupilMM,nominalFocusWl,...
     sizeOfFieldPixels,sizeOfFieldMM,sceParams);
 lpsfo = CenterPSF(conepsfo(:,:,1));
 mpsfo = CenterPSF(conepsfo(:,:,2));

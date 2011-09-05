@@ -1,5 +1,5 @@
-function [pupilfunc,areapix,areapixapod] = ComputePupilFunctionFromZernike(zcoeffs,measpupilMM,calcpupilMM,wl,sizeOfFieldPixels,sizeOfFieldMM,sceParams)
-% [pupilfunc,areapix,areapixapod] = ComputePupilFunctionFromZernike(zcoeffs,measpupilMM,calcpupilMM,wl,sizeOfFieldPixels,sizeOfFieldMM,[sceParams])
+function [pupilfunc,areapix,areapixapod] = wvfComputePupilFunctionFromZernike(zcoeffs,measpupilMM,calcpupilMM,wl,sizeOfFieldPixels,sizeOfFieldMM,sceParams)
+% [pupilfunc,areapix,areapixapod] = wvfComputePupilFunctionFromZernike(zcoeffs,measpupilMM,calcpupilMM,wl,sizeOfFieldPixels,sizeOfFieldMM,[sceParams])
 %
 % Compute the monochromatic pupil fuction (amplitude and phase) over the calculated pupil size for 10 orders of Zernike
 % coeffcients specified to the OSA standard. Includes SCE (Stiles-Crawford Effect) if specified.
@@ -23,7 +23,7 @@ function [pupilfunc,areapix,areapixapod] = ComputePupilFunctionFromZernike(zcoef
 %                       Setting this larger than the calculated pupil size prevents undersampling
 %                       of the PSF that will ultimately be comptued from the pupil function.
 %   sceParams -         Parameter structure for Stiles-Crawford correction.
-%                       See GetStilesCrawfordParams.  Default no correction.
+%                       See wvfGetStilesCrawfordParams.  Default no correction.
 %
 % Outputs
 %   pupilfunc -     Calcuated pupil function
@@ -42,7 +42,7 @@ function [pupilfunc,areapix,areapixapod] = ComputePupilFunctionFromZernike(zcoef
 % (or areapixapod) squared effects a normalization so that the peak reflects
 % the strehl ratio.
 %
-% See also: ComputePSFFromZernike, GetStilesCrawfordParams.
+% See also: wvfComputePSFFromZernike, wvfGetStilesCrawfordParams.
 %
 % Code provided by Heidi Hofer.
 %

@@ -1,7 +1,7 @@
 function [conepsf,arcminperpix,defocusDiopters] = ...
-    ComputeOptimizedConePSF(coneWeights,criterionFraction,wls,T_cones,weightingSpectrum,zcoeffs,measpupilMM,calcpupilMM,nominalFocusWl,sizeOfFieldPixels,sizeOfFieldMM,sceParams)
+    wvfComputeOptimizedConePSF(coneWeights,criterionFraction,wls,T_cones,weightingSpectrum,zcoeffs,measpupilMM,calcpupilMM,nominalFocusWl,sizeOfFieldPixels,sizeOfFieldMM,sceParams)
 % [conepsf,arcminperpix,defocusDiopters] = ...
-%    ComputeOptimizedConePSF(criterion,wls,T_cones,weightingSpectrum,zcoeffs,measpupilMM,calcpupilMM,nominalFocusWl,sizeOfFieldPixels,sizeOfFieldMM,sceParams)
+%    wvfComputeOptimizedConePSF(criterion,wls,T_cones,weightingSpectrum,zcoeffs,measpupilMM,calcpupilMM,nominalFocusWl,sizeOfFieldPixels,sizeOfFieldMM,sceParams)
 %
 % Optimize the PSF seen by the cones, given the cone sensitivities, a weighting spectral power distribution, and a criterion.  Optimization is performed on
 % the defocus parameter, relative to a specified nominal focus wavelength.
@@ -35,13 +35,13 @@ x = fmincon(@InlineMinFunction,x0,[],[],[],[],vlb,vub,[],options);
 defocusDiopters = x;
 [f,conepsf,arcminperpix] = InlineMinFunction(defocusDiopters);
 if (abs(defocusDiopters) >= diopterBound)
-    fprintf('WARNING: defocus found in ComputeOptimizedConePSF is at search limit of %0.1f diopters\n',diopterBound)
+    fprintf('WARNING: defocus found in wvfComputeOptimizedConePSF is at search limit of %0.1f diopters\n',diopterBound)
 end
 
     function [f,conepsf,arcminperpix,critRadius] = InlineMinFunction(x)
         defocusDiopters = x;
         [conepsf, arcminperpix] = ...
-            ComputeConePSFFromZernike(wls,T_cones,weightingSpectrum,zcoeffs,measpupilMM,calcpupilMM,nominalFocusWl,defocusDiopters,...
+            wvfComputeConePSFFromZernike(wls,T_cones,weightingSpectrum,zcoeffs,measpupilMM,calcpupilMM,nominalFocusWl,defocusDiopters,...
             sizeOfFieldPixels,sizeOfFieldMM,sceParams);
         nCones = size(T_cones,1);
         f = 0;
