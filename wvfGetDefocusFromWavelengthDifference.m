@@ -1,11 +1,11 @@
-function [microns,diopters] = wvfGetDefocusFromWavelengthDifference(wls,nominalFocusWl,defocusDiopters,measpupilMM)
+function wvfParams = wvfGetDefocusFromWavelengthDifference(wvfParams)
+%function [microns,diopters] = wvfGetDefocusFromWavelengthDifference(wls,nominalFocusWl,defocusDiopters,measpupilMM)
 % [microns,diopters] = wvfGetDefocusFromWavelengthDifference(wls,nominalFocusWl,,defocusDiopters,measpupilMM)
 %
-% Get the defocus in microns/diopters, from the wavelength of nominal focus
-% and the desired wavelengths.
-% 
-% Also adds in an extra (signed) defocus passed in diopters.  The two
-% parameters nominalFocusWl and defocusDiopters are redundant, in the
+% Get the defocus in microns, from the wavelength of nominal focus
+% and the desired wavelengths and the fixed added defocusDiopters.
+%
+% The two parameters nominalFocusWl and defocusDiopters are redundant, in the
 % the sense that their effects get added together and you can accomplish
 % the same thing with either variable.  But, sometimes it is more
 % convenient to think in one way, and sometimes in the other.
@@ -13,24 +13,32 @@ function [microns,diopters] = wvfGetDefocusFromWavelengthDifference(wls,nominalF
 % The conversion to microns is because these are the units we assume that
 % the pupil function is measured in.
 %
-% Wavelengths passed in NM.
+% Required input fiels for wvfParams struct - see comment in wvfComputePupilFunctionFromZernike for more details.
+%   wls -               Column vector of wavelengths over which to compute, in NANOMETERS.
+%   nominalFocusWl -    Wavelength (in nm) of nominal focus.
+%   defocusDiopters -   Defocus to add in (signed), in diopters.
+%   measpupilMM -       Size of pupil characterized by the coefficients, in MM.
+%
+% Output fields set in wvfParams struct
+%   defocusMicrons -    Defocus added in to zcoeffs(4) at each wavelength, in microns.
 %
 % 8/21/11  dhb  Pulled out from code supplied by Heidi Hofer.
+% 9/5/11   dhb  Rename.  Rewrite for wvfPrams i/o.
 
 % Note from DHB.  This magic code provided by Heidi Hofer.
 % It does have the feature that the adjustment is 0 when
 % the wavelength being evaluated matches the passed nominal
 % focus wavelength.  Heidi assures me that the constants
 % are correct for any pair of wavelengths.
-diopters = zeros (size(wls));
-constant = 1.8859-(0.63346/(0.001*nominalFocusWl-0.2141));
-for wl = 1:length(wls)
+diopters = zeros (size(wvfParams.wls));
+constant = 1.8859-(0.63346/(0.001*wvfParams.nominalFocusWl-0.2141));
+for wl = 1:length(wvfParams.wls)
    diopters(wl) = 1.8859 - constant - (0.63346/(0.001*wls(wl)-0.2141));  
 end
 
 % Add in extra
-diopters = diopters + defocusDiopters;
+diopters = diopters + wvfParams.defocusDiopters;
 
 % Convert defocus diopters to microns
-microns = zeros(size(wls));
-microns = diopters * (measpupilMM*measpupilMM)/(16*sqrt(3));
+wvfParams.defocusMicrons = zeros(size(wls));
+wvfParams.defocusMicrons = diopters * (measpupilMM*measpupilMM)/(16*sqrt(3));
