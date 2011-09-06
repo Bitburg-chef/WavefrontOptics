@@ -1,9 +1,9 @@
 % WavefrontOpticsToolbox
 %
 % Programs (demonstrate use)
-%   wvfComputeConePSFFromZernikeTest -        Test the cone/spectrum weighted psf routines.
-%   wvfComputePSFFromZernikeTest -            Basic test that underlying Zernike monochromatic psf routines behave sensibly.
-%   wvfComputeAverageObserverConePSF -        Compute optimized cone psf for an average observer. 
+%   s_wvfComputeAverageObserverConePSF -      Compute optimized cone psf for an average observer. 
+%   s_wvfComputeConePSFFromZernikeTest -      Test the cone/spectrum weighted psf routines.
+%   s_wvfComputePSFFromZernikeTest -          Basic test that underlying Zernike monochromatic psf routines behave sensibly.
 %
 % Wavefront optics suite
 %   wvfComputeConePSFFromZernike -            Compute cone psfs given zernike, pupil, accom wl, and weighting spectrum
