@@ -4,9 +4,10 @@
 % Zernike coefficients.
 %
 % See also: wvfComputePSFFromZernike, wvfComputePupilFunctionFromZernike,
-% GetStilesCrawfordParamsParams, wvfGetDefocusFromWavelengthDifference
+% GetStilesCrawfordParams, wvfGetDefocusFromWavelengthDifference
 %
 % 8/21/11  dhb  Wrote it, based on code provided by Heidi Hofer.
+% 9/7/11   dhb  Got this working with wvfParams i/o.
 
 %% Clear
 clear; close all;
@@ -18,23 +19,15 @@ clear; close all;
 %
 % This appears to work correctly.
 
-%   zcoeffs -           Zernike coefficients.
-%   measpupilMM -       Size of pupil characterized by the coefficients, in MM.
-%   caclpupilsize -     Size over which returned pupil function is calculated, in MM.
-%   wls -               Column vector of wavelengths over which to compute, in NANOMETERS.
-%   nominalFocusWl -    Wavelength (in nm) of nominal focus.
-%   defocusDiopters -   Defocus to add in (signed), in diopters.
-%   sizeOfFieldPixels - Linear size of square image over which the pupil function is computed.
-%   sizeOfFieldMM -     Size of square image over which the pupile function
-%   is computed in MM.
-wvfParams.zcoeffs = zeros(65,1);
-wvfParams.measpupilMM = 8;
-wvfParams.calcpupilMM = 3;
-wvfParams.wls = 650;
-wvfParams.nominalFocusWl = 650;
-wvfParams.defocusDiopters = 0;
-wvfParams.sizeOfFieldPixels = 201;
-wvfParams.sizeOfFieldMM = 16.212;
+% Set up parameters structure
+wvfParams0.zcoeffs = zeros(65,1);
+wvfParams0.measpupilMM = 8;
+wvfParams0.calcpupilMM = 3;
+wvfParams0.wls = 650;
+wvfParams0.nominalFocusWl = 650;
+wvfParams0.defocusDiopters = 0;
+wvfParams0.sizeOfFieldPixels = 201;
+wvfParams0.sizeOfFieldMM = 16.212;
 wavelengthOffset = 250;
 pupilOffset = 4;
 
@@ -45,7 +38,7 @@ position = get(gcf,'Position');
 position(3) = 1600;
 set(gcf,'Position',position);
 subplot(1,3,1); hold on
-[wvfParams] = wvfComputePSFFromZernike(wvfParams);
+[wvfParams] = wvfComputePSFFromZernike(wvfParams0);
 whichRow = floor(wvfParams.sizeOfFieldPixels/2) + 1;
 onedPSF1 = wvfParams.psf(whichRow,:);
 onedPSF1 = onedPSF1/max(onedPSF1(:));
@@ -59,35 +52,40 @@ xlabel('Arc Minutes');
 ylabel('Normalized PSF');
 title(sprintf('Diffraction limited, %0.1f mm pupil, %0.f nm',wvfParams.calcpupilMM,wvfParams.wls(1)));
 
+wvfParams1 = wvfParams0;
+wvfParams1.wls = wvfParams1.wls-wavelengthOffset;
+wvfParams1.nominalFocusWl = wvfParams1.nominalFocusWl-wavelengthOffset;
 subplot(1,3,2); hold on
-[diffracPSF1,arcminperpix] = wvfComputePSFFromZernike(diffracZcoeffs,measpupilMM,calcpupilMM,theWavelength-wavelengthOffset,theWavelength-wavelengthOffset,defocusDiopters,sizeOfFieldPixels,sizeOfFieldMM);
-whichRow = floor(sizeOfFieldPixels/2) + 1;
-onedPSF1 = diffracPSF1(whichRow,:);
+[wvfParams] = wvfComputePSFFromZernike(wvfParams1);
+whichRow = floor(wvfParams.sizeOfFieldPixels/2) + 1;
+onedPSF1 = wvfParams.psf(whichRow,:);
 onedPSF1 = onedPSF1/max(onedPSF1(:));
-arcminutes = arcminperpix*((1:sizeOfFieldPixels)-whichRow);
+arcminutes = wvfParams.arcminperpix*((1:wvfParams.sizeOfFieldPixels)-whichRow);
 index = find(abs(arcminutes) < 2);
 plot(arcminutes(index),onedPSF1(index),'r','LineWidth',4);
 radians = (pi/180)*(arcminutes/60);
-onedPSF2 = AiryPattern(radians,calcpupilMM,theWavelength-wavelengthOffset);
+onedPSF2 = AiryPattern(radians,wvfParams.calcpupilMM,wvfParams.wls(1));
 plot(arcminutes(index),onedPSF2(index),'b','LineWidth',2);
 xlabel('Arc Minutes');
 ylabel('Normalize PSF');
-title(sprintf('Diffraction limited, %0.1f mm pupil, %0.f nm',calcpupilMM,theWavelength-wavelengthOffset));
+title(sprintf('Diffraction limited, %0.1f mm pupil, %0.f nm',wvfParams.calcpupilMM,wvfParams.wls(1)));
 
+wvfParams2 = wvfParams0;
+wvfParams2.calcpupilMM = wvfParams2.calcpupilMM+pupilOffset;
 subplot(1,3,3); hold on
-[diffracPSF1,arcminperpix] = wvfComputePSFFromZernike(diffracZcoeffs,measpupilMM,calcpupilMM+pupilOffset,theWavelength,theWavelength,defocusDiopters,sizeOfFieldPixels,sizeOfFieldMM);
-whichRow = floor(sizeOfFieldPixels/2) + 1;
-onedPSF1 = diffracPSF1(whichRow,:);
+[wvfParams] = wvfComputePSFFromZernike(wvfParams2);
+whichRow = floor(wvfParams.sizeOfFieldPixels/2) + 1;
+onedPSF1 = wvfParams.psf(whichRow,:);
 onedPSF1 = onedPSF1/max(onedPSF1(:));
-arcminutes = arcminperpix*((1:sizeOfFieldPixels)-whichRow);
+arcminutes = wvfParams.arcminperpix*((1:wvfParams.sizeOfFieldPixels)-whichRow);
 index = find(abs(arcminutes) < 2);
 plot(arcminutes(index),onedPSF1(index),'r','LineWidth',4);
 radians = (pi/180)*(arcminutes/60);
-onedPSF2 = AiryPattern(radians,calcpupilMM+pupilOffset,theWavelength);
+onedPSF2 = AiryPattern(radians,wvfParams.calcpupilMM,wvfParams.wls(1));
 plot(arcminutes(index),onedPSF2(index),'b','LineWidth',2);
 xlabel('Arc Minutes');
 ylabel('Normalized PSF');
-title(sprintf('Diffraction limited, %0.1f mm pupil, %0.f nm',calcpupilMM+pupilOffset,theWavelength));
+title(sprintf('Diffraction limited, %0.1f mm pupil, %0.f nm',wvfParams.calcpupilMM,wvfParams.wls(1)));
 
 %% TEST2: If we change the nominal focus away from a specified wavelength, the psf should
 % get broader.  How much broader, I don't know but we can at least verify the qualitative
@@ -101,6 +99,18 @@ title(sprintf('Diffraction limited, %0.1f mm pupil, %0.f nm',calcpupilMM+pupilOf
 % enough that you'll run into sampling problems.  You could check this
 % by starting with very high sampling density and decreasing until just
 % before the point where you start to see issues. 
+
+% Set up parameters structure
+wvfParams0.zcoeffs = zeros(65,1);
+wvfParams0.measpupilMM = 8;
+wvfParams0.calcpupilMM = 3;
+wvfParams0.wls = 550;
+wvfParams0.nominalFocusWl = 550;
+wvfParams0.defocusDiopters = 0;
+wvfParams0.sizeOfFieldPixels = 201;
+wvfParams0.sizeOfFieldMM = 16.212;
+wavelengthOffset = 50;
+
 nominalFocusWavelength = 550;
 theWavelength = 550;
 wavelengthOffset = 50;
@@ -111,17 +121,22 @@ calcpupilMM = 3;
 defocusDiopters = 0;
 
 figure; clf; hold on
-[diffracPSF1,arcminperpix] = wvfComputePSFFromZernike(diffracZcoeffs,measpupilMM,calcpupilMM,theWavelength,nominalFocusWavelength,defocusDiopters,sizeOfFieldPixels,sizeOfFieldMM);
-whichRow = floor(sizeOfFieldPixels/2) + 1;
-onedPSF1 = diffracPSF1(whichRow,:);
-arcminutes = arcminperpix*((1:sizeOfFieldPixels)-whichRow);
+wvfParams1 = wvfParams0;
+[wvfParams1] = wvfComputePSFFromZernike(wvfParams0);
+whichRow = floor(wvfParams1.sizeOfFieldPixels/2) + 1;
+onedPSF1 = wvfParams1.psf(whichRow,:);
+arcminutes = wvfParams1.arcminperpix*((1:wvfParams1.sizeOfFieldPixels)-whichRow);
 index = find(abs(arcminutes) < 2);
 plot(arcminutes(index),onedPSF1(index),'r','LineWidth',4);
-[diffracPSF2] = wvfComputePSFFromZernike(diffracZcoeffs,measpupilMM,calcpupilMM,theWavelength-wavelengthOffset,nominalFocusWavelength,defocusDiopters,sizeOfFieldPixels,sizeOfFieldMM);
-onedPSF2 = diffracPSF2(whichRow,:);
+wvfParams2 = wvfParams0;
+wvfParams2.wls = wvfParams2.wls - wavelengthOffset;
+[wvfParams2] = wvfComputePSFFromZernike(wvfParams2);
+onedPSF2 = wvfParams2.psf(whichRow,:);
 plot(arcminutes(index),onedPSF2(index),'b','LineWidth',4);
-[diffracPSF3] = wvfComputePSFFromZernike(diffracZcoeffs,measpupilMM,calcpupilMM,theWavelength+wavelengthOffset,nominalFocusWavelength,defocusDiopters,sizeOfFieldPixels,sizeOfFieldMM);
-onedPSF3 = diffracPSF3(whichRow,:);
+wvfParams3 = wvfParams0;
+wvfParams3.wls = wvfParams3.wls + wavelengthOffset;
+[wvfParams3] = wvfComputePSFFromZernike(wvfParams3);
+onedPSF3 = wvfParams3.psf(whichRow,:);
 plot(arcminutes(index),onedPSF3(index),'g','LineWidth',4);
 xlabel('Arc Minutes');
 ylabel('PSF');
@@ -134,31 +149,33 @@ title(sprintf('Effect of defocus, +/- %0.1f nm',wavelengthOffset));
 % demonstrates that the code runs.
 %
 % Note from HH: This looks about right.
-nominalFocusWavelength = 550;
-theWavelength = 550;
-sizeOfFieldPixels = 201;
-sizeOfFieldMM = 16.212;
-measpupilMM = 8;
-calcpupilMM = 8;
-defocusDiopters = 0;
-sceParams = GetStilesCrawfordParamsParams(theWavelength,'berendshot');
+wvfParams0.zcoeffs = zeros(65,1);
+wvfParams0.measpupilMM = 8;
+wvfParams0.calcpupilMM = 8;
+wvfParams0.wls = 550;
+wvfParams0.nominalFocusWl = 550;
+wvfParams0.defocusDiopters = 0;
+wvfParams0.sizeOfFieldPixels = 201;
+wvfParams0.sizeOfFieldMM = 16.212;
+wvfParams0.sceParams = GetStilesCrawfordParams(theWavelength,'berendshot');
 
 figure; clf; hold on
-[diffracPSF1,arcminperpix] = ...
-    wvfComputePSFFromZernike(diffracZcoeffs,measpupilMM,calcpupilMM,theWavelength,nominalFocusWavelength,defocusDiopters,sizeOfFieldPixels,sizeOfFieldMM,[]);
-whichRow = floor(sizeOfFieldPixels/2) + 1;
-onedPSF1 = diffracPSF1(whichRow,:);
-arcminutes = arcminperpix*((1:sizeOfFieldPixels)-whichRow);
+wvfParams1 = wvfParams0;
+wvfParams1.sceParams = [];
+[wvfParams1] = wvfComputePSFFromZernike(wvfParams1);
+whichRow = floor(wvfParams1.sizeOfFieldPixels/2) + 1;
+onedPSF1 = wvfParams1.psf(whichRow,:);
+arcminutes = wvfParams1.arcminperpix*((1:wvfParams1.sizeOfFieldPixels)-whichRow);
 index = find(abs(arcminutes) < 4);
 plot(arcminutes(index),onedPSF1(index),'r','LineWidth',4);
-[diffracPSF2,nil,strehlSCE,sceFrac] = ...
-    wvfComputePSFFromZernike(diffracZcoeffs,measpupilMM,calcpupilMM,theWavelength,nominalFocusWavelength,defocusDiopters,sizeOfFieldPixels,sizeOfFieldMM,sceParams);
-diffracPSF2 = CenterPSF(diffracPSF2);
-onedPSF2 = diffracPSF2(whichRow,:);
+wvfParams2 = wvfParams0;
+[wvfParams2] = wvfComputePSFFromZernike(wvfParams2);
+onedPSF2 = wvfParams2.psf(whichRow,:);
 plot(arcminutes(index),onedPSF2(index),'b','LineWidth',4);
 xlabel('Arc Minutes');
 ylabel('PSF');
-title(sprintf('SCE, returned strehl %0.3f, direct from non-SCE diffrac %0.3f, frac. abs. is %0.2f',strehlSCE,max(diffracPSF2(:))/max(diffracPSF1(:)),sceFrac));
+title(sprintf('SCE, returned strehl %0.3f, direct from non-SCE diffrac %0.3f, frac. abs. is %0.2f',wvfParams2.strehl,max(wvfParams2.psf(:))/max(wvfParams1.psf(:)),wvfParams2.sceFrac));
+
 
 %% TEST4.  We have a set of measured Zernike coefficients for 9 subjects.  Let's make sure
 % we can compute the psfs using these, and look at a slice through each of them.
@@ -184,19 +201,20 @@ title(sprintf('SCE, returned strehl %0.3f, direct from non-SCE diffrac %0.3f, fr
 %
 % Note from HH: For real calculations, using a defocus increment smaller
 % than 0.25 Diopters would be wise.
-nominalFocusWavelength = 550;
-theWavelength = 550;
-sizeOfFieldPixels = 201;
-sizeOfFieldMM = 16.212;
-measpupilMM = 6;
-calcpupilMM = 3;
-defocusDiopters = 0;
+wvfParams0.zcoeffs = zeros(65,1);
+wvfParams0.measpupilMM = 6;
+wvfParams0.calcpupilMM = 3;
+wvfParams0.wls = 550;
+wvfParams0.nominalFocusWl = 550;
+wvfParams0.defocusDiopters = 0;
+wvfParams0.sizeOfFieldPixels = 201;
+wvfParams0.sizeOfFieldMM = 16.212;
 theZernikeCoeffs = load('sampleZernikeCoeffs.txt');
 DOSCE = 0;
 if (DOSCE)
-    sceParams = GetStilesCrawfordParamsParams(theWavelength,'berendshot');
+    wvfParams0.sceParams = GetStilesCrawfordParams(theWavelength,'berendshot');
 else
-    sceParams = GetStilesCrawfordParamsParams(theWavelength,'none');
+    wvfParams0.sceParams = GetStilesCrawfordParams(theWavelength,'none');
 end
 
 figure; clf;
@@ -206,44 +224,49 @@ position(4) = 1600;
 set(gcf,'Position',position);
 for i = 1:9
     subplot(3,3,i); hold on
-    [diffracPSF1,arcminperpix] = ...
-        wvfComputePSFFromZernike(diffracZcoeffs,measpupilMM,calcpupilMM,theWavelength,nominalFocusWavelength,0,sizeOfFieldPixels,sizeOfFieldMM,[]);
-    [diffracPSF2] = ...
-        wvfComputePSFFromZernike(diffracZcoeffs,measpupilMM,calcpupilMM,theWavelength,nominalFocusWavelength,0,sizeOfFieldPixels,sizeOfFieldMM,sceParams);
-    whichRow = floor(sizeOfFieldPixels/2) + 1;
-    onedPSF1 = diffracPSF1(whichRow,:);
-    arcminutes = arcminperpix*((1:sizeOfFieldPixels)-whichRow);
+    wvfParams1 = wvfParams0;
+    wvfParams1.zcoeffs = zeros(61,1);
+    wvfParams1 = wvfComputePSFFromZernike(wvfParams1);
+    whichRow = floor(wvfParams1.sizeOfFieldPixels/2) + 1;
+    arcminutes = wvfParams1.arcminperpix*((1:wvfParams1.sizeOfFieldPixels)-whichRow);
+    diffracPSF1 = wvfParams1.psf;
+    onedPSF1 = wvfParams1.psf(whichRow,:);
     index = find(abs(arcminutes) < 6);
     plot(arcminutes(index),onedPSF1(index),'r','LineWidth',4);
-    [thePSF2,nil,strehl2] = ...
-        wvfComputePSFFromZernike(theZernikeCoeffs(:,i),measpupilMM,calcpupilMM,theWavelength,nominalFocusWavelength,0,sizeOfFieldPixels,sizeOfFieldMM,sceParams);
-    thePSF2 = CenterPSF(thePSF2);
+    
+    wvfParams2 = wvfParams0;
+    wvfParams2.zcoeffs = theZernikeCoeffs(:,i);
+    wvfParams2 = wvfComputePSFFromZernike(wvfParams2);
+    thePSF2 = CenterPSF(wvfParams2.psf);
     onedPSF2 = thePSF2(whichRow,:);
     plot(arcminutes(index),onedPSF2(index),'b','LineWidth',4);
+
+    
+    thePSF2 = CenterPSF(thePSF2);
+    onedPSF2 = thePSF2(whichRow,:);
     strehlDirect2 = max(thePSF2(:))/max(diffracPSF1(:));
-    strehlDirect2SCE = max(thePSF2(:))/max(diffracPSF2(:));
     
     % Optimize strehl by varying defocus
     bestStrehl = 0;
     defocusDiopters = -2:0.25:2;
     for j = 1:length(defocusDiopters)
-        [thePSF3,nil,strehl3] = ...
-        wvfComputePSFFromZernike(theZernikeCoeffs(:,i),measpupilMM,calcpupilMM,theWavelength,nominalFocusWavelength,defocusDiopters(j),sizeOfFieldPixels,sizeOfFieldMM,sceParams);
-        if (strehl3 > bestStrehl)
-            bestStrehl = strehl3;
-            bestPSF3 = thePSF3;
-            bestDefocusDiopters = defocusDiopters(j);
+        wvfParams3 = wvfParams0;
+        wvfParams3.zcoeffs = theZernikeCoeffs(:,i);
+        wvfParams3.defocusDiopters = defocusDiopters(j);
+        wvfParams3 = wvfComputePSFFromZernike(wvfParams3);
+        if (wvfParams3.strehl > bestStrehl)
+            bestStrehl = wvfParams3.strehl;
+            bestPSF3 = CenterPSF(wvfParams3.psf);
+            bestDefocusDiopters = wvfParams3.defocusDiopters;
         end
     end
-    bestPSF3 = CenterPSF(bestPSF3);
     onedPSF3 = bestPSF3(whichRow,:);
     plot(arcminutes(index),onedPSF3(index),'g','LineWidth',2);
     strehlDirect3 = max(bestPSF3(:))/max(diffracPSF1(:));
-    strehlDirect3SCE = max(bestPSF3(:))/max(diffracPSF2(:));
 
     xlabel('Arc Minutes');
     ylabel('PSF');
-    title(sprintf('Subject %d, strehl %0.2f (no defocus), %0.2f (defocus of %0.2f D)',i,strehl2,bestStrehl,bestDefocusDiopters));
+    title(sprintf('Subject %d, strehl %0.2f (no defocus), %0.2f (defocus of %0.2f D)',i,wvfParams2.strehl,bestStrehl,bestDefocusDiopters));
     drawnow;
     
     if (DOSCE)
@@ -251,8 +274,8 @@ for i = 1:9
     else
         fprintf('Subject %i, no SCE correction\n',i);
     end
-    fprintf('\tNo defocus: direct strehl with diffrac %0.3f, direct strehl with SCE diffrac %0.3f, returned, %0.3f\n',strehlDirect2,strehlDirect2SCE,strehl2);
-    fprintf('\twith defocus: direct strehl with diffrac %0.3f, direct strehl with SCE diffrac %0.3f, returned, %0.3f\n',strehlDirect3,strehlDirect3SCE,bestStrehl);
+    fprintf('\tNo defocus: direct strehl %0.3f, returned, %0.3f\n',strehlDirect2,wvfParams2.strehl);
+    fprintf('\tWith defocus: direct strehl %0.3f, returned, %0.3f\n',strehlDirect3,bestStrehl);
         
 end
 

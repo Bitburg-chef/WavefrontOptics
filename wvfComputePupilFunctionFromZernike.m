@@ -13,7 +13,7 @@ function [wvfParams] = wvfComputePupilFunctionFromZernike(wvfParams)
 %   measpupilMM -       Size of pupil characterized by the coefficients, in MM.
 %   caclpupilMM -       Size over which returned pupil function is calculated, in MM.
 %                       Must be smaller than measpupilMM.
-%   wl -                Wavelength to compute for, in NM.
+%   wls -               Wavelength to compute for, in NM.  Can only pass one wavelenth, despite plural in the name.
 %   sizeOfFieldPixels - Linear size of square image over which the pupil function is computed.
 %                       Note that this is not the number of pixels across the pupil unless
 %                       the sizeOfFieldMM parameter is equal to the calpupilMM parameter.
@@ -56,13 +56,13 @@ c = zeros(65,1);
 c(1:length(wvfParams.zcoeffs)) = wvfParams.zcoeffs;
 
 % Convert passed wavelengths to microns
-wlInUM = wvfParams.wl/1000;
+wlInUM = wvfParams.wls/1000;
 
 % Sanity check
 if (wvfParams.calcpupilMM > wvfParams.measpupilMM)
     error('Requested size for calculation cannot exceed size over which measuremnts were made');
 end
-if (length(wvfParams.wl) ~= 1)
+if (length(wvfParams.wls) ~= 1)
     error('Only handles one wavelength at a time');
 end
 
@@ -70,11 +70,11 @@ end
 if (~isfield(wvfParams,'sceParams') || isempty(wvfParams.sceParams))
     xo = 0;
     yo = 0;
-    rho = zeros(size(wvfParams.wl));
+    rho = zeros(size(wvfParams.wls));
 else
     xo=wvfParams.sceParams.xo;
     yo=wvfParams.sceParams.yo;
-    index = find(wvfParams.wavelengths/1000 == wlInUM);
+    index = find(wvfParams.wls/1000 == wlInUM);
     if (length(index) ~= 1)
         error('Pased wavelength not contained in sceParams');
     end
