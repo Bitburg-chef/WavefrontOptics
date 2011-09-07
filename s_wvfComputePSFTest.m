@@ -1,10 +1,10 @@
-% ComputePSFFromZernikeTest
+% s_wvfComputePSFTest
 %
 % Performs basic test of the routines that compute monochromatic PSFs from
 % Zernike coefficients.
 %
-% See also: wvfComputePSFFromZernike, wvfComputePupilFunctionFromZernike, GetStilesCrawfordParamsParams, wvfGetDefocusFromWavelengthDifference
-
+% See also: wvfComputePSFFromZernike, wvfComputePupilFunctionFromZernike,
+% GetStilesCrawfordParamsParams, wvfGetDefocusFromWavelengthDifference
 %
 % 8/21/11  dhb  Wrote it, based on code provided by Heidi Hofer.
 
@@ -17,15 +17,26 @@ clear; close all;
 % PSF using analytic formulae implemented in the PTB routine AiryPattern.
 %
 % This appears to work correctly.
-theWavelength = 650;
+
+%   zcoeffs -           Zernike coefficients.
+%   measpupilMM -       Size of pupil characterized by the coefficients, in MM.
+%   caclpupilsize -     Size over which returned pupil function is calculated, in MM.
+%   wls -               Column vector of wavelengths over which to compute, in NANOMETERS.
+%   nominalFocusWl -    Wavelength (in nm) of nominal focus.
+%   defocusDiopters -   Defocus to add in (signed), in diopters.
+%   sizeOfFieldPixels - Linear size of square image over which the pupil function is computed.
+%   sizeOfFieldMM -     Size of square image over which the pupile function
+%   is computed in MM.
+wvfParams.zcoeffs = zeros(65,1);
+wvfParams.measpupilMM = 8;
+wvfParams.calcpupilMM = 3;
+wvfParams.wls = 650;
+wvfParams.nominalFocusWl = 650;
+wvfParams.defocusDiopters = 0;
+wvfParams.sizeOfFieldPixels = 201;
+wvfParams.sizeOfFieldMM = 16.212;
 wavelengthOffset = 250;
 pupilOffset = 4;
-sizeOfFieldPixels = 201;
-sizeOfFieldMM = 16.212;
-diffracZcoeffs = zeros(65,1);
-measpupilMM = 8;
-calcpupilMM = 3;
-defocusDiopters = 0;
 
 % Make a plot through the peak of the returned PSF, normalized to peak of 1.
 % Compare to what we get from PTB AiryPattern function -- should match
@@ -34,19 +45,19 @@ position = get(gcf,'Position');
 position(3) = 1600;
 set(gcf,'Position',position);
 subplot(1,3,1); hold on
-[diffracPSF1,arcminperpix] = wvfComputePSFFromZernike(diffracZcoeffs,measpupilMM,calcpupilMM,theWavelength,theWavelength,defocusDiopters,sizeOfFieldPixels,sizeOfFieldMM);
-whichRow = floor(sizeOfFieldPixels/2) + 1;
-onedPSF1 = diffracPSF1(whichRow,:);
+[wvfParams] = wvfComputePSFFromZernike(wvfParams);
+whichRow = floor(wvfParams.sizeOfFieldPixels/2) + 1;
+onedPSF1 = wvfParams.psf(whichRow,:);
 onedPSF1 = onedPSF1/max(onedPSF1(:));
-arcminutes = arcminperpix*((1:sizeOfFieldPixels)-whichRow);
+arcminutes = wvfParams.arcminperpix*((1:wvfParams.sizeOfFieldPixels)-whichRow);
 index = find(abs(arcminutes) < 2);
 plot(arcminutes(index),onedPSF1(index),'r','LineWidth',4);
 radians = (pi/180)*(arcminutes/60);
-onedPSF2 = AiryPattern(radians,calcpupilMM,theWavelength);
+onedPSF2 = AiryPattern(radians,wvfParams.calcpupilMM,wvfParams.wls(1));
 plot(arcminutes(index),onedPSF2(index),'b','LineWidth',2);
 xlabel('Arc Minutes');
 ylabel('Normalized PSF');
-title(sprintf('Diffraction limited, %0.1f mm pupil, %0.f nm',calcpupilMM,theWavelength));
+title(sprintf('Diffraction limited, %0.1f mm pupil, %0.f nm',wvfParams.calcpupilMM,wvfParams.wls(1)));
 
 subplot(1,3,2); hold on
 [diffracPSF1,arcminperpix] = wvfComputePSFFromZernike(diffracZcoeffs,measpupilMM,calcpupilMM,theWavelength-wavelengthOffset,theWavelength-wavelengthOffset,defocusDiopters,sizeOfFieldPixels,sizeOfFieldMM);

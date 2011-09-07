@@ -111,8 +111,9 @@ areapixapod = zeros(length(wvfParams.wls));
 for wl = 1:length(wvfParams.wls)
     % Get the pupil function
     tmpWvfParams = wvfParams;
-    tmpWvfParams.zcoeffs(4) = doriginal + tmpWvfParams.defocusMicrons(wl);               % Add in the appropriate LCA to the initial zernike defocus
-    tmpWvfParms.sizeOfFieldMM = tmpWvfParams.sizeOfFieldMM*wvfParams.wls(wl)/setScaleWl; % Rescaling so that PSF pixel dimension is constant with wavelength.
+    tmpWvfParams.wl = wvfParams.wls(wl);
+    tmpWvfParams.zcoeffs(4) = doriginal + tmpWvfParams.defocusMicrons(wl);             % Add in the appropriate LCA to the initial zernike defocus
+    tmpWvfParms.sizeOfFieldMM = tmpWvfParams.sizeOfFieldMM*tmpWvfParams.wl/setScaleWl; % Rescaling so that PSF pixel dimension is constant with wavelength.
     tmpWvfParams = wvfComputePupilFunctionFromZernike(tmpWvfParams);
     pupilfunc(:,:,wl) = tmpWvfParams.pupilfunc;
     areapix(wl) = tmpWvfParams.areapix;

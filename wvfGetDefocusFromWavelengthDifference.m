@@ -1,6 +1,5 @@
 function wvfParams = wvfGetDefocusFromWavelengthDifference(wvfParams)
-%function [microns,diopters] = wvfGetDefocusFromWavelengthDifference(wls,nominalFocusWl,defocusDiopters,measpupilMM)
-% [microns,diopters] = wvfGetDefocusFromWavelengthDifference(wls,nominalFocusWl,,defocusDiopters,measpupilMM)
+% wvfParams = wvfGetDefocusFromWavelengthDifference(wvfParams)
 %
 % Get the defocus in microns, from the wavelength of nominal focus
 % and the desired wavelengths and the fixed added defocusDiopters.
@@ -33,12 +32,12 @@ function wvfParams = wvfGetDefocusFromWavelengthDifference(wvfParams)
 diopters = zeros (size(wvfParams.wls));
 constant = 1.8859-(0.63346/(0.001*wvfParams.nominalFocusWl-0.2141));
 for wl = 1:length(wvfParams.wls)
-   diopters(wl) = 1.8859 - constant - (0.63346/(0.001*wls(wl)-0.2141));  
+   diopters(wl) = 1.8859 - constant - (0.63346/(0.001*wvfParams.wls(wl)-0.2141));  
 end
 
 % Add in extra
 diopters = diopters + wvfParams.defocusDiopters;
 
 % Convert defocus diopters to microns
-wvfParams.defocusMicrons = zeros(size(wls));
-wvfParams.defocusMicrons = diopters * (measpupilMM*measpupilMM)/(16*sqrt(3));
+wvfParams.defocusMicrons = zeros(size(wvfParams.wls));
+wvfParams.defocusMicrons = diopters * (wvfParams.measpupilMM*wvfParams.measpupilMM)/(16*sqrt(3));
