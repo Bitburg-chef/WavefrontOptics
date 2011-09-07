@@ -1,5 +1,5 @@
-function [wvfParams] = wvfComputePupilFunctionFromZernike(wvfParams)
-% [wvfParams] = wvfComputePupilFunctionFromZernike(wvfParams)
+function [wvfParams] = wvfComputePupilFunction(wvfParams)
+% [wvfParams] = wvfComputePupilFunction(wvfParams)
 %
 % Compute the monochromatic pupil fuction (amplitude and phase) over the calculated pupil size for 10 orders of Zernike
 % coeffcients specified to the OSA standard. Includes SCE (Stiles-Crawford Effect) if specified.
@@ -44,7 +44,7 @@ function [wvfParams] = wvfComputePupilFunctionFromZernike(wvfParams)
 % (or areapixapod) squared effects a normalization so that the peak reflects
 % the strehl ratio.
 %
-% See also: wvfComputePSFFromZernike, GetStilesCrawfordParamsParams.
+% See also: wvfComputePSF, GetStilesCrawfordParamsParams.
 %
 % Code provided by Heidi Hofer.
 %

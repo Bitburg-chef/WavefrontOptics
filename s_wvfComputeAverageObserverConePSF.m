@@ -6,8 +6,8 @@
 % This is done with respect to a specified spectral weighting function,
 % and focus optimzed for a specified weighting of the different cone classes.
 %
-% See also: ComputeConePSFFromZernikeTest, wvfComputeConePSFFromZernike
-%   ComputePSFFromZernikeTest, wvfComputePSFFromZernike, wvfComputePupilFunctionFromZernike,
+% See also: ComputeConePSFTest, wvfComputeConePSF
+%   ComputePSFTest, wvfComputePSF, wvfComputePupilFunction,
 %   GetStilesCrawfordParamsParams, wvfGetDefocusFromWavelengthDifference
 %
 % 8/29/11  dhb  Wrote it.

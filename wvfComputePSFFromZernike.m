@@ -1,5 +1,5 @@
-function wvfParams = wvfComputePSFFromZernike(wvfParams)
-% wvfParams = wvfComputePSFFromZernike(wvfParams)
+function wvfParams = wvfComputePSF(wvfParams)
+% wvfParams = wvfComputePSF(wvfParams)
 %
 % Computes the monochromatic psf over the calculated pupil size for 10 orders of Zernike
 % coeffcients specified to the OSA standard. Includes SCE (Stiles-Crawford Effect) if specified.
@@ -7,7 +7,7 @@ function wvfParams = wvfComputePSFFromZernike(wvfParams)
 % The psfs at each wavelength are scaled so that each sums to unity.  If SCE is specified,
 % you can multiply by sceFrac at that wavelength to incorporate the fraction of light absorbed.
 %
-% Required input fields for wvfParams struct - see comment in wvfComputePupilFunctionFromZernike for more details.
+% Required input fields for wvfParams struct - see comment in wvfComputePupilFunction for more details.
 %   zcoeffs -           Zernike coefficients.
 %   measpupilMM -       Size of pupil characterized by the coefficients, in MM.
 %   caclpupilsize -     Size over which returned pupil function is calculated, in MM.
@@ -48,7 +48,7 @@ function wvfParams = wvfComputePSFFromZernike(wvfParams)
 % added in directly.  Although these are redundant, it is often most
 % convenient to think in terms of one of the three ways.
 %
-% See also: wvfComputeConePSFFromZernike, wvfComputePupilFunctionFromZernike, GetStilesCrawfordParamsParams, wvfGetDefocusFromWavelengthDifference
+% See also: wvfComputeConePSF, wvfComputePupilFunction, GetStilesCrawfordParamsParams, wvfGetDefocusFromWavelengthDifference
 %
 % Based on code provided by Heidi Hofer.
 %
@@ -72,7 +72,7 @@ doriginal = wvfParams.zcoeffs(4);
 % The value of arcminperpix is set depending on a wavelength chosen
 % to set the scale.  Here is what Heidi says about this process,
 % and about the renormalization of scale for each call to
-% wvfComputePupilFunctionFromZernike:
+% wvfComputePupilFunction:
 %
 %   The setting of the scale and then the change in the
 %   loop with wavelength is to make sure that the scale on the psfs stays
@@ -114,7 +114,7 @@ for wl = 1:length(wvfParams.wls)
     tmpWvfParams.wls = wvfParams.wls(wl);
     tmpWvfParams.zcoeffs(4) = doriginal + wvfParams.defocusMicrons(wl);              % Add in the appropriate LCA to the initial zernike defocus
     tmpWvfParams.sizeOfFieldMM = wvfParams.sizeOfFieldMM*tmpWvfParams.wls/setScaleWl; % Rescaling so that PSF pixel dimension is constant with wavelength.
-    tmpWvfParams = wvfComputePupilFunctionFromZernike(tmpWvfParams);
+    tmpWvfParams = wvfComputePupilFunction(tmpWvfParams);
     pupilfunc(:,:,wl) = tmpWvfParams.pupilfunc;
     areapix(wl) = tmpWvfParams.areapix;
     areapixapod(wl) = tmpWvfParams.areapixapod;
@@ -142,7 +142,7 @@ end
 %     % Get the pupil function
 %     zcoeffs(4) = doriginal + microns(wl);                      % Add in the appropriate LCA to the initial zernike defocus
 % 	tempSizeOfFieldMM = sizeOfFieldMM*wls(wl)/setScaleWl;      % Rescaling so that PSF pixel dimension is constant with wavelength.
-%     [pupilfunc,areapix(wl),areapixapod(wl)] = ComputePupilFunctionFromZernike(zcoeffs,measpupilMM,calcpupilMM,wls(wl),sizeOfFieldPixels,tempSizeOfFieldMM,sceParams);
+%     [pupilfunc,areapix(wl),areapixapod(wl)] = ComputePupilFunction(zcoeffs,measpupilMM,calcpupilMM,wls(wl),sizeOfFieldPixels,tempSizeOfFieldMM,sceParams);
 % 
 %     % Convert to psf
 %     amp=fft2(pupilfunc);

@@ -6,7 +6,7 @@ function [conepsf,arcminperpix,defocusDiopters] = ...
 % Optimize the PSF seen by the cones, given the cone sensitivities, a weighting spectral power distribution, and a criterion.  Optimization is performed on
 % the defocus parameter, relative to a specified nominal focus wavelength.
 
-% Required input fields for wvfParams struct - see comment in wvfComputePupilFunctionFromZernike for more details.
+% Required input fields for wvfParams struct - see comment in wvfComputePupilFunction for more details.
 %   coneWeights -       vector with relative weights to be applied to a figure of merit for the
 %                       PSF seen by each cone class.  The total figure of merit is the weighted sum of the
 %                       figure for each cone class alone.
@@ -77,7 +77,7 @@ wvfParams = tmpWvfParams;
     function [f,tmpWvfParams] = InlineMinFunction(x)
         tmpWvfParams = wvfParams;
         tmpWvfParams.defocusDiopters = x;
-        tmpWvfParams = wvfComputeConePSFFromZernike(wvfParams);
+        tmpWvfParams = wvfComputeConePSF(wvfParams);
         nCones = size(tmpWvfParams.T_cones,1);
         f = 0;
         for j = 1:nCones

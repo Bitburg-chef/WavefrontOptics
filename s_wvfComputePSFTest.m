@@ -3,7 +3,7 @@
 % Performs basic test of the routines that compute monochromatic PSFs from
 % Zernike coefficients.
 %
-% See also: wvfComputePSFFromZernike, wvfComputePupilFunctionFromZernike,
+% See also: wvfComputePSF, wvfComputePupilFunction,
 % GetStilesCrawfordParams, wvfGetDefocusFromWavelengthDifference
 %
 % 8/21/11  dhb  Wrote it, based on code provided by Heidi Hofer.
@@ -38,7 +38,7 @@ position = get(gcf,'Position');
 position(3) = 1600;
 set(gcf,'Position',position);
 subplot(1,3,1); hold on
-[wvfParams] = wvfComputePSFFromZernike(wvfParams0);
+[wvfParams] = wvfComputePSF(wvfParams0);
 whichRow = floor(wvfParams.sizeOfFieldPixels/2) + 1;
 onedPSF1 = wvfParams.psf(whichRow,:);
 onedPSF1 = onedPSF1/max(onedPSF1(:));
@@ -56,7 +56,7 @@ wvfParams1 = wvfParams0;
 wvfParams1.wls = wvfParams1.wls-wavelengthOffset;
 wvfParams1.nominalFocusWl = wvfParams1.nominalFocusWl-wavelengthOffset;
 subplot(1,3,2); hold on
-[wvfParams] = wvfComputePSFFromZernike(wvfParams1);
+[wvfParams] = wvfComputePSF(wvfParams1);
 whichRow = floor(wvfParams.sizeOfFieldPixels/2) + 1;
 onedPSF1 = wvfParams.psf(whichRow,:);
 onedPSF1 = onedPSF1/max(onedPSF1(:));
@@ -73,7 +73,7 @@ title(sprintf('Diffraction limited, %0.1f mm pupil, %0.f nm',wvfParams.calcpupil
 wvfParams2 = wvfParams0;
 wvfParams2.calcpupilMM = wvfParams2.calcpupilMM+pupilOffset;
 subplot(1,3,3); hold on
-[wvfParams] = wvfComputePSFFromZernike(wvfParams2);
+[wvfParams] = wvfComputePSF(wvfParams2);
 whichRow = floor(wvfParams.sizeOfFieldPixels/2) + 1;
 onedPSF1 = wvfParams.psf(whichRow,:);
 onedPSF1 = onedPSF1/max(onedPSF1(:));
@@ -122,7 +122,7 @@ defocusDiopters = 0;
 
 figure; clf; hold on
 wvfParams1 = wvfParams0;
-[wvfParams1] = wvfComputePSFFromZernike(wvfParams0);
+[wvfParams1] = wvfComputePSF(wvfParams0);
 whichRow = floor(wvfParams1.sizeOfFieldPixels/2) + 1;
 onedPSF1 = wvfParams1.psf(whichRow,:);
 arcminutes = wvfParams1.arcminperpix*((1:wvfParams1.sizeOfFieldPixels)-whichRow);
@@ -130,12 +130,12 @@ index = find(abs(arcminutes) < 2);
 plot(arcminutes(index),onedPSF1(index),'r','LineWidth',4);
 wvfParams2 = wvfParams0;
 wvfParams2.wls = wvfParams2.wls - wavelengthOffset;
-[wvfParams2] = wvfComputePSFFromZernike(wvfParams2);
+[wvfParams2] = wvfComputePSF(wvfParams2);
 onedPSF2 = wvfParams2.psf(whichRow,:);
 plot(arcminutes(index),onedPSF2(index),'b','LineWidth',4);
 wvfParams3 = wvfParams0;
 wvfParams3.wls = wvfParams3.wls + wavelengthOffset;
-[wvfParams3] = wvfComputePSFFromZernike(wvfParams3);
+[wvfParams3] = wvfComputePSF(wvfParams3);
 onedPSF3 = wvfParams3.psf(whichRow,:);
 plot(arcminutes(index),onedPSF3(index),'g','LineWidth',4);
 xlabel('Arc Minutes');
@@ -162,14 +162,14 @@ wvfParams0.sceParams = GetStilesCrawfordParams(theWavelength,'berendshot');
 figure; clf; hold on
 wvfParams1 = wvfParams0;
 wvfParams1.sceParams = [];
-[wvfParams1] = wvfComputePSFFromZernike(wvfParams1);
+[wvfParams1] = wvfComputePSF(wvfParams1);
 whichRow = floor(wvfParams1.sizeOfFieldPixels/2) + 1;
 onedPSF1 = wvfParams1.psf(whichRow,:);
 arcminutes = wvfParams1.arcminperpix*((1:wvfParams1.sizeOfFieldPixels)-whichRow);
 index = find(abs(arcminutes) < 4);
 plot(arcminutes(index),onedPSF1(index),'r','LineWidth',4);
 wvfParams2 = wvfParams0;
-[wvfParams2] = wvfComputePSFFromZernike(wvfParams2);
+[wvfParams2] = wvfComputePSF(wvfParams2);
 onedPSF2 = wvfParams2.psf(whichRow,:);
 plot(arcminutes(index),onedPSF2(index),'b','LineWidth',4);
 xlabel('Arc Minutes');
@@ -226,7 +226,7 @@ for i = 1:9
     subplot(3,3,i); hold on
     wvfParams1 = wvfParams0;
     wvfParams1.zcoeffs = zeros(61,1);
-    wvfParams1 = wvfComputePSFFromZernike(wvfParams1);
+    wvfParams1 = wvfComputePSF(wvfParams1);
     whichRow = floor(wvfParams1.sizeOfFieldPixels/2) + 1;
     arcminutes = wvfParams1.arcminperpix*((1:wvfParams1.sizeOfFieldPixels)-whichRow);
     diffracPSF1 = wvfParams1.psf;
@@ -236,7 +236,7 @@ for i = 1:9
     
     wvfParams2 = wvfParams0;
     wvfParams2.zcoeffs = theZernikeCoeffs(:,i);
-    wvfParams2 = wvfComputePSFFromZernike(wvfParams2);
+    wvfParams2 = wvfComputePSF(wvfParams2);
     thePSF2 = CenterPSF(wvfParams2.psf);
     onedPSF2 = thePSF2(whichRow,:);
     plot(arcminutes(index),onedPSF2(index),'b','LineWidth',4);
@@ -253,7 +253,7 @@ for i = 1:9
         wvfParams3 = wvfParams0;
         wvfParams3.zcoeffs = theZernikeCoeffs(:,i);
         wvfParams3.defocusDiopters = defocusDiopters(j);
-        wvfParams3 = wvfComputePSFFromZernike(wvfParams3);
+        wvfParams3 = wvfComputePSF(wvfParams3);
         if (wvfParams3.strehl > bestStrehl)
             bestStrehl = wvfParams3.strehl;
             bestPSF3 = CenterPSF(wvfParams3.psf);

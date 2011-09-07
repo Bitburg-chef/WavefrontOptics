@@ -12,7 +12,7 @@ function wvfParams = wvfGetDefocusFromWavelengthDifference(wvfParams)
 % The conversion to microns is because these are the units we assume that
 % the pupil function is measured in.
 %
-% Required input fiels for wvfParams struct - see comment in wvfComputePupilFunctionFromZernike for more details.
+% Required input fiels for wvfParams struct - see comment in wvfComputePupilFunction for more details.
 %   wls -               Column vector of wavelengths over which to compute, in NANOMETERS.
 %   nominalFocusWl -    Wavelength (in nm) of nominal focus.
 %   defocusDiopters -   Defocus to add in (signed), in diopters.

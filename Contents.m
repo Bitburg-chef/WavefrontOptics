@@ -2,14 +2,14 @@
 %
 % Programs (demonstrate use)
 %   s_wvfComputeAverageObserverConePSF -      Compute optimized cone psf for an average observer. 
-%   s_wvfComputeConePSFFromZernikeTest -      Test the cone/spectrum weighted psf routines.
-%   s_wvfComputePSFFromZernikeTest -          Basic test that underlying Zernike monochromatic psf routines behave sensibly.
+%   s_wvfComputeConePSFTest -                 Test the cone/spectrum weighted psf routines.
+%   s_wvfComputePSFTest -                     Basic test that underlying Zernike monochromatic psf routines behave sensibly.
 %
 % Wavefront optics suite
-%   wvfComputeConePSFFromZernike -            Compute cone psfs given zernike, pupil, accom wl, and weighting spectrum
+%   wvfComputeConePSF -                       Compute cone psfs given zernike, pupil, accom wl, and weighting spectrum
 %   wvfComputeOptimizedConePSF -              Compute focus optimized cone psfs given zernike, pupil, accom wl, and weighting spectrum
-%   wvfComputePSFFromZernike -                Compute monochomatic PSFs given Zernike coeffs and other params.
-%   wvfComputePupilFunctionFromZernike -      Compute monochromatic pupil functions given Zernike coeffs and other params.
+%   wvfComputePSF -                           Compute monochomatic PSFs given Zernike coeffs and other params.
+%   wvfComputePupilFunction -                 Compute monochromatic pupil functions given Zernike coeffs and other params.
 %   wvfGetDefocusFromWavelengthDifference -   Just as the name suggests.
 %
 % Helper routines (in subdir helpers)
