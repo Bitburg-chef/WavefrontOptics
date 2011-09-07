@@ -3,7 +3,7 @@
 % Performs basic test of the routines that compute monochromatic PSFs from
 % Zernike coefficients.
 %
-% See also: wvfComputePSFFromZernike, wvfComputePupilFunctionFromZernike, wvfGetStilesCrawfordParams, wvfGetDefocusFromWavelengthDifference
+% See also: wvfComputePSFFromZernike, wvfComputePupilFunctionFromZernike, GetStilesCrawfordParamsParams, wvfGetDefocusFromWavelengthDifference
 
 %
 % 8/21/11  dhb  Wrote it, based on code provided by Heidi Hofer.
@@ -130,7 +130,7 @@ sizeOfFieldMM = 16.212;
 measpupilMM = 8;
 calcpupilMM = 8;
 defocusDiopters = 0;
-sceParams = wvfGetStilesCrawfordParams(theWavelength,'berendshot');
+sceParams = GetStilesCrawfordParamsParams(theWavelength,'berendshot');
 
 figure; clf; hold on
 [diffracPSF1,arcminperpix] = ...
@@ -183,9 +183,9 @@ defocusDiopters = 0;
 theZernikeCoeffs = load('sampleZernikeCoeffs.txt');
 DOSCE = 0;
 if (DOSCE)
-    sceParams = wvfGetStilesCrawfordParams(theWavelength,'berendshot');
+    sceParams = GetStilesCrawfordParamsParams(theWavelength,'berendshot');
 else
-    sceParams = wvfGetStilesCrawfordParams(theWavelength,'none');
+    sceParams = GetStilesCrawfordParamsParams(theWavelength,'none');
 end
 
 figure; clf;

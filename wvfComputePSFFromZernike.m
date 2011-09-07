@@ -48,7 +48,7 @@ function wvfParams = wvfComputePSFFromZernike(wvfParams)
 % added in directly.  Although these are redundant, it is often most
 % convenient to think in terms of one of the three ways.
 %
-% See also: wvfComputeConePSFFromZernike, wvfComputePupilFunctionFromZernike, wvfGetStilesCrawfordParams, wvfGetDefocusFromWavelengthDifference
+% See also: wvfComputeConePSFFromZernike, wvfComputePupilFunctionFromZernike, GetStilesCrawfordParamsParams, wvfGetDefocusFromWavelengthDifference
 %
 % Based on code provided by Heidi Hofer.
 %

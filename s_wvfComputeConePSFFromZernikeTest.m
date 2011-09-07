@@ -4,7 +4,7 @@
 % Zernike coefficients.
 %
 % See also: wvfComputeConePSFFromZernike, wvfComputePSFFromZernike, wvfComputePupilFunctionFromZernike,
-%   wvfGetStilesCrawfordParams, wvfGetDefocusFromWavelengthDifference
+%   GetStilesCrawfordParamsParams, wvfGetDefocusFromWavelengthDifference
 %
 % The circular averaging is not a good idea for a single subject, but if you want
 % to obtain an average over subjects it seems like a good idea.
@@ -42,9 +42,9 @@ calcpupilMM = 3;
 plotLimit = 2;
 DOSCE = 0;
 if (DOSCE)
-    sceParams = wvfGetStilesCrawfordParams(wls,'berendshot');
+    sceParams = GetStilesCrawfordParamsParams(wls,'berendshot');
 else
-    sceParams = wvfGetStilesCrawfordParams(wls,'none');
+    sceParams = GetStilesCrawfordParamsParams(wls,'none');
 end
 CIRCULARLYAVERAGE = 1;
 

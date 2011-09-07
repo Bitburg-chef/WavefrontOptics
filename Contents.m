@@ -11,7 +11,6 @@
 %   wvfComputePSFFromZernike -                Compute monochomatic PSFs given Zernike coeffs and other params.
 %   wvfComputePupilFunctionFromZernike -      Compute monochromatic pupil functions given Zernike coeffs and other params.
 %   wvfGetDefocusFromWavelengthDifference -   Just as the name suggests.
-%   wvfGetStilesCrawfordParams -              Get the parameters required for incorporating Stiles-Crawford effect
 %
 % Helper routines (in subdir helpers)
 %   AverageOpticalPSFs -                      Average passed PSFs
@@ -19,6 +18,7 @@
 %   CircularlyAveragePSF -                    Compute circular average of a PSF
 %   FindMatPeak -                             Find the coordinates of the maximum in a matrix.
 %   FindPSFCriterionRadius -                  Find radius that includes passed fraction of PSF mass
+%   GetStilesCrawfordParamsParams -           Get the parameters required for incorporating Stiles-Crawford effect
 %
 % Data
 %   sampleZernikeCoeffs.txt -                 Zernike coefficient data for 9 subjects in OSA format, measured by Heidi Hofer.

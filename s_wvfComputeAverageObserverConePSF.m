@@ -8,7 +8,7 @@
 %
 % See also: ComputeConePSFFromZernikeTest, wvfComputeConePSFFromZernike
 %   ComputePSFFromZernikeTest, wvfComputePSFFromZernike, wvfComputePupilFunctionFromZernike,
-%   wvfGetStilesCrawfordParams, wvfGetDefocusFromWavelengthDifference
+%   GetStilesCrawfordParamsParams, wvfGetDefocusFromWavelengthDifference
 %
 % 8/29/11  dhb  Wrote it.
 
@@ -40,9 +40,9 @@ whichRow = floor(sizeOfFieldPixels/2) + 1;
 plotLimit = 2;
 DOSCE = 0;
 if (DOSCE)
-    sceParams = wvfGetStilesCrawfordParams(wls,'berendshot');
+    sceParams = GetStilesCrawfordParamsParams(wls,'berendshot');
 else
-    sceParams = wvfGetStilesCrawfordParams(wls,'none');
+    sceParams = GetStilesCrawfordParamsParams(wls,'none');
 end
 CIRCULARLYAVERAGE = 1;
 coneWeights = [1 1 0];

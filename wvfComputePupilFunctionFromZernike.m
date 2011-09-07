@@ -25,7 +25,7 @@ function [wvfParams] = wvfComputePupilFunctionFromZernike(wvfParams)
 %
 % Optional input fields for wvfParams struct 
 %   sceParams -         Parameter structure for Stiles-Crawford correction.  If missing or set to empty,
-%                       no correction and is set to empty on return.  See wvfGetStilesCrawfordParams.
+%                       no correction and is set to empty on return.  See GetStilesCrawfordParamsParams.
 %
 % Output fields set in wvfParams struct 
 %   pupilfunc -     Calcuated pupil function
@@ -44,7 +44,7 @@ function [wvfParams] = wvfComputePupilFunctionFromZernike(wvfParams)
 % (or areapixapod) squared effects a normalization so that the peak reflects
 % the strehl ratio.
 %
-% See also: wvfComputePSFFromZernike, wvfGetStilesCrawfordParams.
+% See also: wvfComputePSFFromZernike, GetStilesCrawfordParamsParams.
 %
 % Code provided by Heidi Hofer.
 %

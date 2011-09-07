@@ -1,5 +1,5 @@
-function sceParams = wvfGetStilesCrawfordParams(wls,source)
-% sceParams = wvfGetStilesCrawfordParams(wls,source)
+function sceParams = GetStilesCrawfordParamsParams(wls,source)
+% sceParams = GetStilesCrawfordParamsParams(wls,source)
 %
 % Return a structure with the parameters to use
 % for incorporating the Stiles-Crawford Effect
