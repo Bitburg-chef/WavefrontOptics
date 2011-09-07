@@ -7,7 +7,7 @@ function wvfParams = wvfComputePSFFromZernike(wvfParams)
 % The psfs at each wavelength are scaled so that each sums to unity.  If SCE is specified,
 % you can multiply by sceFrac at that wavelength to incorporate the fraction of light absorbed.
 %
-% Required input fiels for wvfParams struct - see comment in wvfComputePupilFunctionFromZernike for more details.
+% Required input fields for wvfParams struct - see comment in wvfComputePupilFunctionFromZernike for more details.
 %   zcoeffs -           Zernike coefficients.
 %   measpupilMM -       Size of pupil characterized by the coefficients, in MM.
 %   caclpupilsize -     Size over which returned pupil function is calculated, in MM.
