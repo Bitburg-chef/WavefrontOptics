@@ -28,37 +28,42 @@ weightingSpectrum = SplineSpd(S_D65,spd_D65,S);
 %
 % This appears to work correctly.
 whichSubject = 1;
-nominalFocusWl = 550;
-defocusDiopters = 0;
-wavelengthOffset = 250;
-pupilOffset = 4;
-sizeOfFieldPixels = 201;
-sizeOfFieldMM = 16.212;
-diffracZcoeffs = zeros(65,1);
 theZernikeCoeffs = load('sampleZernikeCoeffs.txt');
-zcoeffs = theZernikeCoeffs(:,whichSubject);
-measpupilMM = 6;
-calcpupilMM = 3;
+
+wvfParams0.zcoeffs = theZernikeCoeffs(:,whichSubject);
+wvfParams0.measpupilMM = 6;
+wvfParams0.calcpupilMM = 3;
+wvfParams0.wls = wls;
+wvfParams0.nominalFocusWl = 550;
+wvfParams0.defocusDiopters = 0;
+wvfParams0.sizeOfFieldPixels = 201;
+wvfParams0.sizeOfFieldMM = 16.212;
+wvfParams0.T_cones = T_cones;
+wvfParams0.weightingSpectrum = weightingSpectrum;
+
+diffracZcoeffs = zeros(65,1);
 plotLimit = 2;
 DOSCE = 0;
 if (DOSCE)
-    sceParams = GetStilesCrawfordParamsParams(wls,'berendshot');
+    wvfParams0.sceParams = GetStilesCrawfordParams(wls,'berendshot');
 else
-    sceParams = GetStilesCrawfordParamsParams(wls,'none');
+    wvfParams0.sceParams = GetStilesCrawfordParams(wls,'none');
 end
 CIRCULARLYAVERAGE = 1;
 
 % Compute LMS psfs both for a subject and diffraction limited
-[conepsf,arcminperpix] = ...
-    wvfComputeConePSF(wls,T_cones,weightingSpectrum,zcoeffs,measpupilMM,calcpupilMM,nominalFocusWl,defocusDiopters,sizeOfFieldPixels,sizeOfFieldMM,sceParams);
-[conepsfd,arcminperpix] = ...
-    wvfComputeConePSF(wls,T_cones,weightingSpectrum,diffracZcoeffs,measpupilMM,calcpupilMM,nominalFocusWl,defocusDiopters,sizeOfFieldPixels,sizeOfFieldMM,sceParams);
-lpsf = CenterPSF(conepsf(:,:,1));
-mpsf = CenterPSF(conepsf(:,:,2));
-spsf = CenterPSF(conepsf(:,:,3));
-lpsfd = CenterPSF(conepsfd(:,:,1));
-mpsfd = CenterPSF(conepsfd(:,:,2));
-spsfd = CenterPSF(conepsfd(:,:,3));
+wvfParams1 = wvfParams0;
+wvfParams1 = wvfComputeConePSF(wvfParams1);
+wvfParams2 = wvfParams0;
+wvfParams2.zcoeffs = diffracZcoeffs;
+wvfParams2 = wvfComputeConePSF(wvfParams2);
+
+lpsf = CenterPSF(wvfParams1.conepsf(:,:,1));
+mpsf = CenterPSF(wvfParams1.conepsf(:,:,2));
+spsf = CenterPSF(wvfParams1.conepsf(:,:,3));
+lpsfd = CenterPSF(wvfParams2.conepsf(:,:,1));
+mpsfd = CenterPSF(wvfParams2.conepsf(:,:,2));
+spsfd = CenterPSF(wvfParams2.conepsf(:,:,3));
 if (CIRCULARLYAVERAGE)
     lpsf = CircularlyAveragePSF(lpsf);
     mpsf = CircularlyAveragePSF(mpsf);
@@ -67,7 +72,8 @@ if (CIRCULARLYAVERAGE)
     mpsfd = CircularlyAveragePSF(mpsfd);
     spsfd = CircularlyAveragePSF(spsfd);
 end
-whichRow = floor(sizeOfFieldPixels/2) + 1;
+whichRow = floor(wvfParams1.sizeOfFieldPixels/2) + 1;
+arcminutes = wvfParams1.arcminperpix*((1:wvfParams1.sizeOfFieldPixels)-whichRow);
 
 % Make a plot through the peak of the returned PSFs.
 theFig = figure; clf;
@@ -77,7 +83,6 @@ set(gcf,'Position',position);
 subplot(1,3,1); hold on
 onedLPSF = lpsf(whichRow,:);
 onedLPSFD = lpsfd(whichRow,:);
-arcminutes = arcminperpix*((1:sizeOfFieldPixels)-whichRow);
 index = find(abs(arcminutes) < plotLimit);
 plot(arcminutes(index),onedLPSF(index),'r','LineWidth',2);
 plot(arcminutes(index),onedLPSFD(index),'k','LineWidth',4);
@@ -92,7 +97,6 @@ end
 subplot(1,3,2); hold on
 onedMPSF = mpsf(whichRow,:);
 onedMPSFD = mpsfd(whichRow,:);
-arcminutes = arcminperpix*((1:sizeOfFieldPixels)-whichRow);
 index = find(abs(arcminutes) < plotLimit);
 plot(arcminutes(index),onedMPSF(index),'g','LineWidth',2);
 plot(arcminutes(index),onedMPSFD(index),'k','LineWidth',4);
@@ -107,7 +111,6 @@ end
 subplot(1,3,3); hold on
 onedSPSF = spsf(whichRow,:);
 onedSPSFD = spsfd(whichRow,:);
-arcminutes = arcminperpix*((1:sizeOfFieldPixels)-whichRow);
 index = find(abs(arcminutes) < plotLimit);
 plot(arcminutes(index),onedSPSF(index),'b','LineWidth',2);
 plot(arcminutes(index),onedSPSFD(index),'k','LineWidth',4);
@@ -123,14 +126,13 @@ drawnow;
 %% TEST2.  Optimize focus and add to the plot.
 %
 % This takes a long time.
-coneWeights = [1 1 0];
-criterionFraction = 0.9;
-[conepsfo,arcminperpixel,defocusDiopters] = ...
-    wvfComputeOptimizedConePSF(coneWeights,criterionFraction,wls,T_cones,weightingSpectrum,zcoeffs,measpupilMM,calcpupilMM,nominalFocusWl,...
-    sizeOfFieldPixels,sizeOfFieldMM,sceParams);
-lpsfo = CenterPSF(conepsfo(:,:,1));
-mpsfo = CenterPSF(conepsfo(:,:,2));
-spsfo = CenterPSF(conepsfo(:,:,3));
+wvfParams3 = wvfParams0;
+wvfParams3.coneWeights = [1 1 0];
+wvfParams3.criterionFraction = 0.9;
+wvfParams3 = wvfComputeOptimizedConePSF(wvfParams3);
+lpsfo = CenterPSF(wvfParams3.conepsf(:,:,1));
+mpsfo = CenterPSF(wvfParams3.conepsf(:,:,2));
+spsfo = CenterPSF(wvfParams3.conepsf(:,:,3));
 if (CIRCULARLYAVERAGE)
     lpsfo = CircularlyAveragePSF(lpsfo);
     mpsfo = CircularlyAveragePSF(mpsfo);

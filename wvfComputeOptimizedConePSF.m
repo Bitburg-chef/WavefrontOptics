@@ -1,6 +1,4 @@
 function wvfParams = wvfComputeOptimizedConePSF(wvfParams)
-function [conepsf,arcminperpix,defocusDiopters] = ...
-    wvfComputeOptimizedConePSF(coneWeights,criterionFraction,wls,T_cones,weightingSpectrum,zcoeffs,measpupilMM,calcpupilMM,nominalFocusWl,sizeOfFieldPixels,sizeOfFieldMM,sceParams)
 % wvfParams = wvfComputeOptimizedConePSF(wvfParams)
 %
 % Optimize the PSF seen by the cones, given the cone sensitivities, a weighting spectral power distribution, and a criterion.  Optimization is performed on
@@ -33,7 +31,7 @@ function [conepsf,arcminperpix,defocusDiopters] = ...
 %   conepsf -           Calcuated psf for each cone in T_cones, third dimension indexes cone type.
 %   defocusDiopters -   The defocus added in to optimize.
 %   coneSceFrac -       Vector with calculated SCE fraction for each cone type.
-%   psf -               Calcuated polychromatic psf. Third dimension of returned matrix indexes wavelength. 
+%   psf -               Calcuated polychromatic psf. Third dimension of returned matrix indexes wavelength.
 %   pupilfunc -         Calculated pupil function.  Third dimension of returned matrix indexes wavelength
 %   arcminperpix -      Arc minutes per pixel for returned psfs.
 %   strehl -            Strehl ratio of psf at each wavelength.  If SCE correction is specified, the returned
@@ -48,7 +46,7 @@ function [conepsf,arcminperpix,defocusDiopters] = ...
 % 8/29/11  dhb  Don't need to center or circularly average here.
 %          dhb  Print warning if optimal value is at search bound.
 % 9/7/11   dhb  Rename.  Use wvfParams for i/o.
-             
+
 options = optimset('fmincon');
 options = optimset(options,'Diagnostics','off','Display','off','LargeScale','off','Algorithm','active-set');
 if (IsCluster && matlabpool('size') > 1)
@@ -85,6 +83,6 @@ wvfParams = tmpWvfParams;
             critRadius(j) = FindPSFCriterionRadius(tmpWvfParams.conepsf(:,:,j),tmpWvfParams.criterionFraction);
             f = f + tmpWvfParams.coneWeights(j)*critRadius(j);
         end
-            
+        
     end
 end
