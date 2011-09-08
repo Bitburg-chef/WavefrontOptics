@@ -48,7 +48,7 @@ function wvfParams = wvfComputeOptimizedConePSF(wvfParams)
 % 9/7/11   dhb  Rename.  Use wvfParams for i/o.
 
 options = optimset('fmincon');
-options = optimset(options,'Diagnostics','off','Display','off','LargeScale','off','Algorithm','active-set');
+options = optimset(options,'Diagnostics','off','Display','iter','LargeScale','off','Algorithm','active-set');
 if (IsCluster && matlabpool('size') > 1)
     options = optimset(options,'UseParallel','always');
 end
@@ -69,8 +69,6 @@ if (abs(defocusDiopters) >= diopterBound)
 end
 [f,tmpWvfParams] = InlineMinFunction(defocusDiopters);
 wvfParams = tmpWvfParams;
-
-
 
     function [f,tmpWvfParams] = InlineMinFunction(x)
         tmpWvfParams = wvfParams;
