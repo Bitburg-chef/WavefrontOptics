@@ -13,7 +13,7 @@
 %   wvfGetDefocusFromWavelengthDifference -   Just as the name suggests.
 %
 % Helper routines (in subdir helpers)
-%   AverageOpticalPSFs -                      Average passed PSFs
+%   AveragePSFs -                             Average passed PSFs
 %   CenterPSF -                               Put max of PSF at center of image
 %   CircularlyAveragePSF -                    Compute circular average of a PSF
 %   FindMatPeak -                             Find the coordinates of the maximum in a matrix.
