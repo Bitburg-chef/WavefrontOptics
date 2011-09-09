@@ -222,6 +222,10 @@ position = get(gcf,'Position');
 position(3) = 1600;
 position(4) = 1600;
 set(gcf,'Position',position);
+
+% In this loop, 9 is number of subjects.  Hard coded so that plot comes out
+% 3 by 3.  This counts on their being at least 9 subjects in the sample data
+% file, which there are at present.
 for i = 1:9
     subplot(3,3,i); hold on
     wvfParams1 = wvfParams0;
@@ -240,7 +244,6 @@ for i = 1:9
     thePSF2 = CenterPSF(wvfParams2.psf);
     onedPSF2 = thePSF2(whichRow,:);
     plot(arcminutes(index),onedPSF2(index),'b','LineWidth',4);
-
     
     thePSF2 = CenterPSF(thePSF2);
     onedPSF2 = thePSF2(whichRow,:);
@@ -276,8 +279,34 @@ for i = 1:9
     end
     fprintf('\tNo defocus: direct strehl %0.3f, returned, %0.3f\n',strehlDirect2,wvfParams2.strehl);
     fprintf('\tWith defocus: direct strehl %0.3f, returned, %0.3f\n',strehlDirect3,bestStrehl);
+    
+    % Store results so we can play with them later.
+    wvfParamsArray1(i) = wvfParams1;
+    wvfParamsArray2(i) = wvfParams2;
+    wvfParamsArray3(i) = wvfParams3;
         
 end
+
+%% TEST5.  Verify that PSF averaging function works
+% correctly.  This looks about right by eye.
+figure; clf; hold on
+c = get(gcf,'Colormap');
+psfsToAverage(:,:,1) = wvfParamsArray3(1).psf;
+psfsToAverage(:,:,2) = wvfParamsArray3(8).psf;
+averagePSF = AveragePSFs(psfsToAverage);
+subplot(1,3,1);
+mesh(psfsToAverage(:,:,1));
+view([-16 10]);
+xlim([0 201]); ylim([0 201]); zlim([0 3e-4]);
+subplot(1,3,2);
+mesh(psfsToAverage(:,:,2));
+view([-16 10]);
+xlim([0 201]); ylim([0 201]); zlim([0 3e-4]);
+subplot(1,3,3);
+mesh(averagePSF);
+view([-16 10]);
+xlim([0 201]); ylim([0 201]); zlim([0 3e-4]);
+
 
 
 
