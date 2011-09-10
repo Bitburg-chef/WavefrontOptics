@@ -4,8 +4,7 @@ function wvfParams = wvfComputeOptimizedPSF(wvfParams)
 % Optimize the PSF seen at a wavelength.  Optimization is performed on
 % the defocus parameter, relative to a specified nominal focus wavelength.
 %
-% This is implemented as a call into wvfComputeOptimzedConePSF, with special cases as needed
-% for the more general cone case.
+% This is implemented as a call into wvfComputeOptimzedConePSF.
 %
 % Required input fields for wvfParams struct - see comment in wvfComputePupilFunction for more details.
 %   coneWeights -       vector with relative weights to be applied to a figure of merit for the
@@ -14,8 +13,8 @@ function wvfParams = wvfComputeOptimizedPSF(wvfParams)
 %   criterionFraction - The figure of merit is the radius of a centered and circularly averaged version of
 %                       the psf that contains the specified criterionFraction of the total mass of the PSF seen by each cone.
 %                       The smaller this radius, the better.
-%   wls -               Column vector of wavelengths over which to cone sensitivity and spectrum are specified.
 %   optimizeWl -        Wavelenght to optimize for.
+%   wls -               Column vector of wavelengths over which polychromatic psf is computed.
 %   zcoeffs -           Zernike coefficients.
 %   measpupilMM -       Size of pupil characterized by the coefficients, in MM.
 %   caclpupilsize -     Size over which returned pupil function is calculated, in MM.
@@ -44,55 +43,26 @@ function wvfParams = wvfComputeOptimizedPSF(wvfParams)
 %                       multiplied by the Stiles-Crawford aopdization.
 %   defocusMicrons -    Defocus added in to zcoeffs(4) at each wavelength, in microns.
 %
-% 8/26/11  dhb  Wrote it.
-% 8/29/11  dhb  Don't need to center or circularly average here.
-%          dhb  Print warning if optimal value is at search bound.
-% 9/7/11   dhb  Rename.  Use wvfParams for i/o.
+% 9/9/11   dhb  Wrote it.
 
 index = find(wvfParams.optimizeWl == wvfParams.wls);
 if (isempty(index))
     error('Desired wavelength to optimize for not inluded in wavelengths to compute for.');
 end
+
+% Set up the fields we need to make wvfComputeOptimizedConePSF do what we want.
 wvfParams.coneWeights = 1;
 wvfParams.T_cones = zeros(1,length(wvfParams.wls));
 wvfParams.T_cones(index) = 1;
 wvfParams.weightingSpectrum = zeros(length(wvfParams.wls),1);
 wvfParams.weightingSpectrum(index) = 1;
 
-options = optimset('fmincon');
-options = optimset(options,'Diagnostics','off','Display','off','LargeScale','off','Algorithm','active-set');
-if (IsCluster && matlabpool('size') > 1)
-    options = optimset(options,'UseParallel','always');
-end
+% Do the work
+wvfParams = wvfComputeOptimizedConePSF(wvfParams);
 
-% Initial defocus and bounds (diopters)
-diopterBound = 4;
-x0 = 0;
-vlb = -diopterBound;
-vub = -vlb;
-
-% Optimize focus
-x = fmincon(@InlineMinFunction,x0,[],[],[],[],vlb,vub,[],options);
-
-% Set up return values
-defocusDiopters = x;
-if (abs(defocusDiopters) >= diopterBound)
-    fprintf('WARNING: defocus found in wvfComputeOptimizedConePSF is at search limit of %0.1f diopters\n',diopterBound)
-end
-[f,tmpWvfParams] = InlineMinFunction(defocusDiopters);
-wvfParams = tmpWvfParams;
-
-    function [f,tmpWvfParams] = InlineMinFunction(x)
-        tmpWvfParams = wvfParams;
-        tmpWvfParams.defocusDiopters = x;
-        tmpWvfParams = wvfComputeConePSF(tmpWvfParams);
-        nCones = size(tmpWvfParams.T_cones,1);
-        f = 0;
-        for j = 1:nCones
-            %temppsf = CircularlyAveragePSF(CenterPSF(conepsf(:,:,j)));
-            critRadius(j) = FindPSFCriterionRadius(tmpWvfParams.conepsf(:,:,j),tmpWvfParams.criterionFraction);
-            f = f + tmpWvfParams.coneWeights(j)*critRadius(j);
-        end
-        
-    end
-end
+% Remove the fields we added in and no longer need
+wvfParams = rmfield(wvfParams,'conePsf');
+wvfParams = rmfield(wvfParams,'coneSceFrac');
+wvfParams = rmfield(wvfParams,'coneWeights');
+wvfParams = rmfield(wvfParams,'T_cones');
+wvfParams = rmfield(wvfParams,'weightingSpectrum');
