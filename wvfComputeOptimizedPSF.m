@@ -1,15 +1,16 @@
 function wvfParams = wvfComputeOptimizedPSF(wvfParams)
 % wvfParams = wvfComputeOptimizedPSF(wvfParams)
 %
-% Optimize the PSF seen at a wavelength.  Optimization is performed on
+% Optimize the PSF seen at a specified wavelength.  Optimization is performed on
 % the defocus parameter, relative to a specified nominal focus wavelength.
+% The full polychromatic PSF is returned at the list of specified
+% wavelengths.
 %
 % This is implemented as a call into wvfComputeOptimzedConePSF.
 %
-% Required input fields for wvfParams struct - see comment in wvfComputePupilFunction for more details.
-%   coneWeights -       vector with relative weights to be applied to a figure of merit for the
-%                       PSF seen by each cone class.  The total figure of merit is the weighted sum of the
-%                       figure for each cone class alone.
+% Required input fields for wvfParams struct - see comment in
+% wvfComputePupilFunction for more details.
+%
 %   criterionFraction - The figure of merit is the radius of a centered and circularly averaged version of
 %                       the psf that contains the specified criterionFraction of the total mass of the PSF seen by each cone.
 %                       The smaller this radius, the better.
@@ -61,7 +62,7 @@ wvfParams.weightingSpectrum(index) = 1;
 wvfParams = wvfComputeOptimizedConePSF(wvfParams);
 
 % Remove the fields we added in and no longer need
-wvfParams = rmfield(wvfParams,'conePsf');
+wvfParams = rmfield(wvfParams,'conepsf');
 wvfParams = rmfield(wvfParams,'coneSceFrac');
 wvfParams = rmfield(wvfParams,'coneWeights');
 wvfParams = rmfield(wvfParams,'T_cones');

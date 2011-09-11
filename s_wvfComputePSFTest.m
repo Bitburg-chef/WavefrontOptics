@@ -266,10 +266,21 @@ for i = 1:9
     onedPSF3 = bestPSF3(whichRow,:);
     plot(arcminutes(index),onedPSF3(index),'g','LineWidth',2);
     strehlDirect3 = max(bestPSF3(:))/max(diffracPSF1(:));
+    
+    % Optimize using function.  This optimizes mass within criterion
+    % radius, not strehl, and uses parameter search not the
+    % exhaustive search just above.
+    wvfParams4 = wvfParams0;
+    wvfParams4.criterionFraction = 0.9;
+    wvfParams4.optimizeWl = wvfParams4.wls(1);
+    wvfParams4 = wvfComputeOptimizedPSF(wvfParams4);
+    thePSF4 = CenterPSF(wvfParams4.psf);
+    onedPSF4 = thePSF4(whichRow,:);
+    plot(arcminutes(index),onedPSF3(index),'k:','LineWidth',1);
 
     xlabel('Arc Minutes');
     ylabel('PSF');
-    title(sprintf('Subject %d, strehl %0.2f (no defocus), %0.2f (defocus of %0.2f D)',i,wvfParams2.strehl,bestStrehl,bestDefocusDiopters));
+    title(sprintf('Subject %d, strehl %0.2f (no defocus), %0.2f (defocus of %0.2f/%0.2f D)',i,wvfParams2.strehl,bestStrehl,bestDefocusDiopters,wvfParams4.defocusDiopters));
     drawnow;
     
     if (DOSCE)
