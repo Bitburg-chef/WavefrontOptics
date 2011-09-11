@@ -69,6 +69,7 @@ if (abs(defocusDiopters) >= diopterBound)
 end
 [f,tmpWvfParams] = InlineMinFunction(defocusDiopters);
 wvfParams = tmpWvfParams;
+wvfParams.defocusDiopters = defocusDiopters;
 
     function [f,tmpWvfParams] = InlineMinFunction(x)
         tmpWvfParams = wvfParams;
