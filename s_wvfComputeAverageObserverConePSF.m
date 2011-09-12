@@ -47,15 +47,15 @@ else
     wvfParams0.sceParams = GetStilesCrawfordParams(wls,'none');
 end
 CIRCULARLYAVERAGE = 1;
-coneWeights = [1 1 0];
-criterionFraction = 0.9;
+wvfParams0.coneWeights = [1 1 0];
+wvfParams0.criterionFraction = 0.9;
 
 % Read coefficients and optimze PSF for each observer
 for i = 1:size(theZernikeCoeffs,2)
     wvfParams = wvfParams0;
     wvfParams.zcoeffs = theZernikeCoeffs(:,i);
     wvfParams = wvfComputeOptimizedConePSF(wvfParams);
-    arcminperpixel(i) = wvfParams.arcminperpixel;
+    arcminperpixel(i) = wvfParams.arcminperpix;
     defocusDiopters(i) = wvfParams.defocusDiopters;
     lpsfo(:,:,i) = CenterPSF(wvfParams.conepsf(:,:,1));
     mpsfo(:,:,i) = CenterPSF(wvfParams.conepsf(:,:,2));
@@ -66,16 +66,16 @@ end
 wvfParams = wvfParams0;
 wvfParams.zcoeffs = zeros(61,1);
 wvfParams = wvfComputeOptimizedConePSF(wvfParams);
-arcminperpixeld = wvfParams.arcminperpixel;
+arcminperpixeld = wvfParams.arcminperpix;
 defocusDioptersd = wvfParams.defocusDiopters;
 lpsfd = CenterPSF(wvfParams.conepsf(:,:,1));
 mpsfd = CenterPSF(wvfParams.conepsf(:,:,2));
 spsfd = CenterPSF(wvfParams.conepsf(:,:,3));
 
 % Get average LMS PSFs
-avglpsfo = AverageOpticalPSFs(lpsfo);
-avgmpsfo = AverageOpticalPSFs(lpsfo);
-avgspsfo = AverageOpticalPSFs(lpsfo);
+avglpsfo = AveragePSFs(lpsfo);
+avgmpsfo = AveragePSFs(lpsfo);
+avgspsfo = AveragePSFs(lpsfo);
 if (CIRCULARLYAVERAGE)
     avglpsfo = CircularlyAveragePSF(avglpsfo);
     avgmpsfo = CircularlyAveragePSF(avgmpsfo);
@@ -91,7 +91,7 @@ onedLPSFd = lpsfd(whichRow,:);
 onedMPSFd = mpsfd(whichRow,:);
 onedSPSFd = spsfd(whichRow,:);
 
-arcminutes = arcminperpixel(1)*((1:sizeOfFieldPixels)-whichRow);
+arcminutes = arcminperpixel(1)*((1:wvfParams0.sizeOfFieldPixels)-whichRow);
 index = find(abs(arcminutes) < plotLimit);
 figure; clf;
 subplot(1,3,1); hold on
@@ -128,9 +128,9 @@ drawnow;
 
 % Save
 if (CIRCULARLYAVERAGE)
-    outfile = sprintf('AverageConePSFCIRC_%d_%d_%d_%0.1f',coneWeights(1),coneWeights(2),coneWeights(3),criterionFraction);
+    outfile = sprintf('AverageConePSFCIRC_%d_%d_%d_%0.1f',wvfParams0.coneWeights(1),wvfParams0.coneWeights(2),wvfParams0.coneWeights(3),wvfParams0.criterionFraction);
 else
-    outfile = sprintf('AverageConePSF_%d_%d_%d_%0.1f',coneWeights(1),coneWeights(2),coneWeights(3),criterionFraction);
+    outfile = sprintf('AverageConePSF_%d_%d_%d_%0.1f',wvfParams0.coneWeights(1),wvfParams0.coneWeights(2),wvfParams0.coneWeights(3),wvfParams0.criterionFraction);
 end
 save(outfile,'avglpsfo','avgmpsfo','avgspsfo','lpsfd','mpsfd','spsfd','arcminperpixel','defocusDiopters');
 
