@@ -26,16 +26,18 @@ weightingSpectrum = SplineSpd(S_D65,spd_D65,S);
 % Specify datafile for Zernike coefficients
 zernikeFile = 'sampleZernikeCoeffs.txt';
 measpupilMM = 6;
-
-% Parameters
-nominalFocusWl = 550;
-defocusDiopters = 0;
-sizeOfFieldPixels = 201;
-sizeOfFieldMM = 16.212;
-diffracZcoeffs = zeros(65,1);
 theZernikeCoeffs = load(zernikeFile);
-calcpupilMM = 3;
-whichRow = floor(sizeOfFieldPixels/2) + 1;
+
+wvfParams0.measpupilMM = measpupilMM;
+wvfParams0.calcpupilMM = 3;
+wvfParams0.wls = wls;
+wvfParams0.nominalFocusWl = 550;
+wvfParams0.defocusDiopters = 0;
+wvfParams0.sizeOfFieldPixels = 201;
+wvfParams0.sizeOfFieldMM = 16.212;
+wvfParams0.T_cones = T_cones;
+wvfParams0.weightingSpectrum = weightingSpectrum;
+whichRow = floor(wvfParams0.sizeOfFieldPixels/2) + 1;
 
 plotLimit = 2;
 DOSCE = 0;
@@ -50,22 +52,25 @@ criterionFraction = 0.9;
 
 % Read coefficients and optimze PSF for each observer
 for i = 1:size(theZernikeCoeffs,2)
-    zcoeffs = theZernikeCoeffs(:,i);
-    [conepsfo,arcminperpixel(i),defocusDiopters(i)] = ...
-        wvfComputeOptimizedConePSF(coneWeights,criterionFraction,wls,T_cones,weightingSpectrum,zcoeffs,measpupilMM,calcpupilMM,nominalFocusWl,...
-        sizeOfFieldPixels,sizeOfFieldMM,sceParams);
-    lpsfo{i} = CenterPSF(conepsfo(:,:,1));
-    mpsfo{i} = CenterPSF(conepsfo(:,:,2));
-    spsfo{i} = CenterPSF(conepsfo(:,:,3));
+    wvfParams = wvfParams0;
+    wvfParams.zcoeffs = theZernikeCoeffs(:,i);
+    wvfParams = wvfComputeOptimizedConePSF(wvfParams);
+    arcminperpixel(i) = wvfParams.arcminperpixel;
+    defocusDiopters(i) = wvfParams.defocusDiopters;
+    lpsfo(:,:,i) = CenterPSF(wvfParams.conepsf(:,:,1));
+    mpsfo(:,:,i) = CenterPSF(wvfParams.conepsf(:,:,2));
+    spsfo(:,:,i) = CenterPSF(wvfParams.conepsf(:,:,3));
 end
 
 % Get optimized diffrac limited PSF
-[conepsfd,arcminperpixeld,defocusDioptersd] = ...
-    wvfComputeOptimizedConePSF(coneWeights,criterionFraction,wls,T_cones,weightingSpectrum,diffracZcoeffs,measpupilMM,calcpupilMM,nominalFocusWl,...
-    sizeOfFieldPixels,sizeOfFieldMM,sceParams);
-lpsfd = CenterPSF(conepsfd(:,:,1));
-mpsfd = CenterPSF(conepsfd(:,:,2));
-spsfd = CenterPSF(conepsfd(:,:,3));
+wvfParams = wvfParams0;
+wvfParams.zcoeffs = zeros(61,1);
+wvfParams = wvfComputeOptimizedConePSF(wvfParams);
+arcminperpixeld = wvfParams.arcminperpixel;
+defocusDioptersd = wvfParams.defocusDiopters;
+lpsfd = CenterPSF(wvfParams.conepsf(:,:,1));
+mpsfd = CenterPSF(wvfParams.conepsf(:,:,2));
+spsfd = CenterPSF(wvfParams.conepsf(:,:,3));
 
 % Get average LMS PSFs
 avglpsfo = AverageOpticalPSFs(lpsfo);
