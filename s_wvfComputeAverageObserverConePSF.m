@@ -42,9 +42,9 @@ whichRow = floor(wvfParams0.sizeOfFieldPixels/2) + 1;
 plotLimit = 2;
 DOSCE = 0;
 if (DOSCE)
-    sceParams = GetStilesCrawfordParamsParams(wls,'berendshot');
+    wvfParams0.sceParams = GetStilesCrawfordParams(wls,'berendshot');
 else
-    sceParams = GetStilesCrawfordParamsParams(wls,'none');
+    wvfParams0.sceParams = GetStilesCrawfordParams(wls,'none');
 end
 CIRCULARLYAVERAGE = 1;
 coneWeights = [1 1 0];
