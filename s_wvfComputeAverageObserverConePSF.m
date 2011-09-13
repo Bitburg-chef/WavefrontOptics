@@ -40,7 +40,7 @@ wvfParams0.weightingSpectrum = weightingSpectrum;
 whichRow = floor(wvfParams0.sizeOfFieldPixels/2) + 1;
 
 plotLimit = 2;
-DOSCE = 0;
+DOSCE = 1;
 if (DOSCE)
     wvfParams0.sceParams = sceGetParams(wls,'berendshot');
 else
@@ -90,6 +90,7 @@ onedSPSFo = avgspsfo(whichRow,:);
 onedLPSFd = lpsfd(whichRow,:);
 onedMPSFd = mpsfd(whichRow,:);
 onedSPSFd = spsfd(whichRow,:);
+maxY = max(max([onedLPSFo(:) onedMPSFo(:) onedSPSFo(:) onedLPSFd(:) onedMPSFd(:) onedSPSFd(:)]));
 
 arcminutes = arcminperpixel(1)*((1:wvfParams0.sizeOfFieldPixels)-whichRow);
 index = find(abs(arcminutes) < plotLimit);
@@ -99,6 +100,7 @@ plot(arcminutes(index),onedLPSFo(index),'r','LineWidth',4);
 plot(arcminutes(index),onedLPSFd(index),'k','LineWidth',4);
 xlabel('Arc Minutes');
 ylabel('PSF');
+ylim([0 maxY]);
 if (CIRCULARLYAVERAGE)
     title('Circularized L cone PSF');
 else
@@ -109,6 +111,7 @@ plot(arcminutes(index),onedMPSFo(index),'g','LineWidth',4);
 plot(arcminutes(index),onedMPSFd(index),'k','LineWidth',4);
 xlabel('Arc Minutes');
 ylabel('PSF');
+ylim([0 maxY]);
 if (CIRCULARLYAVERAGE)
     title('Circularized M cone PSF');
 else
@@ -119,6 +122,7 @@ plot(arcminutes(index),onedSPSFo(index),'b','LineWidth',4);
 plot(arcminutes(index),onedSPSFd(index),'k','LineWidth',4);
 xlabel('Arc Minutes');
 ylabel('PSF');
+ylim([0 maxY]);
 if (CIRCULARLYAVERAGE)
     title('Circularized S cone PSF');
 else
@@ -127,10 +131,18 @@ end
 drawnow;
 
 % Save
-if (CIRCULARLYAVERAGE)
-    outfile = sprintf('AverageConePSFCIRC_%d_%d_%d_%0.1f',wvfParams0.coneWeights(1),wvfParams0.coneWeights(2),wvfParams0.coneWeights(3),wvfParams0.criterionFraction);
+if (DOSCE)
+    if (CIRCULARLYAVERAGE)
+        outfile = sprintf('AverageConePSFCIRC_SCE_%d_%d_%d_%0.1f',wvfParams0.coneWeights(1),wvfParams0.coneWeights(2),wvfParams0.coneWeights(3),wvfParams0.criterionFraction);
+    else
+        outfile = sprintf('AverageConePSF_SCE_%d_%d_%d_%0.1f',wvfParams0.coneWeights(1),wvfParams0.coneWeights(2),wvfParams0.coneWeights(3),wvfParams0.criterionFraction);
+    end
 else
-    outfile = sprintf('AverageConePSF_%d_%d_%d_%0.1f',wvfParams0.coneWeights(1),wvfParams0.coneWeights(2),wvfParams0.coneWeights(3),wvfParams0.criterionFraction);
+    if (CIRCULARLYAVERAGE)
+        outfile = sprintf('AverageConePSFCIRC_%d_%d_%d_%0.1f',wvfParams0.coneWeights(1),wvfParams0.coneWeights(2),wvfParams0.coneWeights(3),wvfParams0.criterionFraction);
+    else
+        outfile = sprintf('AverageConePSF_%d_%d_%d_%0.1f',wvfParams0.coneWeights(1),wvfParams0.coneWeights(2),wvfParams0.coneWeights(3),wvfParams0.criterionFraction);
+    end
 end
 save(outfile,'avglpsfo','avgmpsfo','avgspsfo','lpsfd','mpsfd','spsfd','arcminperpixel','defocusDiopters');
 
