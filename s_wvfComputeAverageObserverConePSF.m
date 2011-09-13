@@ -74,8 +74,8 @@ spsfd = psfCenter(wvfParams.conepsf(:,:,3));
 
 % Get average LMS PSFs
 avglpsfo = psfAverageMultiple(lpsfo);
-avgmpsfo = psfAverageMultiple(lpsfo);
-avgspsfo = psfAverageMultiple(lpsfo);
+avgmpsfo = psfAverageMultiple(mpsfo);
+avgspsfo = psfAverageMultiple(spsfo);
 if (CIRCULARLYAVERAGE)
     avglpsfo = psfCircularlyAverage(avglpsfo);
     avgmpsfo = psfCircularlyAverage(avgmpsfo);
