@@ -25,7 +25,7 @@ if (n ~= m)
     error('Input must be a square matrix');
 end
 nLinearPixels = n;
-[peakRow,peakCol] = FindMatPeak(inPSF);
+[peakRow,peakCol] = psfFindPeak(inPSF);
 radiusMat = MakeRadiusMat(nLinearPixels,nLinearPixels,peakCol,peakRow);
 
 % Find the criterion radius

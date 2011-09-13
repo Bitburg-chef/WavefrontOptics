@@ -7,7 +7,7 @@ function outPSF = psfCenter(inPSF)
 % 8/22/11  dhb  A 'round' should be a 'floor', I think.
 
 % Use interpolation to recenter
-[peakRow,peakCol] = FindMatPeak(inPSF);
+[peakRow,peakCol] = psfFindPeak(inPSF);
 [m,n] = size(inPSF);
 xIn = ((1:n)-peakCol);
 yIn = ((1:m)-peakRow);

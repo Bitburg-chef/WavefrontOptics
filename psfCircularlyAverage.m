@@ -17,7 +17,7 @@ if (n ~= m)
 end
 nLinearPixels = m;
 
-[peakRow,peakCol] = FindMatPeak(inPSF);
+[peakRow,peakCol] = psfFindPeak(inPSF);
 radiusMat = MakeRadiusMat(nLinearPixels,nLinearPixels,peakCol,peakRow);
 outPSF = zeros(nLinearPixels,nLinearPixels);
 nBands = round(nLinearPixels/quantizationFactor);

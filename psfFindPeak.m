@@ -1,7 +1,7 @@
-function [peakRow,peakCol] = FindMatPeak(input)
-% [peakRow,peakCol] = FindMatPeak(input)
+function [peakRow,peakCol] = psfFindPeak(input)
+% [peakRow,peakCol] = psfFindPeak(input)
 %
-% Find row/col corresponding to max of two dimensional input.
+% Find row/col corresponding to max of two dimensional PSF input.
 %
 % This method works reasonably when there is more than one
 % maximum in the input, in that it returns the coordinates of
