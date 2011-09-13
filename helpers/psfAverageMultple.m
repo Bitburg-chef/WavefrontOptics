@@ -1,5 +1,5 @@
-function [averagePSF] = AverageOpticalPSFs(inputPSFs,CHECKINSFDOMAIN)
-% [averagePSF] = AverageOpticalPSFs(inputPSFs,[CHECKINSFDOMAIN])
+function [averagePSF] = psfAverageMultiple(inputPSFs,CHECKINSFDOMAIN)
+% [averagePSF] = psfAverageMultiple(inputPSFs,[CHECKINSFDOMAIN])
 %
 % Produces an average of passed optical point spread functions.
 % Input is a 3D array of PSFs, with the averaging occuring over
