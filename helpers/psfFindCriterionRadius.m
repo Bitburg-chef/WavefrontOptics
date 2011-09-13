@@ -1,5 +1,5 @@
-function radius = FindPSFCriterionRadius(inPSF,criterion)
-% radius = FindPSFCriterionRadius(psf,criterion)
+function radius = psfFindCriterionRadius(inPSF,criterion)
+% radius = psfFindCriterionRadius(psf,criterion)
 %
 % Find the radius around the peak of the passed circularly symmetric
 % PSF that includes criterion fraction [0-1] of the mass.
@@ -17,7 +17,7 @@ function radius = FindPSFCriterionRadius(inPSF,criterion)
 
 % Normalize so it sums to one
 inPSF = inPSF/sum(inPSF(:));
-inPSF = CenterPSF(inPSF);
+inPSF = psfCenter(inPSF);
 
 % Make the radius matrix
 [n,m] = size(inPSF);

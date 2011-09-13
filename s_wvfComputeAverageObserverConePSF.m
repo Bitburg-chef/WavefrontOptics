@@ -8,7 +8,7 @@
 %
 % See also: ComputeConePSFTest, wvfComputeConePSF
 %   ComputePSFTest, wvfComputePSF, wvfComputePupilFunction,
-%   GetStilesCrawfordParamsParams, wvfGetDefocusFromWavelengthDifference
+%   sceGetParamsParams, wvfGetDefocusFromWavelengthDifference
 %
 % 8/29/11  dhb  Wrote it.
 
@@ -42,9 +42,9 @@ whichRow = floor(wvfParams0.sizeOfFieldPixels/2) + 1;
 plotLimit = 2;
 DOSCE = 0;
 if (DOSCE)
-    wvfParams0.sceParams = GetStilesCrawfordParams(wls,'berendshot');
+    wvfParams0.sceParams = sceGetParams(wls,'berendshot');
 else
-    wvfParams0.sceParams = GetStilesCrawfordParams(wls,'none');
+    wvfParams0.sceParams = sceGetParams(wls,'none');
 end
 CIRCULARLYAVERAGE = 1;
 wvfParams0.coneWeights = [1 1 0];
@@ -57,9 +57,9 @@ for i = 1:size(theZernikeCoeffs,2)
     wvfParams = wvfComputeOptimizedConePSF(wvfParams);
     arcminperpixel(i) = wvfParams.arcminperpix;
     defocusDiopters(i) = wvfParams.defocusDiopters;
-    lpsfo(:,:,i) = CenterPSF(wvfParams.conepsf(:,:,1));
-    mpsfo(:,:,i) = CenterPSF(wvfParams.conepsf(:,:,2));
-    spsfo(:,:,i) = CenterPSF(wvfParams.conepsf(:,:,3));
+    lpsfo(:,:,i) = psfCenter(wvfParams.conepsf(:,:,1));
+    mpsfo(:,:,i) = psfCenter(wvfParams.conepsf(:,:,2));
+    spsfo(:,:,i) = psfCenter(wvfParams.conepsf(:,:,3));
 end
 
 % Get optimized diffrac limited PSF
@@ -68,21 +68,21 @@ wvfParams.zcoeffs = zeros(61,1);
 wvfParams = wvfComputeOptimizedConePSF(wvfParams);
 arcminperpixeld = wvfParams.arcminperpix;
 defocusDioptersd = wvfParams.defocusDiopters;
-lpsfd = CenterPSF(wvfParams.conepsf(:,:,1));
-mpsfd = CenterPSF(wvfParams.conepsf(:,:,2));
-spsfd = CenterPSF(wvfParams.conepsf(:,:,3));
+lpsfd = psfCenter(wvfParams.conepsf(:,:,1));
+mpsfd = psfCenter(wvfParams.conepsf(:,:,2));
+spsfd = psfCenter(wvfParams.conepsf(:,:,3));
 
 % Get average LMS PSFs
-avglpsfo = AveragePSFs(lpsfo);
-avgmpsfo = AveragePSFs(lpsfo);
-avgspsfo = AveragePSFs(lpsfo);
+avglpsfo = psfAverageMultiple(lpsfo);
+avgmpsfo = psfAverageMultiple(lpsfo);
+avgspsfo = psfAverageMultiple(lpsfo);
 if (CIRCULARLYAVERAGE)
-    avglpsfo = CircularlyAveragePSF(avglpsfo);
-    avgmpsfo = CircularlyAveragePSF(avgmpsfo);
-    avgspsfo = CircularlyAveragePSF(avgspsfo);
-    lpsfd = CircularlyAveragePSF(lpsfd);
-    mpsfd = CircularlyAveragePSF(mpsfd);
-    spsfd = CircularlyAveragePSF(spsfd);
+    avglpsfo = psfCircularlyAverage(avglpsfo);
+    avgmpsfo = psfCircularlyAverage(avgmpsfo);
+    avgspsfo = psfCircularlyAverage(avgspsfo);
+    lpsfd = psfCircularlyAverage(lpsfd);
+    mpsfd = psfCircularlyAverage(mpsfd);
+    spsfd = psfCircularlyAverage(spsfd);
 end
 onedLPSFo = avglpsfo(whichRow,:);
 onedMPSFo = avgmpsfo(whichRow,:);

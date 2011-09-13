@@ -1,5 +1,5 @@
-function outPSF = CircularlyAveragePSF(inPSF)
-% outPSF = CircularlyAveragePSF(inPSF)
+function outPSF = psfCircularlyAverage(inPSF)
+% outPSF = psfCircularlyAverage(inPSF)
 %
 % As the name suggests.
 %

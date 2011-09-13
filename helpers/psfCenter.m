@@ -1,5 +1,5 @@
-function outPSF = CenterPSF(inPSF)
-% outPSF = CenterPSF(inPSF)
+function outPSF = psfCenter(inPSF)
+% outPSF = psfCenter(inPSF)
 %
 % Put the maximum of a PSF at the center of the two D grid.
 %

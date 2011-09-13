@@ -4,7 +4,7 @@
 % Zernike coefficients.
 %
 % See also: wvfComputePSF, wvfComputePupilFunction,
-% GetStilesCrawfordParams, wvfGetDefocusFromWavelengthDifference
+% sceGetParams, wvfGetDefocusFromWavelengthDifference
 %
 % 8/21/11  dhb  Wrote it, based on code provided by Heidi Hofer.
 % 9/7/11   dhb  Got this working with wvfParams i/o.
@@ -157,7 +157,7 @@ wvfParams0.nominalFocusWl = 550;
 wvfParams0.defocusDiopters = 0;
 wvfParams0.sizeOfFieldPixels = 201;
 wvfParams0.sizeOfFieldMM = 16.212;
-wvfParams0.sceParams = GetStilesCrawfordParams(theWavelength,'berendshot');
+wvfParams0.sceParams = sceGetParams(theWavelength,'berendshot');
 
 figure; clf; hold on
 wvfParams1 = wvfParams0;
@@ -212,9 +212,9 @@ wvfParams0.sizeOfFieldMM = 16.212;
 theZernikeCoeffs = load('sampleZernikeCoeffs.txt');
 DOSCE = 0;
 if (DOSCE)
-    wvfParams0.sceParams = GetStilesCrawfordParams(theWavelength,'berendshot');
+    wvfParams0.sceParams = sceGetParams(theWavelength,'berendshot');
 else
-    wvfParams0.sceParams = GetStilesCrawfordParams(theWavelength,'none');
+    wvfParams0.sceParams = sceGetParams(theWavelength,'none');
 end
 
 figure; clf;
@@ -241,11 +241,11 @@ for i = 1:9
     wvfParams2 = wvfParams0;
     wvfParams2.zcoeffs = theZernikeCoeffs(:,i);
     wvfParams2 = wvfComputePSF(wvfParams2);
-    thePSF2 = CenterPSF(wvfParams2.psf);
+    thePSF2 = psfCenter(wvfParams2.psf);
     onedPSF2 = thePSF2(whichRow,:);
     plot(arcminutes(index),onedPSF2(index),'b','LineWidth',4);
     
-    thePSF2 = CenterPSF(thePSF2);
+    thePSF2 = psfCenter(thePSF2);
     onedPSF2 = thePSF2(whichRow,:);
     strehlDirect2 = max(thePSF2(:))/max(diffracPSF1(:));
     
@@ -259,7 +259,7 @@ for i = 1:9
         wvfParams3 = wvfComputePSF(wvfParams3);
         if (wvfParams3.strehl > bestStrehl)
             bestStrehl = wvfParams3.strehl;
-            bestPSF3 = CenterPSF(wvfParams3.psf);
+            bestPSF3 = psfCenter(wvfParams3.psf);
             bestDefocusDiopters = wvfParams3.defocusDiopters;
         end
     end
@@ -277,7 +277,7 @@ for i = 1:9
     wvfParams4.criterionFraction = 0.9;
     wvfParams4.optimizeWl = wvfParams4.wls(1);
     wvfParams4 = wvfComputeOptimizedPSF(wvfParams4);
-    thePSF4 = CenterPSF(wvfParams4.psf);
+    thePSF4 = psfCenter(wvfParams4.psf);
     onedPSF4 = thePSF4(whichRow,:);
     plot(arcminutes(index),onedPSF4(index),'k:','LineWidth',1);
 
@@ -307,7 +307,7 @@ figure; clf; hold on
 c = get(gcf,'Colormap');
 psfsToAverage(:,:,1) = wvfParamsArray3(1).psf;
 psfsToAverage(:,:,2) = wvfParamsArray3(8).psf;
-averagePSF = AveragePSFs(psfsToAverage);
+averagePSF = psfAverageMultiple(psfsToAverage);
 subplot(1,3,1);
 mesh(psfsToAverage(:,:,1));
 view([-16 10]);

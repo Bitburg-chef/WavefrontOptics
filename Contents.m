@@ -14,12 +14,12 @@
 %   wvfGetDefocusFromWavelengthDifference -   Just as the name suggests.
 %
 % Helper routines (in subdir helpers)
-%   AveragePSFs -                             Average passed PSFs
-%   CenterPSF -                               Put max of PSF at center of image
-%   CircularlyAveragePSF -                    Compute circular average of a PSF
+%   psfAverageMultiple -                             Average passed PSFs
+%   psfCenter -                               Put max of PSF at center of image
+%   psfCircularlyAverage -                    Compute circular average of a PSF
 %   FindMatPeak -                             Find the coordinates of the maximum in a matrix.
-%   FindPSFCriterionRadius -                  Find radius that includes passed fraction of PSF mass
-%   GetStilesCrawfordParamsParams -           Get the parameters required for incorporating Stiles-Crawford effect
+%   psfFindCriterionRadius -                  Find radius that includes passed fraction of PSF mass
+%   sceGetParamsParams -           Get the parameters required for incorporating Stiles-Crawford effect
 %
 % Data
 %   sampleZernikeCoeffs.txt -                 Zernike coefficient data for 9 subjects in OSA format, measured by Heidi Hofer.

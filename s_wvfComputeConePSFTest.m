@@ -4,7 +4,7 @@
 % Zernike coefficients.
 %
 % See also: wvfComputeConePSF, wvfComputePSF, wvfComputePupilFunction,
-%   GetStilesCrawfordParamsParams, wvfGetDefocusFromWavelengthDifference
+%   sceGetParamsParams, wvfGetDefocusFromWavelengthDifference
 %
 % The circular averaging is not a good idea for a single subject, but if you want
 % to obtain an average over subjects it seems like a good idea.
@@ -45,9 +45,9 @@ diffracZcoeffs = zeros(65,1);
 plotLimit = 2;
 DOSCE = 0;
 if (DOSCE)
-    wvfParams0.sceParams = GetStilesCrawfordParams(wls,'berendshot');
+    wvfParams0.sceParams = sceGetParams(wls,'berendshot');
 else
-    wvfParams0.sceParams = GetStilesCrawfordParams(wls,'none');
+    wvfParams0.sceParams = sceGetParams(wls,'none');
 end
 CIRCULARLYAVERAGE = 1;
 
@@ -58,19 +58,19 @@ wvfParams2 = wvfParams0;
 wvfParams2.zcoeffs = diffracZcoeffs;
 wvfParams2 = wvfComputeConePSF(wvfParams2);
 
-lpsf = CenterPSF(wvfParams1.conepsf(:,:,1));
-mpsf = CenterPSF(wvfParams1.conepsf(:,:,2));
-spsf = CenterPSF(wvfParams1.conepsf(:,:,3));
-lpsfd = CenterPSF(wvfParams2.conepsf(:,:,1));
-mpsfd = CenterPSF(wvfParams2.conepsf(:,:,2));
-spsfd = CenterPSF(wvfParams2.conepsf(:,:,3));
+lpsf = psfCenter(wvfParams1.conepsf(:,:,1));
+mpsf = psfCenter(wvfParams1.conepsf(:,:,2));
+spsf = psfCenter(wvfParams1.conepsf(:,:,3));
+lpsfd = psfCenter(wvfParams2.conepsf(:,:,1));
+mpsfd = psfCenter(wvfParams2.conepsf(:,:,2));
+spsfd = psfCenter(wvfParams2.conepsf(:,:,3));
 if (CIRCULARLYAVERAGE)
-    lpsf = CircularlyAveragePSF(lpsf);
-    mpsf = CircularlyAveragePSF(mpsf);
-    spsf = CircularlyAveragePSF(spsf);
-    lpsfd = CircularlyAveragePSF(lpsfd);
-    mpsfd = CircularlyAveragePSF(mpsfd);
-    spsfd = CircularlyAveragePSF(spsfd);
+    lpsf = psfCircularlyAverage(lpsf);
+    mpsf = psfCircularlyAverage(mpsf);
+    spsf = psfCircularlyAverage(spsf);
+    lpsfd = psfCircularlyAverage(lpsfd);
+    mpsfd = psfCircularlyAverage(mpsfd);
+    spsfd = psfCircularlyAverage(spsfd);
 end
 whichRow = floor(wvfParams1.sizeOfFieldPixels/2) + 1;
 arcminutes = wvfParams1.arcminperpix*((1:wvfParams1.sizeOfFieldPixels)-whichRow);
@@ -130,13 +130,13 @@ wvfParams3 = wvfParams0;
 wvfParams3.coneWeights = [1 1 0];
 wvfParams3.criterionFraction = 0.9;
 wvfParams3 = wvfComputeOptimizedConePSF(wvfParams3);
-lpsfo = CenterPSF(wvfParams3.conepsf(:,:,1));
-mpsfo = CenterPSF(wvfParams3.conepsf(:,:,2));
-spsfo = CenterPSF(wvfParams3.conepsf(:,:,3));
+lpsfo = psfCenter(wvfParams3.conepsf(:,:,1));
+mpsfo = psfCenter(wvfParams3.conepsf(:,:,2));
+spsfo = psfCenter(wvfParams3.conepsf(:,:,3));
 if (CIRCULARLYAVERAGE)
-    lpsfo = CircularlyAveragePSF(lpsfo);
-    mpsfo = CircularlyAveragePSF(mpsfo);
-    spsfo = CircularlyAveragePSF(spsfo);
+    lpsfo = psfCircularlyAverage(lpsfo);
+    mpsfo = psfCircularlyAverage(mpsfo);
+    spsfo = psfCircularlyAverage(spsfo);
 end
 onedLPSFo = lpsfo(whichRow,:);
 onedMPSFo = mpsfo(whichRow,:);

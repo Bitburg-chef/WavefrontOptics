@@ -25,7 +25,7 @@ function [wvfParams] = wvfComputePupilFunction(wvfParams)
 %
 % Optional input fields for wvfParams struct 
 %   sceParams -         Parameter structure for Stiles-Crawford correction.  If missing or set to empty,
-%                       no correction and is set to empty on return.  See GetStilesCrawfordParamsParams.
+%                       no correction and is set to empty on return.  See sceGetParamsParams.
 %
 % Output fields set in wvfParams struct 
 %   pupilfunc -     Calcuated pupil function
@@ -44,7 +44,7 @@ function [wvfParams] = wvfComputePupilFunction(wvfParams)
 % (or areapixapod) squared effects a normalization so that the peak reflects
 % the strehl ratio.
 %
-% See also: wvfComputePSF, GetStilesCrawfordParamsParams.
+% See also: wvfComputePSF, sceGetParamsParams.
 %
 % Code provided by Heidi Hofer.
 %

@@ -48,7 +48,7 @@ function wvfParams = wvfComputePSF(wvfParams)
 % added in directly.  Although these are redundant, it is often most
 % convenient to think in terms of one of the three ways.
 %
-% See also: wvfComputeConePSF, wvfComputePupilFunction, GetStilesCrawfordParamsParams, wvfGetDefocusFromWavelengthDifference
+% See also: wvfComputeConePSF, wvfComputePupilFunction, sceGetParamsParams, wvfGetDefocusFromWavelengthDifference
 %
 % Based on code provided by Heidi Hofer.
 %

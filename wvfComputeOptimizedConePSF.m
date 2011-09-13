@@ -79,8 +79,8 @@ wvfParams = tmpWvfParams;
         nCones = size(tmpWvfParams.T_cones,1);
         f = 0;
         for j = 1:nCones
-            %temppsf = CircularlyAveragePSF(CenterPSF(conepsf(:,:,j)));
-            critRadius(j) = FindPSFCriterionRadius(tmpWvfParams.conepsf(:,:,j),tmpWvfParams.criterionFraction);
+            %temppsf = psfCircularlyAverage(psfCenter(conepsf(:,:,j)));
+            critRadius(j) = psfFindCriterionRadius(tmpWvfParams.conepsf(:,:,j),tmpWvfParams.criterionFraction);
             f = f + tmpWvfParams.coneWeights(j)*critRadius(j);
         end
         
