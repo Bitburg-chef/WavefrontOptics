@@ -51,8 +51,11 @@ options = optimset('fmincon');
 options = optimset(options,'Diagnostics','off','Display','off','LargeScale','off','Algorithm','active-set');
 %options = optimset(options,'TypicalX',0.1,'DiffMinChange',1e-3);
 
-if (IsCluster && matlabpool('size') > 1)
-    options = optimset(options,'UseParallel','always');
+% If the parallel toolbox is present, check and use if available
+if exist('matlabpool','builtin')
+    if (IsCluster && matlabpool('size') > 1)
+        options = optimset(options,'UseParallel','always');
+    end
 end
 
 % Initial defocus and bounds (diopters)

@@ -4,18 +4,28 @@
 % Zernike coefficients.
 %
 % See also: wvfComputePSF, wvfComputePupilFunction,
-% sceGetParams, wvfGetDefocusFromWavelengthDifference
+%           sceGetParams, wvfGetDefocusFromWavelengthDifference
 %
 % 8/21/11  dhb  Wrote it, based on code provided by Heidi Hofer.
 % 9/7/11   dhb  Got this working with wvfParams i/o.
+%
+
+% TODO
+%   Consider plotting in terms of physical distance in the image plane,
+%   rather than angle
+
+% Include the WavefrontOpticsToolbox path and the Psychtoolbox path
+%   addpath(genpath(pwd))
+%   ptbPath
 
 %% Clear
 clear; close all;
 
-%% TEST1: The Zernike code should return the diffraction limited PSF if we pass
-% all zeros as the coefficients.  So the first test is whether this works,
-% when we compare to what we get when we produce the diffraction limited
-% PSF using analytic formulae implemented in the PTB routine AiryPattern.
+%% TEST1: 
+% The Zernike code should return the diffraction limited PSF if we pass all
+% zeros as the coefficients.  So the first test is whether this works, when
+% we compare to what we get when we produce the diffraction limited PSF
+% using analytic formulae implemented in the PTB routine AiryPattern.
 %
 % This appears to work correctly.
 
@@ -38,7 +48,7 @@ position = get(gcf,'Position');
 position(3) = 1600;
 set(gcf,'Position',position);
 subplot(1,3,1); hold on
-[wvfParams] = wvfComputePSF(wvfParams0);
+wvfParams = wvfComputePSF(wvfParams0);
 whichRow = floor(wvfParams.sizeOfFieldPixels/2) + 1;
 onedPSF1 = wvfParams.psf(whichRow,:);
 onedPSF1 = onedPSF1/max(onedPSF1(:));
@@ -51,6 +61,8 @@ plot(arcminutes(index),onedPSF2(index),'b','LineWidth',2);
 xlabel('Arc Minutes');
 ylabel('Normalized PSF');
 title(sprintf('Diffraction limited, %0.1f mm pupil, %0.f nm',wvfParams.calcpupilMM,wvfParams.wls(1)));
+
+% vcNewGraphWin; mesh(wvfParams.psf)
 
 wvfParams1 = wvfParams0;
 wvfParams1.wls = wvfParams1.wls-wavelengthOffset;
