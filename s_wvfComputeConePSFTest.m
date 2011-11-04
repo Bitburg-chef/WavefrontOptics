@@ -29,26 +29,29 @@ weightingSpectrum = SplineSpd(S_D65,spd_D65,S);
 % This appears to work correctly.
 whichSubject = 1;
 theZernikeCoeffs = load('sampleZernikeCoeffs.txt');
-
+wvfParams0 = wvfCreate;
 wvfParams0.zcoeffs = theZernikeCoeffs(:,whichSubject);
-wvfParams0.measpupilMM = 6;
-wvfParams0.calcpupilMM = 3;
-wvfParams0.wls = wls;
-wvfParams0.nominalFocusWl = 550;
-wvfParams0.defocusDiopters = 0;
-wvfParams0.sizeOfFieldPixels = 201;
-wvfParams0.sizeOfFieldMM = 16.212;
-wvfParams0.T_cones = T_cones;
-wvfParams0.weightingSpectrum = weightingSpectrum;
 
+% Set in the create call.
+% wvfParams0.measpupilMM = 6;
+% wvfParams0.calcpupilMM = 3;
+% wvfParams0.wls = wls;
+% wvfParams0.nominalFocusWl = 550;
+% wvfParams0.defocusDiopters = 0;
+% wvfParams0.sizeOfFieldPixels = 201;
+% wvfParams0.sizeOfFieldMM = 16.212;
+% wvfParams0.T_cones = T_cones;
+% wvfParams0.weightingSpectrum = weightingSpectrum;
+
+wls = wvfParams0.wls;
 diffracZcoeffs = zeros(65,1);
 plotLimit = 2;
+
 DOSCE = 0;
-if (DOSCE)
-    wvfParams0.sceParams = sceGetParams(wls,'berendshot');
-else
-    wvfParams0.sceParams = sceGetParams(wls,'none');
+if (DOSCE), wvfParams0.sceParams = sceGetParams(wls,'berendshot');
+else        wvfParams0.sceParams = sceGetParams(wls,'none');
 end
+
 CIRCULARLYAVERAGE = 1;
 
 % Compute LMS psfs both for a subject and diffraction limited

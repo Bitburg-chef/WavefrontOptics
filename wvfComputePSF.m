@@ -33,20 +33,22 @@ function wvfParams = wvfComputePSF(wvfParams)
 %                       multiplied by the Stiles-Crawford aopdization.
 %   defocusMicrons -    Defocus added in to zcoeffs(4) at each wavelength, in microns.
 %
-% Note: These calculations only account for lognitudinal chromatic aberration (LCA), and do not
-% incoporate transverse chromatic aberration (TCA).
+% Note: These calculations only account for longitudinal chromatic
+% aberration (LCA), and do not incoporate transverse chromatic aberration
+% (TCA).
 %
-% Note: If this function is called with a zcoeffs vector that is composed of only zeros 
-% the output monochromatic and polychromatic PSFs will be
-% limited only by diffraction and longitudinal chromatic aberration (and the SCE if specified).
+% Note: If this function is called with a zcoeffs vector that is composed
+% of only zeros the output monochromatic and polychromatic PSFs will be
+% limited only by diffraction and longitudinal chromatic aberration (and
+% the SCE if specified).
 %
 % Note: For better or worse, there are three ways that defocus can be
 % specified to this routine.  First, the value of the 4th zernike
 % coefficient is included.  Then, a value is computed based on the
-% differencebetween nominalFocusWl and the wavelength for which
-% the PSF is being computed. Finally, the value of defocusDiopters is 
-% added in directly.  Although these are redundant, it is often most
-% convenient to think in terms of one of the three ways.
+% differencebetween nominalFocusWl and the wavelength for which the PSF is
+% being computed. Finally, the value of defocusDiopters is added in
+% directly.  Although these are redundant, it is often most convenient to
+% think in terms of one of the three ways.
 %
 % See also: wvfComputeConePSF, wvfComputePupilFunction, sceGetParamsParams, wvfGetDefocusFromWavelengthDifference
 %
@@ -63,8 +65,8 @@ end
 %% Handle defocus relative to reference wavelength.
 [wvfParams] = wvfGetDefocusFromWavelengthDifference(wvfParams);
 
-% Store the original value of defocus (wvfParams.zcoeffs(4)) since it will get changed
-% later when changing wavelength
+% Store the original value of defocus (wvfParams.zcoeffs(4)) since it will
+% get changed later when changing wavelength
 doriginal = wvfParams.zcoeffs(4);
 
 %% Get the pupil function, correcting defocus at each wavelength
@@ -74,27 +76,27 @@ doriginal = wvfParams.zcoeffs(4);
 % and about the renormalization of scale for each call to
 % wvfComputePupilFunction:
 %
-%   The setting of the scale and then the change in the
-%   loop with wavelength is to make sure that the scale on the psfs stays
-%   the same as the wavelength is changed - since the scale is related to
-%   lamda/(linear dimension of matrix) - this is just related to the way
-%   the dimensions are related with the fourier transform and not special
-%   to the Zernike coefficients.  So one needs to change the 'size' of the
-%   matrix that contains the pupil function as the wavelength changes (but
-%   keeping the pupil size constant, so the sampling geometry is variable),
-%   so that the scale on the psf is the same for each wavelength.
+%   The setting of the scale and then the change in the loop with
+%   wavelength is to make sure that the scale on the psfs stays the same as
+%   the wavelength is changed - since the scale is related to lamda/(linear
+%   dimension of matrix) - this is just related to the way the dimensions
+%   are related with the fourier transform and not special to the Zernike
+%   coefficients.  So one needs to change the 'size' of the matrix that
+%   contains the pupil function as the wavelength changes (but keeping the
+%   pupil size constant, so the sampling geometry is variable), so that the
+%   scale on the psf is the same for each wavelength.
 % 
-%   What I've done by hardcoding the 550 is to say
-%   that I will adjust the scale of all the psfs so that they match the
-%   scale you would get at 550nm.  So yes, the 550nm is not special.  It
-%   doesn't really matter whether this would be 550nm or something else
-%   (or made into 'reflamda')- the only result is that  you would end up
-%   with different overall scale if you used a different wavelength here.
-%   So to make everything always come out with the same scale (pix size on
-%   the psf) it seemed good to me to just pick a wavelength here to use as
-%   the default for rescaling when computing the other wavelengths. This
-%   part only affects the scale of the output and not any other part of
-%   the computation. [Note from DB, I changed the hard coded 550 to setScaleWl,
+%   What I've done by hardcoding the 550 is to say that I will adjust the
+%   scale of all the psfs so that they match the scale you would get at
+%   550nm.  So yes, the 550nm is not special.  It doesn't really matter
+%   whether this would be 550nm or something else (or made into
+%   'reflamda')- the only result is that  you would end up with different
+%   overall scale if you used a different wavelength here. So to make
+%   everything always come out with the same scale (pix size on the psf) it
+%   seemed good to me to just pick a wavelength here to use as the default
+%   for rescaling when computing the other wavelengths. This part only
+%   affects the scale of the output and not any other part of the
+%   computation. [Note from DB, I changed the hard coded 550 to setScaleWl,
 %   and set that to 550.]
 % 
 %   At some point I tried making so that the user could put the scale
@@ -103,17 +105,23 @@ doriginal = wvfParams.zcoeffs(4);
 %   this, but I ended up having a hard time finding a way to do this that
 %   worked right all the time (the psfs weren't aligned all the time, I
 %   guess I way having rounding issues or something).
+
 setScaleWl = 550;
 arcminperpix = (180*60/3.1416)*setScaleWl*.001*.001/wvfParams.sizeOfFieldMM; 
 psf = zeros(wvfParams.sizeOfFieldPixels,wvfParams.sizeOfFieldPixels,length(wvfParams.wls));
 areapix = zeros(length(wvfParams.wls));
 areapixapod = zeros(length(wvfParams.wls));
+
 for wl = 1:length(wvfParams.wls)
     % Get the pupil function
     tmpWvfParams = wvfParams;
     tmpWvfParams.wls = wvfParams.wls(wl);
-    tmpWvfParams.zcoeffs(4) = doriginal + wvfParams.defocusMicrons(wl);              % Add in the appropriate LCA to the initial zernike defocus
-    tmpWvfParams.sizeOfFieldMM = wvfParams.sizeOfFieldMM*tmpWvfParams.wls/setScaleWl; % Rescaling so that PSF pixel dimension is constant with wavelength.
+    
+    % Add in the appropriate LCA to the initial zernike defocus
+    tmpWvfParams.zcoeffs(4) = doriginal + wvfParams.defocusMicrons(wl); 
+    
+    % Rescaling so that PSF pixel dimension is constant with wavelength.
+    tmpWvfParams.sizeOfFieldMM = wvfParams.sizeOfFieldMM*tmpWvfParams.wls/setScaleWl;
     tmpWvfParams = wvfComputePupilFunction(tmpWvfParams);
     pupilfunc(:,:,wl) = tmpWvfParams.pupilfunc;
     areapix(wl) = tmpWvfParams.areapix;
@@ -133,6 +141,7 @@ for wl = 1:length(wvfParams.wls)
     sceFrac(wl) = (areapixapod(wl)/areapix(wl));
     psf(:,:,wl) = psf(:,:,wl)/sum(sum(psf(:,:,wl)));
 end
+
 % setScaleWl = 550;
 % arcminperpix = (180*60/3.1416)*setScaleWl*.001*.001/sizeOfFieldMM; 
 % psf = zeros(sizeOfFieldPixels,sizeOfFieldPixels,length(wls));
