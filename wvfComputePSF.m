@@ -1,13 +1,24 @@
-function wvfParams = wvfComputePSF(wvfParams)
-% wvfParams = wvfComputePSF(wvfParams)
+function wvfP = wvfComputePSF(wvfP)
+% Compute the monochromatic psf over the calculated pupil 
 %
-% Computes the monochromatic psf over the calculated pupil size for 10 orders of Zernike
-% coeffcients specified to the OSA standard. Includes SCE (Stiles-Crawford Effect) if specified.
+% wvfP = wvfComputePSF(wvfP)
 %
-% The psfs at each wavelength are scaled so that each sums to unity.  If SCE is specified,
-% you can multiply by sceFrac at that wavelength to incorporate the fraction of light absorbed.
+% A structure of wavefront parameters (wvfP) is input.  See wvfCreate
+% for the default fields.
+% 
+% The point spread function is computed for each of the wavelengths listed
+% in the input wvfP structure. The PSF computation is based on 10 orders of
+% Zernike coeffcients specified to the OSA standard. 
 %
-% Required input fields for wvfParams struct - see comment in wvfComputePupilFunction for more details.
+% The computation includes the Stiles-Crawford Effect (SCE) if specified by
+% the wvfP structure.
+%
+% The psfs at each wavelength are scaled so that each sums to unity.  If
+% SCE is specified, you can multiply by sceFrac at that wavelength to
+% incorporate the fraction of light absorbed.
+%
+% Required input fields for wvfP struct - see comment in
+% wvfComputePupilFunction for more details
 %   zcoeffs -           Zernike coefficients.
 %   measpupilMM -       Size of pupil characterized by the coefficients, in MM.
 %   caclpupilsize -     Size over which returned pupil function is calculated, in MM.
@@ -17,11 +28,11 @@ function wvfParams = wvfComputePSF(wvfParams)
 %   sizeOfFieldPixels - Linear size of square image over which the pupil function is computed.
 %   sizeOfFieldMM -     Size of square image over which the pupile function is computed in MM.
 %
-% Optional input fields for wvfParams struct
+% Optional input fields for wvfP struct
 %   sceParams -         Parameter structure for Stiles-Crawford correction.  If missing or set to empty,
 %                       no correction and is set to empty on return.
 %
-% Output fields set in wvfParams struct
+% Output fields set in wvfP struct
 %   psf -               Calcuated polychromatic psf. Third dimension of returned matrix indexes wavelength. 
 %   pupilfunc -         Calculated pupil function.  Third dimension of returned matrix indexes wavelength
 %   arcminperpix -      Arc minutes per pixel for returned psfs.
@@ -50,24 +61,25 @@ function wvfParams = wvfComputePSF(wvfParams)
 % directly.  Although these are redundant, it is often most convenient to
 % think in terms of one of the three ways.
 %
-% See also: wvfComputeConePSF, wvfComputePupilFunction, sceGetParamsParams, wvfGetDefocusFromWavelengthDifference
+% See also: wvfComputeConePSF, wvfComputePupilFunction, sceGetParamsParams,
+% wvfGetDefocusFromWavelengthDifference 
 %
 % Based on code provided by Heidi Hofer.
 %
 % 8/20/11 dhb      Rename function and pull out of supplied routine. Reformat comments.
-% 9/5/11  dhb      Rename.  Rewrite for wvfParams i/o.
+% 9/5/11  dhb      Rename.  Rewrite for wvfP i/o.
 
 %% Check optional fields
-if (~isfield(wvfParams,'sceParams') || isempty(wvfParams.sceParams))
-    wvfParams.sceParams = [];
+if (~isfield(wvfP,'sceParams') || isempty(wvfP.sceParams))
+    wvfP.sceParams = [];
 end
 
 %% Handle defocus relative to reference wavelength.
-[wvfParams] = wvfGetDefocusFromWavelengthDifference(wvfParams);
+[wvfP] = wvfGetDefocusFromWavelengthDifference(wvfP);
 
-% Store the original value of defocus (wvfParams.zcoeffs(4)) since it will
+% Store the original value of defocus (wvfP.zcoeffs(4)) since it will
 % get changed later when changing wavelength
-doriginal = wvfParams.zcoeffs(4);
+doriginal = wvfP.zcoeffs(4);
 
 %% Get the pupil function, correcting defocus at each wavelength
 %
@@ -107,21 +119,21 @@ doriginal = wvfParams.zcoeffs(4);
 %   guess I way having rounding issues or something).
 
 setScaleWl = 550;
-arcminperpix = (180*60/3.1416)*setScaleWl*.001*.001/wvfParams.sizeOfFieldMM; 
-psf = zeros(wvfParams.sizeOfFieldPixels,wvfParams.sizeOfFieldPixels,length(wvfParams.wls));
-areapix = zeros(length(wvfParams.wls));
-areapixapod = zeros(length(wvfParams.wls));
+arcminperpix = (180*60/3.1416)*setScaleWl*.001*.001/wvfP.sizeOfFieldMM; 
+psf = zeros(wvfP.sizeOfFieldPixels,wvfP.sizeOfFieldPixels,length(wvfP.wls));
+areapix = zeros(length(wvfP.wls));
+areapixapod = zeros(length(wvfP.wls));
 
-for wl = 1:length(wvfParams.wls)
+for wl = 1:length(wvfP.wls)
     % Get the pupil function
-    tmpWvfParams = wvfParams;
-    tmpWvfParams.wls = wvfParams.wls(wl);
+    tmpWvfParams = wvfP;
+    tmpWvfParams.wls = wvfP.wls(wl);
     
     % Add in the appropriate LCA to the initial zernike defocus
-    tmpWvfParams.zcoeffs(4) = doriginal + wvfParams.defocusMicrons(wl); 
+    tmpWvfParams.zcoeffs(4) = doriginal + wvfP.defocusMicrons(wl); 
     
     % Rescaling so that PSF pixel dimension is constant with wavelength.
-    tmpWvfParams.sizeOfFieldMM = wvfParams.sizeOfFieldMM*tmpWvfParams.wls/setScaleWl;
+    tmpWvfParams.sizeOfFieldMM = wvfP.sizeOfFieldMM*tmpWvfParams.wls/setScaleWl;
     tmpWvfParams = wvfComputePupilFunction(tmpWvfParams);
     pupilfunc(:,:,wl) = tmpWvfParams.pupilfunc;
     areapix(wl) = tmpWvfParams.areapix;
@@ -169,13 +181,13 @@ end
 % end
 
 %% Set output fields
-wvfParams.psf = psf;
-wvfParams.pupilfunc = pupilfunc;
-wvfParams.arcminperpix = arcminperpix;
-wvfParams.strehl = strehl;
-wvfParams.sceFrac = sceFrac;
-wvfParams.areapix = areapix;
-wvfParams.areapixapod = areapixapod;
+wvfP.psf = psf;
+wvfP.pupilfunc = pupilfunc;
+wvfP.arcminperpix = arcminperpix;
+wvfP.strehl = strehl;
+wvfP.sceFrac = sceFrac;
+wvfP.areapix = areapix;
+wvfP.areapixapod = areapixapod;
 
 end
 

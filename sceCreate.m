@@ -1,8 +1,8 @@
-function sceParams = sceGetParams(wls,source)
-% sceParams = sceGetParams(wls,source)
+function sceP = sceCreate(wls,source)
+% Return a structure with the Stiles-Crawford Effect parameters needed the
+% Zernike optics calculations. 
 %
-% Return a structure with the parameters needed to incorporate the
-% Stiles-Crawford Effect into the Zernike optics calculations.
+%   sceP = sceCreate(wls,source)
 %
 % Input
 %   wls           -           Wavelengths (nm) over which to return rho
@@ -13,10 +13,10 @@ function sceParams = sceGetParams(wls,source)
 %   'berendshot'  -           Adjusted Berendshot et al. data for rho (default).
 %
 % Output
-%   sceParams.wavelengths     SCE wavelengths.  This is just the passed wls.
-%   sceParams.rho -           SCE rho as a function of wavelength.
-%   sceParams.xo  -           SCE x center in mm
-%   sceParams.yo              SCE y center in mm
+%   sceP.wavelengths     SCE wavelengths.  
+%   sceP.rho -           SCE rho as a function of wavelength.
+%   sceP.xo  -           SCE x center in mm
+%   sceP.yo              SCE y center in mm
 %
 % Berenschot data is taken from Berendshot et al. and then adjusted
 % slighlty (subtracting .0045) to give rho=.041 at 550nm in agreement with
@@ -28,39 +28,43 @@ function sceParams = sceGetParams(wls,source)
 %
 % Code provided by Heidi Hofer.
 %
-% Depends on Psychtoolbox splining routines.
+% See also: Depends on Psychtoolbox splining routines.
+%
+% Examples:
+%    sceCreate
 %
 % 8/21/11  dhb  Pulled into a separate routine.
+%
+% (c) WVF Toolbox Team 2011
 
 % TODO
-%   This is really sceCreate
-%   There could also be an sceSet/Get
+%   There should also be an sceSet/Get
 %
 
-% Make wavelength representation
-wls = MakeItWls(wls);
+if ~exist('wls','var') || isempty(wls), wls = [400,10,31]'; end
+if ~exist('source','var') || isempty(source), source = 'none'; end
 
 % Let's include units.
 switch (source)
     case 'berendshot'
-        % Berendshot et al.
-        wls0 = (400:10:700)';
+        % Berendshot et al., wavelength parameters for rho0
+        wave = (400:10:700)';
         rho0 = [0.0565 0.0585 0.0605 0.06 0.05875 0.05775 0.0565 0.0545 0.0525 0.051 0.04925 0.04675 0.044 0.041 0.04 0.041 0.041 0.0415 0.0425 0.04275 0.04325 0.045 0.047 0.048 0.0485 0.049 0.04975 0.05 0.04975 0.04925 0.049]';
-        sceParams.xo=0.47;   % SCE center in mm
-        sceParams.yo=0.00;   % SCE center in mm
+        sceP.xo=0.47;   % SCE center in mm
+        sceP.yo=0.00;   % SCE center in mm
     case 'none'
         % Fill in with zeros
-        wls0 = (400:10:700)';
-        rho0 = zeros(size(wls0));
-        sceParams.xo=0;   % SCE center in mm
-        sceParams.yo=0;   % SCE center in mm
+        wave = (400:10:700)';
+        rho0 = zeros(size(wave));
+        sceP.xo=0;   % SCE center in mm
+        sceP.yo=0;   % SCE center in mm
     otherwise
         error('Unsupported method %s\n',source);
         
 end
 
-% Spline to passed wavelength sampling.
-sceParams.wavelengths = wls;
-sceParams.rho = SplineSrf(wls0,rho0,wls,1);
+% Spline initial wavelength sampling to request in wls
+sceP.wavelengths = MakeItWls(wls);
+sceP.rho = SplineSrf(wave,rho0,wls,1);
 
 %% End

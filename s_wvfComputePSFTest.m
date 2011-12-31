@@ -4,7 +4,7 @@
 % Zernike coefficients.
 %
 % See also: wvfComputePSF, wvfComputePupilFunction,
-%           sceGetParams, wvfGetDefocusFromWavelengthDifference
+%           sceCreate, wvfGetDefocusFromWavelengthDifference
 %
 % 8/21/11  dhb  Wrote it, based on code provided by Heidi Hofer.
 % 9/7/11   dhb  Got this working with wvfParams i/o.
@@ -21,7 +21,7 @@
 %% Clear
 clear; close all;
 
-%% TEST1: 
+%% Compare with diffraction
 % The Zernike code should return the diffraction limited PSF if we pass all
 % zeros as the coefficients.  So the first test is whether this works, when
 % we compare to what we get when we produce the diffraction limited PSF
@@ -30,31 +30,28 @@ clear; close all;
 % This appears to work correctly.
 
 % Set up parameters structure
-wvfParams0.zcoeffs = zeros(65,1);
-wvfParams0.measpupilMM = 8;
-wvfParams0.calcpupilMM = 3;
-wvfParams0.wls = 650;
-wvfParams0.nominalFocusWl = 650;
-wvfParams0.defocusDiopters = 0;
-wvfParams0.sizeOfFieldPixels = 201;
-wvfParams0.sizeOfFieldMM = 16.212;
-wavelengthOffset = 250;
-pupilOffset = 4;
+wvfParams0 = wvfCreate;
 
-% Make a plot through the peak of the returned PSF, normalized to peak of 1.
-% Compare to what we get from PTB AiryPattern function -- should match
-figure; clf;
-position = get(gcf,'Position');
-position(3) = 1600;
-set(gcf,'Position',position);
-subplot(1,3,1); hold on
+% Calculate the PSF, normalized to peak of 1.
 wvfParams = wvfComputePSF(wvfParams0);
+% vcNewGraphWin; mesh(wvfParams.psf)
+
+% Extract a row of the psf
 whichRow = floor(wvfParams.sizeOfFieldPixels/2) + 1;
 onedPSF1 = wvfParams.psf(whichRow,:);
 onedPSF1 = onedPSF1/max(onedPSF1(:));
 arcminutes = wvfParams.arcminperpix*((1:wvfParams.sizeOfFieldPixels)-whichRow);
 index = find(abs(arcminutes) < 2);
+
+% Make a plot through the peak of the returned PSF, normalized to peak of 1.
+figure; clf;
+position = get(gcf,'Position');
+position(3) = 1600;
+set(gcf,'Position',position);
+subplot(1,3,1); hold on
 plot(arcminutes(index),onedPSF1(index),'r','LineWidth',4);
+
+% Compare to what we get from PTB AiryPattern function -- should match
 radians = (pi/180)*(arcminutes/60);
 onedPSF2 = AiryPattern(radians,wvfParams.calcpupilMM,wvfParams.wls(1));
 plot(arcminutes(index),onedPSF2(index),'b','LineWidth',2);
@@ -62,36 +59,43 @@ xlabel('Arc Minutes');
 ylabel('Normalized PSF');
 title(sprintf('Diffraction limited, %0.1f mm pupil, %0.f nm',wvfParams.calcpupilMM,wvfParams.wls(1)));
 
-% vcNewGraphWin; mesh(wvfParams.psf)
-
+% Repeat the calculation with a wavelength offset
+wavelengthOffset = 250;
 wvfParams1 = wvfParams0;
-wvfParams1.wls = wvfParams1.wls-wavelengthOffset;
-wvfParams1.nominalFocusWl = wvfParams1.nominalFocusWl-wavelengthOffset;
-subplot(1,3,2); hold on
+wvfParams1.wls = wvfParams1.wls - wavelengthOffset;
+wvfParams1.nominalFocusWl = wvfParams1.nominalFocusWl - wavelengthOffset;
+
 [wvfParams] = wvfComputePSF(wvfParams1);
 whichRow = floor(wvfParams.sizeOfFieldPixels/2) + 1;
 onedPSF1 = wvfParams.psf(whichRow,:);
 onedPSF1 = onedPSF1/max(onedPSF1(:));
 arcminutes = wvfParams.arcminperpix*((1:wvfParams.sizeOfFieldPixels)-whichRow);
 index = find(abs(arcminutes) < 2);
+
+subplot(1,3,2); hold on
 plot(arcminutes(index),onedPSF1(index),'r','LineWidth',4);
 radians = (pi/180)*(arcminutes/60);
 onedPSF2 = AiryPattern(radians,wvfParams.calcpupilMM,wvfParams.wls(1));
+
 plot(arcminutes(index),onedPSF2(index),'b','LineWidth',2);
 xlabel('Arc Minutes');
 ylabel('Normalize PSF');
 title(sprintf('Diffraction limited, %0.1f mm pupil, %0.f nm',wvfParams.calcpupilMM,wvfParams.wls(1)));
 
+% Repeat the calculation with a pupil offset
+pupilOffset = 4;   % In millimeters?
 wvfParams2 = wvfParams0;
-wvfParams2.calcpupilMM = wvfParams2.calcpupilMM+pupilOffset;
-subplot(1,3,3); hold on
+wvfParams2.calcpupilMM = wvfParams2.calcpupilMM + pupilOffset;
 [wvfParams] = wvfComputePSF(wvfParams2);
 whichRow = floor(wvfParams.sizeOfFieldPixels/2) + 1;
 onedPSF1 = wvfParams.psf(whichRow,:);
 onedPSF1 = onedPSF1/max(onedPSF1(:));
 arcminutes = wvfParams.arcminperpix*((1:wvfParams.sizeOfFieldPixels)-whichRow);
 index = find(abs(arcminutes) < 2);
+
+subplot(1,3,3); hold on
 plot(arcminutes(index),onedPSF1(index),'r','LineWidth',4);
+
 radians = (pi/180)*(arcminutes/60);
 onedPSF2 = AiryPattern(radians,wvfParams.calcpupilMM,wvfParams.wls(1));
 plot(arcminutes(index),onedPSF2(index),'b','LineWidth',2);
@@ -99,18 +103,21 @@ xlabel('Arc Minutes');
 ylabel('Normalized PSF');
 title(sprintf('Diffraction limited, %0.1f mm pupil, %0.f nm',wvfParams.calcpupilMM,wvfParams.wls(1)));
 
-%% TEST2: If we change the nominal focus away from a specified wavelength, the psf should
-% get broader.  How much broader, I don't know but we can at least verify the qualitative
-% behavior, again for the diffaction limited case.
+%% TEST2: Change the nominal focus away from a specified wavelength
 %
-% Note from DHB.  The psfs do get broader, and they take on multiple peaks.  Is this right?  I don't know.
+% The psf should get broader. How much broader, I don't know but we can at
+% least verify the qualitative behavior, again for the diffaction limited
+% case.
 %
-% Note from HH: The PSF should start to take on multiple peaks
-% (ringing, etc should still be radially symmetric) with change in
-% defocus, so this looks right.  At some point defocus will be large
-% enough that you'll run into sampling problems.  You could check this
-% by starting with very high sampling density and decreasing until just
-% before the point where you start to see issues. 
+% Note from DHB.  The psfs do get broader, and they take on multiple peaks.
+% Is this right?  I don't know.
+%
+% Note from HH: The PSF should start to take on multiple peaks (ringing,
+% etc should still be radially symmetric) with change in defocus, so this
+% looks right.  At some point defocus will be large enough that you'll run
+% into sampling problems.  You could check this by starting with very high
+% sampling density and decreasing until just before the point where you
+% start to see issues.
 
 % Set up parameters structure
 wvfParams0.zcoeffs = zeros(65,1);
@@ -156,8 +163,8 @@ title(sprintf('Effect of defocus, +/- %0.1f nm',wavelengthOffset));
 
 %% TEST3.  Include the Stiles-Crawford effect.
 %
-% Note from DHB.  I'm not sure here what the effect should look like,
-% given that we're using a diffraction limited pupil, so this mostly just
+% Note from DHB.  I'm not sure here what the effect should look like, given
+% that we're using a diffraction limited pupil, so this mostly just
 % demonstrates that the code runs.
 %
 % Note from HH: This looks about right.
@@ -169,7 +176,7 @@ wvfParams0.nominalFocusWl = 550;
 wvfParams0.defocusDiopters = 0;
 wvfParams0.sizeOfFieldPixels = 201;
 wvfParams0.sizeOfFieldMM = 16.212;
-wvfParams0.sceParams = sceGetParams(theWavelength,'berendshot');
+wvfParams0.sceParams = sceCreate(theWavelength,'berendshot');
 
 figure; clf; hold on
 wvfParams1 = wvfParams0;
@@ -189,7 +196,9 @@ ylabel('PSF');
 title(sprintf('SCE, returned strehl %0.3f, direct from non-SCE diffrac %0.3f, frac. abs. is %0.2f',wvfParams2.strehl,max(wvfParams2.psf(:))/max(wvfParams1.psf(:)),wvfParams2.sceFrac));
 
 
-%% TEST4.  We have a set of measured Zernike coefficients for 9 subjects.  Let's make sure
+%% TEST4.  Compute the psfs for the sample data
+%
+% We have a set of measured Zernike coefficients for 9 subjects.  Let's make sure
 % we can compute the psfs using these, and look at a slice through each of them.
 %
 % The computed PSFs are recentered, with their maximum in the center, so that we
@@ -224,9 +233,9 @@ wvfParams0.sizeOfFieldMM = 16.212;
 theZernikeCoeffs = load('sampleZernikeCoeffs.txt');
 DOSCE = 0;
 if (DOSCE)
-    wvfParams0.sceParams = sceGetParams(theWavelength,'berendshot');
+    wvfParams0.sceParams = sceCreate(theWavelength,'berendshot');
 else
-    wvfParams0.sceParams = sceGetParams(theWavelength,'none');
+    wvfParams0.sceParams = sceCreate(theWavelength,'none');
 end
 
 figure; clf;
@@ -313,8 +322,9 @@ for i = 1:9
         
 end
 
-%% TEST5.  Verify that PSF averaging function works
-% correctly.  This looks about right by eye.
+%% TEST5.  Verify that PSF averaging function works correctly.  
+
+% This looks about right by eye.
 figure; clf; hold on
 c = get(gcf,'Colormap');
 psfsToAverage(:,:,1) = wvfParamsArray3(1).psf;

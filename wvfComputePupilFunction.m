@@ -1,10 +1,10 @@
-function [wvfParams] = wvfComputePupilFunction(wvfParams)
-% [wvfParams] = wvfComputePupilFunction(wvfParams)
+function [wvfP] = wvfComputePupilFunction(wvfP)
+% [wvfP] = wvfComputePupilFunction(wvfP)
 %
 % Compute the monochromatic pupil fuction (amplitude and phase) over the calculated pupil size for 10 orders of Zernike
 % coeffcients specified to the OSA standard. Includes SCE (Stiles-Crawford Effect) if specified.
 %
-% Required input fields for wvfParams struct
+% Required input fields for wvfP struct
 %   zcoeffs -           Zernike coefficients. Expects 65 coefficients numbered with the osa j index.
 %                       These are up to the 10th order.  Coefficients zcoeffs(1) and zcoeffs(2) are tip and
 %                       tilt, and are not entered into the calculations (i.e. treated as zero ). zcoeffs(3)
@@ -23,11 +23,11 @@ function [wvfParams] = wvfComputePupilFunction(wvfParams)
 %                       Setting this larger than the calculated pupil size prevents undersampling
 %                       of the PSF that will ultimately be comptued from the pupil function.
 %
-% Optional input fields for wvfParams struct 
+% Optional input fields for wvfP struct 
 %   sceParams -         Parameter structure for Stiles-Crawford correction.  If missing or set to empty,
 %                       no correction and is set to empty on return.  See sceGetParamsParams.
 %
-% Output fields set in wvfParams struct 
+% Output fields set in wvfP struct 
 %   pupilfunc -     Calcuated pupil function
 %   areapix -       Number of pixels within the computed pupil aperture
 %   areapixapod -   Number of pixels within the computed pupil aperture,
@@ -49,75 +49,73 @@ function [wvfParams] = wvfComputePupilFunction(wvfParams)
 % Code provided by Heidi Hofer.
 %
 % 8/20/11 dhb      Rename function and pull out of supplied routine. Reformat comments.
-% 9/5/11  dhb      Rewrite for wvfParams struct i/o.  Rename.
+% 9/5/11  dhb      Rewrite for wvfP struct i/o.  Rename.
 
 % Handle case where not all 65 coefficients are passed
 c = zeros(65,1);
-c(1:length(wvfParams.zcoeffs)) = wvfParams.zcoeffs;
+c(1:length(wvfP.zcoeffs)) = wvfP.zcoeffs;
 
 % Convert passed wavelengths to microns
-wlInUM = wvfParams.wls/1000;
+wlInUM = wvfP.wls/1000;
 
 % Sanity check
-if (wvfParams.calcpupilMM > wvfParams.measpupilMM)
+if (wvfP.calcpupilMM > wvfP.measpupilMM)
     error('Requested size for calculation cannot exceed size over which measuremnts were made');
 end
-if (length(wvfParams.wls) ~= 1)
+if (length(wvfP.wls) ~= 1)
     error('Only handles one wavelength at a time');
 end
 
 % Set SCE correction params, if desired
-if (~isfield(wvfParams,'sceParams') || isempty(wvfParams.sceParams))
+if (~isfield(wvfP,'sceParams') || isempty(wvfP.sceParams))
     xo = 0;
     yo = 0;
-    rho = zeros(size(wvfParams.wls));
+    rho = zeros(size(wvfP.wls));
 else
-    xo=wvfParams.sceParams.xo;
-    yo=wvfParams.sceParams.yo;
-    index = find(wvfParams.wls/1000 == wlInUM);
+    xo=wvfP.sceParams.xo;
+    yo=wvfP.sceParams.yo;
+    index = find(wvfP.wls/1000 == wlInUM);
     if (length(index) ~= 1)
         error('Pased wavelength not contained in sceParams');
     end
-    rho = wvfParams.sceParams.rho(index);
+    rho = wvfP.sceParams.rho(index);
 end
 
 % Set up SCE correction
-if all(rho) == 0;
-    A=ones(wvfParams.sizeOfFieldPixels);
+if all(rho) == 0, A=ones(wvfP.sizeOfFieldPixels);
 else
-    for ny = 1:wvfParams.sizeOfFieldPixels
-        for nx = 1:wvfParams.sizeOfFieldPixels  
-            xpos = ((nx-1)*(wvfParams.sizeOfFieldMM/wvfParams.sizeOfFieldPixels)-(wvfParams.sizeOfFieldMM/2));
-            ypos = ((ny-1)*(wvfParams.sizeOfFieldMM/wvfParams.sizeOfFieldPixels)-(wvfParams.sizeOfFieldMM/2));
+    % Commnent please
+    for ny = 1:wvfP.sizeOfFieldPixels
+        for nx = 1:wvfP.sizeOfFieldPixels  
+            xpos = ((nx-1)*(wvfP.sizeOfFieldMM/wvfP.sizeOfFieldPixels)-(wvfP.sizeOfFieldMM/2));
+            ypos = ((ny-1)*(wvfP.sizeOfFieldMM/wvfP.sizeOfFieldPixels)-(wvfP.sizeOfFieldMM/2));
             A(nx,ny)=10^(-rho*((xpos-xo)^2+(ypos-yo)^2));
         end
     end
 end
 
 % Compute the pupil function
-wvfParams.pupilfunc = zeros(wvfParams.sizeOfFieldPixels,wvfParams.sizeOfFieldPixels);
+wvfP.pupilfunc = zeros(wvfP.sizeOfFieldPixels,wvfP.sizeOfFieldPixels);
 k=0;
-for ny = 1:wvfParams.sizeOfFieldPixels
-    for nx = 1:wvfParams.sizeOfFieldPixels
-        xpos = ((nx-1)*(wvfParams.sizeOfFieldMM/wvfParams.sizeOfFieldPixels)-(wvfParams.sizeOfFieldMM/2));
-        ypos = ((ny-1)*(wvfParams.sizeOfFieldMM/wvfParams.sizeOfFieldPixels)-(wvfParams.sizeOfFieldMM/2));
-        norm_radius = (sqrt(xpos^2+ypos^2))/(wvfParams.measpupilMM/2);
-        if (xpos==0 && ypos>0)
-            angle = 3.1416/2;
-        elseif(xpos==0 && ypos<0)
-            angle = -3.1416/2;
-        elseif(xpos==0 && ypos==0)
-            angle = 0;
-        elseif(xpos>0)
-            angle = atan(ypos/xpos);
-        else
-            angle= 3.1416 + atan(ypos/xpos);
+for ny = 1:wvfP.sizeOfFieldPixels
+    for nx = 1:wvfP.sizeOfFieldPixels
+        
+        xpos = ((nx-1)*(wvfP.sizeOfFieldMM/wvfP.sizeOfFieldPixels)-(wvfP.sizeOfFieldMM/2));
+        ypos = ((ny-1)*(wvfP.sizeOfFieldMM/wvfP.sizeOfFieldPixels)-(wvfP.sizeOfFieldMM/2));
+        norm_radius = (sqrt(xpos^2+ypos^2))/(wvfP.measpupilMM/2);
+        
+        if (xpos==0 && ypos>0),     angle = 3.1416/2;
+        elseif(xpos==0 && ypos<0),  angle = -3.1416/2;
+        elseif(xpos==0 && ypos==0), angle = 0;
+        elseif(xpos>0),             angle = atan(ypos/xpos);
+        else                        angle= 3.1416 + atan(ypos/xpos);
         end
-        if norm_radius > wvfParams.calcpupilMM/wvfParams.measpupilMM
-            wvfParams.pupilfunc(nx,ny)=0;
+        
+        if norm_radius > wvfP.calcpupilMM/wvfP.measpupilMM
+            wvfP.pupilfunc(nx,ny)=0;
         else
             phase = 0;
-            phase = 0+...
+            phase = 0 + ...
                 c(5) * sqrt(6)*norm_radius^2 * cos(2 * angle) + ...
                 c(3) * sqrt(6)*norm_radius^2 * sin(2 * angle) + ...
                 c(4) * sqrt(3)*(2 * norm_radius^2 - 1) + ...
@@ -181,12 +179,13 @@ for ny = 1:wvfParams.sizeOfFieldPixels
                 c(61) *sqrt(22)* (210 * norm_radius^10 - 504 * norm_radius^8 + 420 * norm_radius^6 - 140 * norm_radius^4 + 15 * norm_radius^2) * cos(2 * angle) + ...
                 c(59) *sqrt(22)* (210 * norm_radius^10 - 504 * norm_radius^8 + 420 * norm_radius^6 - 140 * norm_radius^4 + 15 * norm_radius^2) * sin(2 * angle) + ...
                 c(60) *sqrt(11)* (252 * norm_radius^10 - 630 * norm_radius^8 + 560 * norm_radius^6 - 210 * norm_radius^4 + 30 * norm_radius^2 - 1);
-            wvfParams.pupilfunc(nx,ny) = A(nx,ny).*exp(-i * 2 * 3.1416 * phase/wlInUM);
+            
+            wvfP.pupilfunc(nx,ny) = A(nx,ny).*exp(-i * 2 * 3.1416 * phase/wlInUM);
             k=k+1;
         end
     end
 end
-wvfParams.areapix=k;
-wvfParams.areapixapod=sum(sum(abs(wvfParams.pupilfunc)));
+wvfP.areapix=k;
+wvfP.areapixapod=sum(sum(abs(wvfP.pupilfunc)));
 end
 
