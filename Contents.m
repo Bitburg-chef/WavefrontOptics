@@ -26,7 +26,8 @@
 % Data
 %   autrusseauStandardObserver.txt -          Zernike coefficient data for the "standard observer" of Autrusseau, Thibos, & Shevell (2011),
 %                                             VisionResearch, 51, pp. 2282-2294, Table 1.  These seem to have defocus, tip, and tilt included
-%                                             so it is worth some checking to make sure the convention matches the code here.
+%                                             so it is worth some checking to make sure the convention matches the code here.  Could their
+%                                             coeficient 0 correspond to our 3?
 %   sampleZernikeCoeffs.txt -                 Zernike coefficient data for 9 subjects in OSA format, measured by Heidi Hofer.
 %                                             Data for each subject, 65 coefficients in a column.  The pupil size for
 %                                             the measurements was 6 mm for all subjects.  Tip, tilt, and defocus
