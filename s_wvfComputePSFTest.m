@@ -14,9 +14,13 @@
 %   Consider plotting in terms of physical distance in the image plane,
 %   rather than angle
 
+% For BW:
 % Include the WavefrontOpticsToolbox path and the Psychtoolbox path
-%   addpath(genpath(pwd))
-%   ptbPath
+%   addpath(genpath(pwd)); ptbPath
+%   Given some of the issues with 64-bit Windows/Matlab, it will probably
+%   be best to import the few PTB routines here rather than force an
+%   install of the PTB for every user.
+%
 
 %% Clear
 clear; close all;
