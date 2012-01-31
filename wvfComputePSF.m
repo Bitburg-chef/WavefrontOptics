@@ -1,14 +1,14 @@
 function wvfP = wvfComputePSF(wvfP)
 % Compute the monochromatic psf over the calculated pupil 
 %
-% wvfP = wvfComputePSF(wvfP)
+%    wvfP = wvfComputePSF(wvfP)
 %
-% A structure of wavefront parameters (wvfP) is input.  See wvfCreate
-% for the default fields.
+% wvfP: A structure of wavefront parameters. See wvfCreate for the default
+%       fields
 % 
 % The point spread function is computed for each of the wavelengths listed
 % in the input wvfP structure. The PSF computation is based on 10 orders of
-% Zernike coeffcients specified to the OSA standard. 
+% Zernike coefficients specified to the OSA standard. 
 %
 % The computation includes the Stiles-Crawford Effect (SCE) if specified by
 % the wvfP structure.
@@ -17,8 +17,9 @@ function wvfP = wvfComputePSF(wvfP)
 % SCE is specified, you can multiply by sceFrac at that wavelength to
 % incorporate the fraction of light absorbed.
 %
-% Required input fields for wvfP struct - see comment in
-% wvfComputePupilFunction for more details
+% Required input fields for wvfP struct - 
+%  (see comment in wvfComputePupilFunction for more details)
+%
 %   zcoeffs -           Zernike coefficients.
 %   measpupilMM -       Size of pupil characterized by the coefficients, in MM.
 %   caclpupilsize -     Size over which returned pupil function is calculated, in MM.

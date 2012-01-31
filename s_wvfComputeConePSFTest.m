@@ -1,13 +1,13 @@
 % ComputeConePSFTest
 %
-% Performs basic test of the routines that compute L, M, and S cone PSFs from
-% Zernike coefficients.
+% The the routines that compute L, M, and S cone PSFs from Zernike
+% coefficients.
 %
 % See also: wvfComputeConePSF, wvfComputePSF, wvfComputePupilFunction,
-%   sceGetParamsParams, wvfGetDefocusFromWavelengthDifference
+%   sceGetParams, wvfGetDefocusFromWavelengthDifference
 %
-% The circular averaging is not a good idea for a single subject, but if you want
-% to obtain an average over subjects it seems like a good idea.
+% The circular averaging is not a good idea for a single subject, but if
+% you want to obtain an average over subjects it seems like a good idea.
 %
 % 8/21/11  dhb  Wrote it.
 
@@ -29,6 +29,7 @@ weightingSpectrum = SplineSpd(S_D65,spd_D65,S);
 % This appears to work correctly.
 whichSubject = 1;
 theZernikeCoeffs = load('sampleZernikeCoeffs.txt');
+
 wvfParams0 = wvfCreate;
 wvfParams0.zcoeffs = theZernikeCoeffs(:,whichSubject);
 
@@ -47,6 +48,7 @@ wls = wvfParams0.wls;
 diffracZcoeffs = zeros(65,1);
 plotLimit = 2;
 
+% Stiles-Crawford effect
 DOSCE = 0;
 if (DOSCE), wvfParams0.sceParams = sceGetParams(wls,'berendshot');
 else        wvfParams0.sceParams = sceGetParams(wls,'none');
@@ -67,6 +69,7 @@ spsf = psfCenter(wvfParams1.conepsf(:,:,3));
 lpsfd = psfCenter(wvfParams2.conepsf(:,:,1));
 mpsfd = psfCenter(wvfParams2.conepsf(:,:,2));
 spsfd = psfCenter(wvfParams2.conepsf(:,:,3));
+
 if (CIRCULARLYAVERAGE)
     lpsf = psfCircularlyAverage(lpsf);
     mpsf = psfCircularlyAverage(mpsf);
@@ -91,10 +94,9 @@ plot(arcminutes(index),onedLPSF(index),'r','LineWidth',2);
 plot(arcminutes(index),onedLPSFD(index),'k','LineWidth',4);
 xlabel('Arc Minutes');
 ylabel('PSF');
-if (CIRCULARLYAVERAGE)
-    title('Circularized L cone PSF');
-else
-    title('L cone PSF');
+
+if (CIRCULARLYAVERAGE), title('Circularized L cone PSF');
+else                    title('L cone PSF');
 end
 
 subplot(1,3,2); hold on
@@ -105,10 +107,9 @@ plot(arcminutes(index),onedMPSF(index),'g','LineWidth',2);
 plot(arcminutes(index),onedMPSFD(index),'k','LineWidth',4);
 xlabel('Arc Minutes');
 ylabel('PSF');
-if (CIRCULARLYAVERAGE)
-    title('Circularized M cone PSF');
-else
-    title('M cone PSF');
+
+if (CIRCULARLYAVERAGE),  title('Circularized M cone PSF');
+else                     title('M cone PSF');
 end
 
 subplot(1,3,3); hold on
@@ -119,10 +120,9 @@ plot(arcminutes(index),onedSPSF(index),'b','LineWidth',2);
 plot(arcminutes(index),onedSPSFD(index),'k','LineWidth',4);
 xlabel('Arc Minutes');
 ylabel('PSF');
-if (CIRCULARLYAVERAGE)
-    title('Circularized S cone PSF');
-else
-    title('S cone PSF');
+
+if (CIRCULARLYAVERAGE), title('Circularized S cone PSF');
+else                    title('S cone PSF');
 end
 drawnow;
 
@@ -144,6 +144,7 @@ end
 onedLPSFo = lpsfo(whichRow,:);
 onedMPSFo = mpsfo(whichRow,:);
 onedSPSFo = spsfo(whichRow,:);
+
 figure(theFig);
 subplot(1,3,1);
 plot(arcminutes(index),onedLPSFo(index),'r','LineWidth',4);

@@ -14,13 +14,8 @@
 %   Consider plotting in terms of physical distance in the image plane,
 %   rather than angle
 
-% For BW:
-% Include the WavefrontOpticsToolbox path and the Psychtoolbox path
-%   addpath(genpath(pwd)); ptbPath
-%   Given some of the issues with 64-bit Windows/Matlab, it will probably
-%   be best to import the few PTB routines here rather than force an
-%   install of the PTB for every user.
-%
+% Include the WavefrontOpticsToolbox path 
+%   addpath(genpath(pwd)); 
 
 %% Clear
 clear; close all;
@@ -40,7 +35,7 @@ wvfParams0 = wvfCreate;
 wvfParams = wvfComputePSF(wvfParams0);
 % vcNewGraphWin; mesh(wvfParams.psf)
 
-% Extract a row of the psf
+%% Extract a row of the psf
 whichRow = floor(wvfParams.sizeOfFieldPixels/2) + 1;
 onedPSF1 = wvfParams.psf(whichRow,:);
 onedPSF1 = onedPSF1/max(onedPSF1(:));

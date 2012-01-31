@@ -1,8 +1,10 @@
 function [wvfP] = wvfComputePupilFunction(wvfP)
-% [wvfP] = wvfComputePupilFunction(wvfP)
+% Compute the monochromatic pupil fuction (amplitude and phase) over the
+% calculated pupil size for 10 orders of Zernike coeffcients specified to
+% the OSA standard. Includes SCE (Stiles-Crawford Effect) if specified. 
 %
-% Compute the monochromatic pupil fuction (amplitude and phase) over the calculated pupil size for 10 orders of Zernike
-% coeffcients specified to the OSA standard. Includes SCE (Stiles-Crawford Effect) if specified.
+%    [wvfP] = wvfComputePupilFunction(wvfP)
+%
 %
 % Required input fields for wvfP struct
 %   zcoeffs -           Zernike coefficients. Expects 65 coefficients numbered with the osa j index.
