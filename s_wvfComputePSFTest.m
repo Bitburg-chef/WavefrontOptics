@@ -14,6 +14,7 @@
 %   Consider plotting in terms of physical distance in the image plane,
 %   rather than angle
 
+
 % Include the WavefrontOpticsToolbox path 
 %   addpath(genpath(pwd)); 
 
@@ -118,25 +119,27 @@ title(sprintf('Diffraction limited, %0.1f mm pupil, %0.f nm',wvfParams.calcpupil
 % sampling density and decreasing until just before the point where you
 % start to see issues.
 
-% Set up parameters structure
-wvfParams0.zcoeffs = zeros(65,1);
-wvfParams0.measpupilMM = 8;
-wvfParams0.calcpupilMM = 3;
-wvfParams0.wls = 550;
-wvfParams0.nominalFocusWl = 550;
-wvfParams0.defocusDiopters = 0;
-wvfParams0.sizeOfFieldPixels = 201;
-wvfParams0.sizeOfFieldMM = 16.212;
-wavelengthOffset = 50;
-
 nominalFocusWavelength = 550;
 theWavelength = 550;
-wavelengthOffset = 50;
 sizeOfFieldPixels = 201;
 sizeOfFieldMM = 16.212;
 measpupilMM = 8;
 calcpupilMM = 3;
 defocusDiopters = 0;
+
+% Set up parameters structure
+wvfParams0 = wvfSet(wvfParams0,'zcoeffs',zeros(65,1));
+wvfParams0 = wvfSet(wvfParams0,'measured pupil',measpupilMM);
+wvfParams0 = wvfSet(wvfParams0,'calculated pupil',calcpupilMM);
+wvfParams0 = wvfSet(wvfParams0,'wave',theWavelength);
+wvfParams0 = wvfSet(wvfParams0,'infocus wavelength',nominalFocusWavelength);
+wvfParams0 = wvfSet(wvfParams0,'defocus diopters',defocusDiopters);
+
+% This looks like it might be redundant and should be removed
+wvfParams0 = wvfSet(wvfParams0,'field size pixels',sizeOfFieldPixels);
+wvfParams0 = wvfSet(wvfParams0,'field size mm',sizeOfFieldMM);
+
+wavelengthOffset = 50;
 
 figure; clf; hold on
 wvfParams1 = wvfParams0;

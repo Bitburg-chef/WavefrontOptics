@@ -1,7 +1,7 @@
 function val = wvfGet(wvf,parm,varargin)
 %Get wavefront structure parameters and derived properties
 %
-%     val = wvfGet(scene,parm,varargin)
+%     val = wvfGet(wvf,parm,varargin)
 %
 % Wavefront properties are either stored as parameters or computed from those
 % parameters. We generally store only unique values and  calculate all
@@ -58,6 +58,8 @@ switch parm
         % Spectral matters
     case 'wave'
         val = wvf.wls;
+    case 'nwave'
+        val = length(wvf.wls);
     case 'infocuswavelength'
         wvf.nominalFocusWl = 650;            % In focus wavelength (nm)
 
@@ -65,19 +67,49 @@ switch parm
     case 'calculatedpupil'
         val = wvf.calcpupilMM;               % Default pupil??? radius?
     case 'measuredpupil'
+        % Default is in millimeters
+        % wvfGet(wvf,'measured pupil','mm');
         val = wvf.measpupilMM;               % Default pupil diameter?
-    
+        % Scale for unit
+        if ~isempty(varargin)
+            % Convert to meters and then scale
+            val = (val/1000)*ieUnitScaleFactor(varargin{1});
+        end
+   
         % Field?
-    case 'fieldsizepixels'
-        val = wvfP.sizeOfFieldPixels;          % In pixels?  No units?
+    case {'fieldsizepixels','npixels','fieldsize'}
+        % In pixels?  No units?  Why not a distance or an angle or
+        % something?
+        val = wvf.sizeOfFieldPixels;         
     case 'fieldsizemm'
-        val = wvfP.sizeOfFieldMM;
+        val = wvf.sizeOfFieldMM;
+        if ~isempty(varargin)
+            % Convert to meters and then scale
+            val = (val/1000)*ieUnitScaleFactor(varargin{1});
+        end
         
         % Focus parameters
-    case 'zcoef'
-        val = wvf.zcoeffs;
+    case {'zcoeffs'}
+        % wvfGet(wvf,'zcoef',list)
+        % wvfGet(wvf,'zcoef',4)
+        if isempty(varargin)
+            val = wvf.zcoeffs;
+        else
+            val = wvf.zcoeffs(varargin{1});
+        end
+        
     case 'defocusdiopters'
         val = wvf.defocusDiopters;           % Defocus
+    case {'defocusmicrons','defocusdistance'}
+        % The defocus in distance rather than diopters
+        % The default is microns.
+        % wvfGet(wvfP,'defocus distance','mm');
+        val = wvfGetDefocusFromWavelengthDifference(wvf);
+        if isempty(varargin), return
+        else 
+            % Convert to meters and then scale
+            val = (val/10^6)*ieUnitScaleFactor(varargin{1});
+        end
     case 'weightspectrum'
         val = wvf.weightingSpectrum;         % Defocus
 

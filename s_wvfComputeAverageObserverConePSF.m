@@ -42,9 +42,9 @@ whichRow = floor(wvfParams0.sizeOfFieldPixels/2) + 1;
 plotLimit = 2;
 DOSCE = 1;
 if (DOSCE)
-    wvfParams0.sceParams = sceGetParams(wls,'berendshot');
+    wvfParams0.sceParams = sceCreate(wls,'berendshot');
 else
-    wvfParams0.sceParams = sceGetParams(wls,'none');
+    wvfParams0.sceParams = sceCreate(wls,'none');
 end
 CIRCULARLYAVERAGE = 1;
 wvfParams0.coneWeights = [1 1 0];

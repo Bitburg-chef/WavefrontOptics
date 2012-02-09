@@ -76,11 +76,14 @@ if (~isfield(wvfP,'sceParams') || isempty(wvfP.sceParams))
 end
 
 %% Handle defocus relative to reference wavelength.
-[wvfP] = wvfGetDefocusFromWavelengthDifference(wvfP);
+defocusMicrons = wvfGet(wvfP,'defocus distance','um');
+wvfP.defocusMicrons = defocusMicrons;
+% wvfGetDefocusFromWavelengthDifference(wvfP);
 
 % Store the original value of defocus (wvfP.zcoeffs(4)) since it will
 % get changed later when changing wavelength
-doriginal = wvfP.zcoeffs(4);
+doriginal = wvfGet(wvfP,'zcoeffs',4);
+% doriginal = wvfP.zcoeffs(4);
 
 %% Get the pupil function, correcting defocus at each wavelength
 %
@@ -117,18 +120,41 @@ doriginal = wvfP.zcoeffs(4);
 %   parameters and have the code work out what it need to do to achieve
 %   this, but I ended up having a hard time finding a way to do this that
 %   worked right all the time (the psfs weren't aligned all the time, I
-%   guess I way having rounding issues or something).
+%   guess I was having rounding issues or something).
 
-setScaleWl = 550;
+setScaleWl = 550;   % Nanometers
+
+% It looks like this has three parts
+%   (180/pi)*60   setScaleWl -> millimeters      1/fieldMM
+%
+% Here is my understanding
+%   (180/pi) is 1 deg in radians, 60 gets us minutes in radians.
+%   (deg/rad)*min/deg ->  min/rad
+%
+%   setScaleWl*10^-6 is nm * mm/nm = mm
+%   (1/mm) is the total field of view
+%
+%   So we have min/rad units when we are done.  I guess if 1 minute is 1
+%   pixel, then we have arc minutes per pixel.
+%
+% This is probably close, but not quite right.  Maybe we can fix this
+% comment.
 arcminperpix = (180*60/3.1416)*setScaleWl*.001*.001/wvfP.sizeOfFieldMM; 
-psf = zeros(wvfP.sizeOfFieldPixels,wvfP.sizeOfFieldPixels,length(wvfP.wls));
-areapix = zeros(length(wvfP.wls));
-areapixapod = zeros(length(wvfP.wls));
 
-for wl = 1:length(wvfP.wls)
+wave    = wvfGet(wvfP,'wave');
+nWave   = wvfGet(wvfP,'nwave');
+nPixels = wvfGet(wvfP,'npixels');
+
+psf     = zeros(nPixels,nPixels,nWave);
+areapix = zeros(nWave,1);
+areapixapod = zeros(nWave,1);
+strehl  = zeros(nWave,1);
+sceFrac = zeros(nWave,1);
+
+for wl = 1:nWave
     % Get the pupil function
     tmpWvfParams = wvfP;
-    tmpWvfParams.wls = wvfP.wls(wl);
+    tmpWvfParams = wvfSet(tmpWvfParams,'wave',wave(wl));
     
     % Add in the appropriate LCA to the initial zernike defocus
     tmpWvfParams.zcoeffs(4) = doriginal + wvfP.defocusMicrons(wl); 
