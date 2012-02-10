@@ -19,15 +19,15 @@ function val = wvfGet(wvf,parm,varargin)
 %     'name'
 %     'type'
 %     'pupilsize'
-% 
+%
 %  % Spectral matters
 %     'wave'
 %     'infocuswavelength'
-% 
+%
 %  % Pupil parameters
 %     'calculatedpupil'
 %     'measuredpupil'
-%     
+%
 %  % Field?
 %     'fieldsizepixels'
 %     'fieldsizemm'
@@ -54,18 +54,22 @@ switch parm
     case 'type'
         val = wvf.type;
     case 'pupilsize'
-
+        
         % Spectral matters
     case 'wave'
         val = wvf.wls;
+    % Wavelength related
+    case 'weightspectrum'
+        val = wvf.weightingSpectrum;         % Defocus
     case 'nwave'
         val = length(wvf.wls);
-    case 'infocuswavelength'
-        wvf.nominalFocusWl = 650;            % In focus wavelength (nm)
-
+    case {'infocuswavelength','infocuswave'}
+        val = wvf.nominalFocusWl;            % In focus wavelength (nm)
+        
         % Pupil parameters
     case 'calculatedpupil'
-        val = wvf.calcpupilMM;               % Default pupil??? radius?
+        % What's the difference between calcpupil and measpupil?
+        val = wvf.calcpupilMM;               % Default pupil? diameter?
     case 'measuredpupil'
         % Default is in millimeters
         % wvfGet(wvf,'measured pupil','mm');
@@ -75,18 +79,7 @@ switch parm
             % Convert to meters and then scale
             val = (val/1000)*ieUnitScaleFactor(varargin{1});
         end
-   
-        % Field?
-    case {'fieldsizepixels','npixels','fieldsize'}
-        % In pixels?  No units?  Why not a distance or an angle or
-        % something?
-        val = wvf.sizeOfFieldPixels;         
-    case 'fieldsizemm'
-        val = wvf.sizeOfFieldMM;
-        if ~isempty(varargin)
-            % Convert to meters and then scale
-            val = (val/1000)*ieUnitScaleFactor(varargin{1});
-        end
+        
         
         % Focus parameters
     case {'zcoeffs'}
@@ -97,7 +90,6 @@ switch parm
         else
             val = wvf.zcoeffs(varargin{1});
         end
-        
     case 'defocusdiopters'
         val = wvf.defocusDiopters;           % Defocus
     case {'defocusmicrons','defocusdistance'}
@@ -106,21 +98,98 @@ switch parm
         % wvfGet(wvfP,'defocus distance','mm');
         val = wvfGetDefocusFromWavelengthDifference(wvf);
         if isempty(varargin), return
-        else 
+        else
             % Convert to meters and then scale
             val = (val/10^6)*ieUnitScaleFactor(varargin{1});
         end
-    case 'weightspectrum'
-        val = wvf.weightingSpectrum;         % Defocus
-
-        % Special cases
+        
+        
+        % Stiles Crawford Effect
     case 'sceparams'
         val = wvf.sce;
         
-        % Derived parameters
+        % Spread data
     case 'psf'
         val = wvf.psf;
-
+    case '1dpsf'
+        % wvfGet(wvf,'1d psf',row)
+        if isempty(varargin)
+            whichRow = floor(wvfGet(wvf,'npixels')/2) + 1;
+        else
+            whichRow = varargin{1};
+        end
+        val = wvf.psf(whichRow,:);
+    
+        % Spatial and angular support
+    case {'fieldsizepixels','npixels'}
+        % In pixels?  No units?  Why not a distance or an angle or
+        % something?
+        val = wvf.sizeOfFieldPixels;
+    case {'angleperpixel','angperpix'}
+        % wvfGet(wvf,'angle per pixel',unit)
+        %  unit = 'min', 'deg', or 'sec'
+        val = wvfGet(wvf,'arcminperpix');
+        if ~isempty(varargin)
+            unit = lower(varargin{1});
+            switch unit
+                case 'deg'
+                    val = val/60;
+                case 'sec'
+                    val = val*60;
+                case 'min'
+                    % Default
+                otherwise
+                    error('unknown angle unit %s\n',unit);
+            end
+        end
+        
+    case 'arcminperpix'
+        % Visual angle (arc minutes) per pixel.
+        if isempty(varargin),  wave = 550;
+        else                   wave = varargin{1};
+        end
+        fieldMM = wvfGet(wvf,'field size mm');
+        % Wavelength in nanometers
+        val = (180*60/3.1416)*wave*.001*.001/fieldMM;
+    case {'samplesangle','samplesarcmin','supportarcmin'}
+        % Sample support in angle ('min' default), centered on 0
+        %    wvfGet(wvf,'samples angle','min')
+        %  angle can also be 'deg' or 'sec'
+        
+        unit = 'min';
+        if ~isempty(varargin),unit = varargin{1}; end
+        anglePerPix = wvfGet(wvf,'angleperpixel',unit);
+        
+        middleRow = wvfGet(wvf,'middle row');
+        nPixels = wvfGet(wvf,'npixels');
+        val = anglePerPix*((1:nPixels)-middleRow);
+    case {'middlerow'}
+        val = floor(wvfGet(wvf,'npixels')/2) + 1;    
+    case {'fieldsizemm','fieldsizespace','fieldsize'}
+        val = wvf.sizeOfFieldMM;
+        if ~isempty(varargin)
+            % Convert to meters and then scale
+            val = (val/1000)*ieUnitScaleFactor(varargin{1});
+        end
+    case {'distanceperpix','distperpix','distanceperpixel'}
+        % Distance per pixel in specified unit ('mm')
+        %   wvf(wvf,'distance per pixel','um');
+        if isempty(varargin), unit = 'mm';
+        else unit = varargin{1};
+        end
+        val = wvfGet(wvf,'field size',unit)/wvfGet(wvf,'npixels');
+    case {'samplesspace','supportspace','spatialsupport'}
+        % Spatial support in samples, centered on 0
+        % Unit can be specified
+        %    wvfGet(wvf,'samples space','um')
+        if isempty(varargin), unit = 'mm';
+        else unit = varargin{1};
+        end
+        distPerPix = wvfGet(wvf,'distperpix',unit);
+        middleRow = wvfGet(wvf,'middle row');
+        nPixels = wvfGet(wvf,'npixels');
+        val = distPerPix*((1:nPixels)-middleRow);
+        
     otherwise
         error('Unknown parameter %s\n',parm);
 end

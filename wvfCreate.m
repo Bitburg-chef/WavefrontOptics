@@ -24,17 +24,12 @@ wvfP.type = 'wvf';
 % Parameters in wvf
 wvfP.zcoeffs     = zeros(65,1);     % Zernicke coefficients
 
-% Pupil - probably radius, though 8 is pretty big.  Not sure what
-% calculated and measured distinction means (BW).
-%
-% These are diameters.  The measpupilMM is the diameter of the pupil
-% when the aberrations were measured.  You can't compute for a diameter
-% larger than this, but you can compute for any diameter smaller.  The
-% main function of specifying the diameter at measurement time is to
-% allow an error check that you're not trying to compute for a pupil
-% larger than that for which you have data. (DHB)
-wvfP.measpupilMM = 8;               % Default pupil diameter?
-wvfP.calcpupilMM = 3;               % Default pupil??? radius?
+% These are diameters. The measpupilMM is the pupil diameter when the
+% aberrations were measured.  The reason for specifying the diameter at
+% measurement time is to allow an error check that you're not trying to
+% compute for a pupil larger than that for which you have data. (DHB)
+wvfP.measpupilMM = 8;               % Maximum pupil diameter
+wvfP.calcpupilMM = 3;               % Used for this calculation
 
 %
 wvfP.nominalFocusWl = 650;          % In focus wavelength (nm)

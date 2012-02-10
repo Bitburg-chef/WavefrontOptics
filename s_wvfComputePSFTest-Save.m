@@ -1,13 +1,7 @@
 % s_wvfComputePSFTest
 %
-% SEE v_wvfDiffractionPSF - That replaces the first part.
-% We willl move the 2nd and 3rd part to validation scripts in the validate
-% directory, too.
-%
-% Original notes:
-%
-% Tests the monochromatic PSFs using Zernike coefficients by comparing with
-% PTB.  
+% Performs basic test of the routines that compute monochromatic PSFs from
+% Zernike coefficients.
 %
 % See also: wvfComputePSF, wvfComputePupilFunction,
 %           sceCreate, wvfGetDefocusFromWavelengthDifference
@@ -15,100 +9,101 @@
 % 8/21/11  dhb  Wrote it, based on code provided by Heidi Hofer.
 % 9/7/11   dhb  Got this working with wvfParams i/o.
 %
+
 % TODO
-%   Compare with ISET.  The implementation there uses spatial units, not
-%   angles, to specify the samples. Further, it uses f-number, not just
-%   pupil size.  So we need to build up ISET so that we can compute the psf
-%   in terms of visual angle using only a pupil diameter (e.g., 3mm)
-%   irrespective of the focal length (or equivalently f-number).
-%
-%   Is it the case that if we compute 
-%     * the diffraction limited function for any f-number 
-%     * use the focal length to  convert the spatial samples to arcmin 
-%     * the result is the function for that aperture size
-%
+%   Consider plotting in terms of physical distance in the image plane,
+%   rather than angle
+
+
+% Include the WavefrontOpticsToolbox path 
+%   addpath(genpath(pwd)); 
 
 %% Clear
 clear; close all;
 
-%% Compare with diffraction in PTB
-
-% When the Zernike coefficients are all zero, the wvfComputePSF code should
-% return the diffraction limited PSF.  We test whether this works by
-% comparing to the diffraction limited PSF implemented in the PTB routine
-% AiryPattern.
+%% Compare with diffraction
+% The Zernike code should return the diffraction limited PSF if we pass all
+% zeros as the coefficients.  So the first test is whether this works, when
+% we compare to what we get when we produce the diffraction limited PSF
+% using analytic formulae implemented in the PTB routine AiryPattern.
+%
+% This appears to work correctly.
 
 % Set up parameters structure
 wvfParams0 = wvfCreate;
 
 % Calculate the PSF, normalized to peak of 1.
 wvfParams = wvfComputePSF(wvfParams0);
+% vcNewGraphWin; mesh(wvfParams.psf)
 
-% Make a graph of the PSF within 1 mm of center
-vcNewGraphWin;
-maxMM = 1;
-wvfPlot(wvfParams,'2dpsf space','mm',maxMM);
-
-% Make a graph of the PSF within 2 arc min
-vcNewGraphWin;
-maxMIN = 2;
-wvfPlot(wvfParams,'2dpsf angle','min',maxMIN);
-
-%% Plot the middle row of the psf, scaled to peak of 1
-vcNewGraphWin;
-wvfPlot(wvfParams,'1d psf angle','min',maxMIN);
-hold on
-
-% Used for plotting comparisons below
-arcminutes = wvfGet(wvfParams,'support arcmin');
+%% Extract a row of the psf
+whichRow = floor(wvfParams.sizeOfFieldPixels/2) + 1;
+onedPSF1 = wvfParams.psf(whichRow,:);
+onedPSF1 = onedPSF1/max(onedPSF1(:));
+arcminutes = wvfParams.arcminperpix*((1:wvfParams.sizeOfFieldPixels)-whichRow);
 index = find(abs(arcminutes) < 2);
-radians = (pi/180)*(arcminutes/60);
+
+% Make a plot through the peak of the returned PSF, normalized to peak of 1.
+figure; clf;
+position = get(gcf,'Position');
+position(3) = 1600;
+set(gcf,'Position',position);
+subplot(1,3,1); hold on
+plot(arcminutes(index),onedPSF1(index),'r','LineWidth',4);
 
 % Compare to what we get from PTB AiryPattern function -- should match
+radians = (pi/180)*(arcminutes/60);
 onedPSF2 = AiryPattern(radians,wvfParams.calcpupilMM,wvfParams.wls(1));
 plot(arcminutes(index),onedPSF2(index),'b','LineWidth',2);
 xlabel('Arc Minutes');
 ylabel('Normalized PSF');
 title(sprintf('Diffraction limited, %0.1f mm pupil, %0.f nm',wvfParams.calcpupilMM,wvfParams.wls(1)));
 
-%% Repeat the calculation with a wavelength offset
-
-newWave = 400;  
+% Repeat the calculation with a wavelength offset
+wavelengthOffset = 250;
 wvfParams1 = wvfParams0;
-wvfParams1 = wvfSet(wvfParams1,'wave',newWave);
-wvfParams1 = wvfSet(wvfParams1,'in focus wavelength', newWave);
-wvfParams = wvfComputePSF(wvfParams1);
+wvfParams1.wls = wvfParams1.wls - wavelengthOffset;
+wvfParams1.nominalFocusWl = wvfParams1.nominalFocusWl - wavelengthOffset;
 
-vcNewGraphWin;
-wvfPlot(wvfParams,'1d psf angle','min',maxMIN)
- 
-hold on
+[wvfParams] = wvfComputePSF(wvfParams1);
+whichRow = floor(wvfParams.sizeOfFieldPixels/2) + 1;
+onedPSF1 = wvfParams.psf(whichRow,:);
+onedPSF1 = onedPSF1/max(onedPSF1(:));
+arcminutes = wvfParams.arcminperpix*((1:wvfParams.sizeOfFieldPixels)-whichRow);
+index = find(abs(arcminutes) < 2);
+
+subplot(1,3,2); hold on
+plot(arcminutes(index),onedPSF1(index),'r','LineWidth',4);
+radians = (pi/180)*(arcminutes/60);
 onedPSF2 = AiryPattern(radians,wvfParams.calcpupilMM,wvfParams.wls(1));
+
 plot(arcminutes(index),onedPSF2(index),'b','LineWidth',2);
 xlabel('Arc Minutes');
 ylabel('Normalize PSF');
 title(sprintf('Diffraction limited, %0.1f mm pupil, %0.f nm',wvfParams.calcpupilMM,wvfParams.wls(1)));
 
-%% Repeat the calculation with a different pupil size
-pupilMM = 7;   % In millimeters?
+% Repeat the calculation with a pupil offset
+pupilOffset = 4;   % In millimeters?
 wvfParams2 = wvfParams0;
-wvfParams2 = wvfSet(wvfParams2,'calculated pupil',pupilMM);
-wvfParams = wvfComputePSF(wvfParams2);
+wvfParams2.calcpupilMM = wvfParams2.calcpupilMM + pupilOffset;
+[wvfParams] = wvfComputePSF(wvfParams2);
+whichRow = floor(wvfParams.sizeOfFieldPixels/2) + 1;
+onedPSF1 = wvfParams.psf(whichRow,:);
+onedPSF1 = onedPSF1/max(onedPSF1(:));
+arcminutes = wvfParams.arcminperpix*((1:wvfParams.sizeOfFieldPixels)-whichRow);
+index = find(abs(arcminutes) < 2);
 
-vcNewGraphWin;
-wvfPlot(wvfParams,'1d psf angle','min',maxMIN);
-hold on;
+subplot(1,3,3); hold on
+plot(arcminutes(index),onedPSF1(index),'r','LineWidth',4);
 
+radians = (pi/180)*(arcminutes/60);
 onedPSF2 = AiryPattern(radians,wvfParams.calcpupilMM,wvfParams.wls(1));
 plot(arcminutes(index),onedPSF2(index),'b','LineWidth',2);
 xlabel('Arc Minutes');
 ylabel('Normalized PSF');
 title(sprintf('Diffraction limited, %0.1f mm pupil, %0.f nm',wvfParams.calcpupilMM,wvfParams.wls(1)));
 
-%% Put ISET diffraction comparisons here or insert above
-
-%% Move this to a different script.  Move TEST3 to a different script, too. 
-% TEST2: Change the nominal focus away from a specified wavelength
+%% TEST2: Change the nominal focus away from a specified wavelength
 %
 % The psf should get broader. How much broader, I don't know but we can at
 % least verify the qualitative behavior, again for the diffaction limited
