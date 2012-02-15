@@ -54,7 +54,7 @@ switch parm
     case 'pupilsize'
 
         % Spectral matters
-    case {'wave','wavelist'}
+    case {'wave','wavelist','wavelength'}
         wvf.wls = val;
     case 'infocuswavelength'
         wvf.nominalFocusWl = val;            % In focus wavelength (nm)
@@ -82,10 +82,10 @@ switch parm
         wvf.weightingSpectrum = val;         % Defocus
 
         % Special cases
-    case 'sceparams'
+    case {'sceparams','stilescrawford'}
         % The structure of sce should be:
         %
-        wvf.sce = val;
+        wvf.sceParams = val;
         
         % Derived parameters
     case 'psf'

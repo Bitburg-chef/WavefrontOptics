@@ -67,7 +67,12 @@ switch (source)
 end
 
 % Spline initial wavelength sampling to request in wls
-outWLS = [wave(1),wave(2)-wave(1),length(wave)];
+if length(wave) > 1
+    outWLS = [wave(1),wave(2)-wave(1),length(wave)];
+else
+    outWLS = [wave,0,1];
+end
+
 sceP.wavelengths = wave(:);
 sceP.rho = SplineSrf(initWLS,rho0,outWLS,1);
 

@@ -107,8 +107,18 @@ switch parm
         % Stiles Crawford Effect
     case 'sceparams'
         val = wvf.sce;
+    case 'strehl'
+        % Strehl ratio.  Not sure when it is calculated
+        if isfield(wvf,'strehl'),  val = wvf.strehl;
+        else                       disp('No strehl parameter present');
+        end
+    case 'scefrac'
+        % Not what this is or when it is calculated
+        if isfield(wvf,'sceFrac'),  val = wvf.sceFrac;
+        else                       disp('No sceFrac parameter present');
+        end
         
-        % Spread data
+        % Point and line spread data
     case 'psf'
         val = wvf.psf;
     case '1dpsf'
