@@ -57,7 +57,7 @@ switch (source)
         sceP.yo=0.00;   % SCE center in mm
     case 'none'
         % Fill in with zeros
-        initWLS = [wave(1),wave(2)-wave(1),length(wave)];
+        initWLS = MakeItS(wave);
         rho0 = zeros(size(wave));
         sceP.xo=0;   % SCE center in mm
         sceP.yo=0;   % SCE center in mm
@@ -67,13 +67,15 @@ switch (source)
 end
 
 % Spline initial wavelength sampling to request in wls
-if length(wave) > 1
-    outWLS = [wave(1),wave(2)-wave(1),length(wave)];
-else
-    outWLS = [wave,0,1];
-end
-
 sceP.wavelengths = wave(:);
-sceP.rho = SplineSrf(initWLS,rho0,outWLS,1);
+
+% Interpolate the rho values, if there multiple wavelength samples.  This
+% hasn't been tested much.
+if length(rho0) > 1
+    outWLS = MakeItS(wave);
+    sceP.rho = SplineSrf(initWLS,rho0,outWLS,1);
+else
+    sceP.rho = rho0;
+end
 
 %% End
