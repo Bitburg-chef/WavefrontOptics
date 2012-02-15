@@ -52,7 +52,7 @@ end
 %%
 vcNewGraphWin;
 for ii = 1:nSubjects
-    fprintf('** Subjects %d\n',ii)
+    fprintf('** Subject %d\n',ii)
     
     subplot(nRows,nCols,ii)
     
