@@ -55,15 +55,19 @@ switch parm
 
         % Spectral matters
     case {'wave','wavelist','wavelength'}
-        wvf.wls = val;
-    case 'infocuswavelength'
-        wvf.nominalFocusWl = val;            % In focus wavelength (nm)
+        % Vector of wavelengths  e.g., w = StoWls([400 5 61])
+        wvf.wls = val(:);
+    case {'infocuswavelength','nominalfocuswl'}
+        % In focus wavelength nm.  Single value.
+        wvf.nominalFocusWl = val; 
 
         % Pupil parameters
-    case 'calculatedpupil'
-        wvf.calcpupilMM = val;               % Default pupil??? radius?
+    case {'calculatedpupil','calculatedpupildiameter'}
+        % Pupil diameter in mm - must be smaller than measurements
+        wvf.calcpupilMM = val;               
     case {'measuredpupil','measuredpupildiameter'}
-        wvf.measpupilMM = val;               % Default pupil diameter?
+        % Largest measured pupil diameter in mm
+        wvf.measpupilMM = val;               
     
         % Field?
     case 'fieldsizepixels'

@@ -3,19 +3,20 @@ function wvfP = wvfCreate(varargin)
 %
 %    wvfP = wvfCreate(varargin)
 %
-% varargin:  Can be structured as param, val pairs
+% varargin:  Will be structured as param, val pairs
 %   
 % See also:  scePGet
 %
 % Examples:
-%    wvfP = wvfCreate('wave',[400 5 61]);
+%    wvfP = wvfCreate('wave',[400:10:700]);
+%    wvfP = wvfCreate('
 %
 % (c) WVF Toolbox Team 2011
 
 % Should have a switch for reading varargin param, val pairs.
 
-% Wavelength samples - Default is 650
-if isempty(varargin), S = [650 1 1]; end
+% Wavelength samples - Default is 550, monochromatic
+S = [550 1 1]; 
 
 % Book-keeping
 wvfP.name = 'default';
@@ -32,7 +33,7 @@ wvfP.measpupilMM = 8;               % Maximum pupil diameter
 wvfP.calcpupilMM = 3;               % Used for this calculation
 
 %
-wvfP.nominalFocusWl = 650;          % In focus wavelength (nm)
+wvfP.nominalFocusWl = 550;          % In focus wavelength (nm)
 wvfP.defocusDiopters = 0;           % Defocus
 
 % What field are we talking about here?
@@ -58,5 +59,15 @@ wvfP.weightingSpectrum = weightingSpectrum;  % Probably used for combined psf
 
 % Sets up the Stiles Crawford Effect parameters. 
 wvfP.sceParams = sceCreate([],'none');
+
+% Set additional arguments
+if ~isempty(varargin)
+    if isodd(length(varargin))
+        error('Arguments must be (pair, val) pairs');
+    end
+    for ii=1:2:(length(varargin)-1)
+        wvfP = wvfSet(wvfP,varargin{ii},varargin{ii+1});
+    end
+end
 
 return
