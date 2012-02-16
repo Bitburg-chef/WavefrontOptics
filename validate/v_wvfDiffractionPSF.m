@@ -44,7 +44,7 @@ wvfPlot(wvfParams,'2dpsf space','mm',maxMM);
 % Make a graph of the PSF within 2 arc min
 vcNewGraphWin;
 maxMIN = 2;
-wvfPlot(wvfParams0,'2dpsf angle','min',maxMIN);
+wvfPlot(wvfParams,'2dpsf angle','min',maxMIN);
 
 %% Plot the middle row of the psf, scaled to peak of 1
 vcNewGraphWin;
