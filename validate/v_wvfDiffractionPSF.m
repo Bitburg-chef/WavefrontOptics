@@ -7,6 +7,7 @@
 %           sceCreate, wvfGetDefocusFromWavelengthDifference
 %
 % TODO
+%   Add wvfPlot to output normalized to 1 curve.
 %   Compare with ISET.  The implementation there uses spatial units, not
 %   angles, to specify the samples. Further, it uses f-number, not just
 %   pupil size.  So we need to build up ISET so that we can compute the psf

@@ -121,14 +121,19 @@ switch parm
         % Point and line spread data
     case 'psf'
         val = wvf.psf;
+    case 'psfcentered'
+        % Centered so that peak is at middle position in coordinate grid 
+        val = psfCenter(wvfGet(wvf,'psf'));
     case '1dpsf'
         % wvfGet(wvf,'1d psf',row)
+        psf = psfCenter(wvfGet(wvf,'psf'));
+
         if isempty(varargin)
             whichRow = floor(wvfGet(wvf,'npixels')/2) + 1;
         else
             whichRow = varargin{1};
         end
-        val = wvf.psf(whichRow,:);
+        val = psf(whichRow,:);
     
         % Spatial and angular support
     case {'fieldsizepixels','npixels'}

@@ -1,4 +1,4 @@
-function wvfPlot(wvfP,pType,varargin)
+function [uData, pData] = wvfPlot(wvfP,pType,varargin)
 % Gateway routine for wavefront plots
 %
 %   wvfPlot(wvfP,pType,varargin);
@@ -21,6 +21,7 @@ function wvfPlot(wvfP,pType,varargin)
 if ieNotDefined('wvfP'), error('Wavefront structure required.'); end
 if ieNotDefined('pType'), pType = '1dpsf'; end
 
+uData = [];
 pType = ieParamFormat(pType);
 
 switch(pType)
@@ -33,21 +34,21 @@ switch(pType)
         if length(varargin) > 1, pRange = varargin{2}; end
         
         psfLine = wvfGet(wvfP,'1d psf');
-        psfLine = psfLine/max(psfLine(:));
+        % psfLine = psfLine/max(psfLine(:));
         samp = wvfGet(wvfP,'samples angle',unit);
         
         % Make a plot through of the returned PSF in the central region.
         index = find(abs(samp) < pRange);
         samp = samp(index);
         psfLine = psfLine(index);
-        plot(samp,psfLine,'r','LineWidth',4);
+        pData = plot(samp,psfLine,'r','LineWidth',4);
         str = sprintf('Angle (%s)',unit);
         xlabel(str); ylabel('PSF slice')
         
         % Store the data
-        udata.x = samp;
-        udata.y = psfLine;
-        set(gcf,'userdata',udata);
+        uData.x = samp;
+        uData.y = psfLine;
+        set(gcf,'userdata',uData);
 case {'2dpsf','2dpsfangle'}
         % Plot of the psf as a mesh, within a range
         % Samples are in arc minutes
@@ -74,10 +75,10 @@ case {'2dpsf','2dpsfangle'}
         xlabel(s); ylabel(s);
         zlabel('PSF amplitude')
         
-        udata.x = samp;
-        udata.y = samp;
-        udata.z = psf;
-        set(gcf,'userdata',udata);
+        uData.x = samp;
+        uData.y = samp;
+        uData.z = psf;
+        set(gcf,'userdata',uData);
     
 case {'1dpsfspace','1dpsfspacenormalized'}
         % wvfPlot(wvfP,'1d psf normalized',plotRangeArcMin);
@@ -88,20 +89,20 @@ case {'1dpsfspace','1dpsfspacenormalized'}
         if length(varargin) > 1, pRange = varargin{2}; end
         
         psfLine = wvfGet(wvfP,'1d psf');
-        psfLine = psfLine/max(psfLine(:));
+        % psfLine = psfLine/max(psfLine(:));
         samp = wvfGet(wvfP,'spatial support',unit);
         
         % Make a plot through of the returned PSF in the central region.
         index = find(abs(samp) < pRange);
         samp = samp(index); psfLine = psfLine(index);
-        plot(samp,psfLine,'r','LineWidth',4);
+        pData = plot(samp,psfLine,'r','LineWidth',4);
         s = sprintf('Position (%s)',unit);
         xlabel(s); ylabel('PSF slice')
 
         % Store the data
-        udata.x = samp;
-        udata.y = psfLine;
-        set(gcf,'userdata',udata);
+        uData.x = samp;
+        uData.y = psfLine;
+        set(gcf,'userdata',uData);
 
     case {'2dpsfspace'}
         % Plot of the psf as a mesh, within a range
@@ -129,10 +130,10 @@ case {'1dpsfspace','1dpsfspacenormalized'}
         xlabel(s); ylabel(s);
         zlabel('Relative amplitude')
         
-        udata.x = samp;
-        udata.y = samp;
-        udata.z = psf;
-        set(gcf,'userdata',udata);
+        uData.x = samp;
+        uData.y = samp;
+        uData.z = psf;
+        set(gcf,'userdata',uData);
         
     otherwise
         error('Unknown plot type %s\n',pType);
