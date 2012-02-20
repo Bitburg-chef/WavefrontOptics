@@ -14,30 +14,42 @@ function val = wvfGet(wvf,parm,varargin)
 % Examples:
 %
 %
-% Parameters
-%  % General
-%     'name'
-%     'type'
-%     'pupilsize'
+%Parameters
+% General
+%     'name' - Name of this wavefront parameter structure
+%     'type' - Always 'wvf'
 %
-%  % Spectral matters
-%     'wave'
-%     'infocuswavelength'
+% Spectral 
+%     'wavelength' - wavelength samples
+%     'nwave' - Number of wavelength samples
+%     'infocus wavelength'
 %
-%  % Pupil parameters
-%     'calculatedpupil'
-%     'measuredpupil'
+% Pupil parameters
+%     'calculated pupil'
+%     'measured pupil'
 %
-%  % Field?
-%     'fieldsizepixels'
-%     'fieldsizemm'
+% Field?
+%     'field size pixels'
+%     'field size mm'
 %
-%  % Focus parameters
+% Focus parameters
 %     'zcoef'
 %     'defocusdiopters'
-%     'weightspectrum'
-%     'sceparams'
+%     'defocus distance' *microns
+%     'weight spectrum'
+
+% Stiles Crawford Effect
+%     'sce params' - The whole structure
+%     'sce x0'
+%     'sce y0'
+%     'sce rho'
+%     'sce wavelengths'*
+%
+% Pointspread function
 %     'psf'
+%     'psf centered'
+%     '1d psf'
+%     'strehl'
 %
 % (c) Wavefront Toolbox Team 2011
 
@@ -53,11 +65,19 @@ switch parm
         val = wvf.name;
     case 'type'
         val = wvf.type;
-    case 'pupilsize'
-        
+   
         % Spectral matters
-    case 'wave'
+    case {'wave','wavelength','wavelengths'}
+        % wvfGet(wvf,'wave',unit)
+        % wvfGet(wvf,'wave','um')
         val = wvf.wls;
+        
+        % Adjust units
+        if ~isempty(varargin)
+            unit = varargin{1};
+            val = val*(1e-9)*ieUnitScaleFactor(unit);
+        end
+
     % Wavelength related
     case 'weightspectrum'
         val = wvf.weightingSpectrum;         % Defocus
@@ -68,19 +88,27 @@ switch parm
         
         % Pupil parameters
     case 'calculatedpupil'
-        % What's the difference between calcpupil and measpupil?
+        % Measured describes original data.  Calculated describes what we
+        % are using in the simulation.  Default in mm.
+        %  wvfGet(wvf,'calculated pupil','mm')
+        %  wvfGet(wvf,'calculated pupil','um')
         val = wvf.calcpupilMM;               % Default pupil? diameter?
+        if ~isempty(varargin)
+            % Convert to meters and then scale
+            val = (val*1e-3)*ieUnitScaleFactor(varargin{1});
+        end
     case 'measuredpupil'
+        % Measurements - maximum value in mm
         % Default is in millimeters
-        % wvfGet(wvf,'measured pupil','mm');
+        % wvfGet(wvf,'measured pupil','m')
+        % wvfGet(wvf,'measured pupil')
         val = wvf.measpupilMM;               % Default pupil diameter?
         % Scale for unit
         if ~isempty(varargin)
             % Convert to meters and then scale
-            val = (val/1000)*ieUnitScaleFactor(varargin{1});
+            val = (val*1e-3)*ieUnitScaleFactor(varargin{1});
         end
-        
-        
+             
         % Focus parameters
     case {'zcoeffs'}
         % wvfGet(wvf,'zcoef',list)
@@ -102,23 +130,54 @@ switch parm
             % Convert to meters and then scale
             val = (val/10^6)*ieUnitScaleFactor(varargin{1});
         end
-        
-        
+              
         % Stiles Crawford Effect
     case 'sceparams'
-        val = wvf.sce;
-    case 'strehl'
-        % Strehl ratio.  Not sure when it is calculated
-        if isfield(wvf,'strehl'),  val = wvf.strehl;
-        else                       disp('No strehl parameter present');
+        if isfield(wvf,'sceParams'), val = wvf.sceParams; end
+    case 'scex0'
+        if checkfields(wvf,'sceParams','xo'), val = wvf.sceParams.xo;
+        else val = 0; 
         end
-    case 'scefrac'
-        % Not what this is or when it is calculated
-        if isfield(wvf,'sceFrac'),  val = wvf.sceFrac;
-        else                       disp('No sceFrac parameter present');
+    case 'scey0'
+        if checkfields(wvf,'sceParams','yo'), val = wvf.sceParams.yo;
+        else val = 0;
+        end
+    case {'scewavelength','scewavelengths','scewave'}
+        % This returns the wvf wavelength list if there isn't a sceParams
+        % structure.  Might be OK.
+        % wvfGet(wvf,'sce wavelengths',unit)
+        if checkfields(wvf,'sceParams','wavelengths'), val = wvf.sceParams.wavelengths;
+        else val = wvf.wls;
+        end
+        % Adjust units
+        if ~isempty(varargin)
+            unit = varargin{1};
+            val = val*10e-9*ieUnitScaleFactor(unit);
+        end
+    case 'scerho'
+        % Get rho value for a particular wavelength
+        %  wvfGet(wvf,'rho',waveList)
+        if checkfields(wvf,'sceParams','rho'), val = wvf.sceParams.rho;
+        else val = zeros(wvfGet(wvf,'nWave'),1);
         end
         
-        % Point and line spread data
+        % Return rho values for selected wavelengths
+        if ~isempty(varargin)
+            wave = wvfGet(wvf,'sce wave');  % The waves for rho
+            waveList = varargin{1};
+            index = find(wave == waveList);
+            if ~isempty(index), val = val(index);
+            else error('Passed wavelength not contained in sceParams');
+            end
+        end
+    
+    case 'scefrac'
+        % Note what this is or when it is calculated
+        if checkfields(wvf,'sceFrac'), val = wvf.sceFrac; 
+        else warning('No sceFrac field');
+        end
+        
+       % Point and line spread data
     case 'psf'
         val = wvf.psf;
     case 'psfcentered'
@@ -134,7 +193,12 @@ switch parm
             whichRow = varargin{1};
         end
         val = psf(whichRow,:);
-    
+     case 'strehl'
+        % Strehl ratio.  Not sure when it is calculated
+        if isfield(wvf,'strehl'),  val = wvf.strehl;
+        else                       disp('No strehl parameter present');
+        end
+   
         % Spatial and angular support
     case {'fieldsizepixels','npixels'}
         % In pixels?  No units?  Why not a distance or an angle or

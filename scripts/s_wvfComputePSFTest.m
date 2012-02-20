@@ -107,6 +107,7 @@ title(sprintf('Diffraction limited, %0.1f mm pupil, %0.f nm',wvfParams.calcpupil
 
 %% Put ISET diffraction comparisons here or insert above
 
+%% END
 %% Move this to a different script.  Move TEST3 to a different script, too. 
 % TEST2: Change the nominal focus away from a specified wavelength
 %
@@ -145,13 +146,13 @@ wvfParams0 = wvfSet(wvfParams0,'field size pixels',sizeOfFieldPixels);
 wvfParams0 = wvfSet(wvfParams0,'field size mm',sizeOfFieldMM);
 
 wavelengthOffset = 50;
+arcminPerPix = wvfGet(wvfParams1,'arcmin per pix');
 
 figure; clf; hold on
-wvfParams1 = wvfParams0;
-[wvfParams1] = wvfComputePSF(wvfParams0);
+wvfParams1 = wvfComputePSF(wvfParams0);
 whichRow = floor(wvfParams1.sizeOfFieldPixels/2) + 1;
 onedPSF1 = wvfParams1.psf(whichRow,:);
-arcminutes = wvfParams1.arcminperpix*((1:wvfParams1.sizeOfFieldPixels)-whichRow);
+arcminutes = arcminPerPix*((1:wvfParams1.sizeOfFieldPixels)-whichRow);
 index = find(abs(arcminutes) < 2);
 plot(arcminutes(index),onedPSF1(index),'r','LineWidth',4);
 wvfParams2 = wvfParams0;
@@ -187,11 +188,12 @@ wvfParams0.sceParams = sceCreate(theWavelength,'berendshot');
 
 figure; clf; hold on
 wvfParams1 = wvfParams0;
-wvfParams1.sceParams = [];
+wvfParams1 = rmfield(wvfParams1,'sceParams');
+% wvfParams1.sceParams = [];
 [wvfParams1] = wvfComputePSF(wvfParams1);
 whichRow = floor(wvfParams1.sizeOfFieldPixels/2) + 1;
 onedPSF1 = wvfParams1.psf(whichRow,:);
-arcminutes = wvfParams1.arcminperpix*((1:wvfParams1.sizeOfFieldPixels)-whichRow);
+arcminutes = wvfParams1.arcminPerPix*((1:wvfParams1.sizeOfFieldPixels)-whichRow);
 index = find(abs(arcminutes) < 4);
 plot(arcminutes(index),onedPSF1(index),'r','LineWidth',4);
 wvfParams2 = wvfParams0;
@@ -260,7 +262,7 @@ for i = 1:9
     wvfParams1.zcoeffs = zeros(61,1);
     wvfParams1 = wvfComputePSF(wvfParams1);
     whichRow = floor(wvfParams1.sizeOfFieldPixels/2) + 1;
-    arcminutes = wvfParams1.arcminperpix*((1:wvfParams1.sizeOfFieldPixels)-whichRow);
+    arcminutes = wvfParams1.arcminPerPix*((1:wvfParams1.sizeOfFieldPixels)-whichRow);
     diffracPSF1 = wvfParams1.psf;
     onedPSF1 = wvfParams1.psf(whichRow,:);
     index = find(abs(arcminutes) < 6);

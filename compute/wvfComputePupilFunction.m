@@ -57,7 +57,7 @@ function [wvfP] = wvfComputePupilFunction(wvfP)
 c = zeros(65,1);
 c(1:length(wvfP.zcoeffs)) = wvfP.zcoeffs;
 
-% Convert passed wavelengths to microns
+% Convert wavelengths in nanometers to wavelengths in microns
 wlInUM = wvfP.wls/1000;
 
 % Sanity check
@@ -69,24 +69,16 @@ if (length(wvfP.wls) ~= 1)
 end
 
 % Set SCE correction params, if desired
-if (~isfield(wvfP,'sceParams') || isempty(wvfP.sceParams))
-    xo = 0;
-    yo = 0;
-    rho = zeros(size(wvfP.wls));
-else
-    xo=wvfP.sceParams.xo;
-    yo=wvfP.sceParams.yo;
-    index = find(wvfP.wls/1000 == wlInUM);
-    if (length(index) ~= 1)
-        error('Pased wavelength not contained in sceParams');
-    end
-    rho = wvfP.sceParams.rho(index);
-end
+xo = wvfGet(wvfP,'scex0');
+yo = wvfGet(wvfP,'scey0');
+thisWave = wvfGet(wvfP,'wave');
+rho      = wvfGet(wvfP,'sce rho',thisWave);
 
 % Set up SCE correction
 if all(rho) == 0, A=ones(wvfP.sizeOfFieldPixels);
 else
-    % Commnent please
+    % Comment please 
+    A = zeros(wvfP.sizeOfFieldPixels,wvfP.sizeOfFieldPixels);
     for ny = 1:wvfP.sizeOfFieldPixels
         for nx = 1:wvfP.sizeOfFieldPixels  
             xpos = ((nx-1)*(wvfP.sizeOfFieldMM/wvfP.sizeOfFieldPixels)-(wvfP.sizeOfFieldMM/2));
@@ -96,8 +88,10 @@ else
     end
 end
 
-% Compute the pupil function
+% Allocate space for the pupil function
 wvfP.pupilfunc = zeros(wvfP.sizeOfFieldPixels,wvfP.sizeOfFieldPixels);
+
+% Not sure what this is other than a counter for number of pixels
 k=0;
 for ny = 1:wvfP.sizeOfFieldPixels
     for nx = 1:wvfP.sizeOfFieldPixels
@@ -116,7 +110,7 @@ for ny = 1:wvfP.sizeOfFieldPixels
         if norm_radius > wvfP.calcpupilMM/wvfP.measpupilMM
             wvfP.pupilfunc(nx,ny)=0;
         else
-            phase = 0;
+            % phase = 0;
             phase = 0 + ...
                 c(5) * sqrt(6)*norm_radius^2 * cos(2 * angle) + ...
                 c(3) * sqrt(6)*norm_radius^2 * sin(2 * angle) + ...
@@ -182,12 +176,16 @@ for ny = 1:wvfP.sizeOfFieldPixels
                 c(59) *sqrt(22)* (210 * norm_radius^10 - 504 * norm_radius^8 + 420 * norm_radius^6 - 140 * norm_radius^4 + 15 * norm_radius^2) * sin(2 * angle) + ...
                 c(60) *sqrt(11)* (252 * norm_radius^10 - 630 * norm_radius^8 + 560 * norm_radius^6 - 210 * norm_radius^4 + 30 * norm_radius^2 - 1);
             
+            %
             wvfP.pupilfunc(nx,ny) = A(nx,ny).*exp(-i * 2 * 3.1416 * phase/wlInUM);
-            k=k+1;
+            k=k+1;  % Looks like we are counting pixels
         end
     end
 end
-wvfP.areapix=k;
-wvfP.areapixapod=sum(sum(abs(wvfP.pupilfunc)));
+
+% Are these needed?  What are they?
+wvfP.areapix = k;
+wvfP.areapixapod = sum(sum(abs(wvfP.pupilfunc)));
+
 end
 

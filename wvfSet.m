@@ -68,7 +68,9 @@ switch parm
     case {'measuredpupil','measuredpupildiameter'}
         % Largest measured pupil diameter in mm
         wvf.measpupilMM = val;               
-    
+    case {'pupilfunction','pupilfunc'}
+        wvf.pupilfunc = val;
+        
         % Field?
     case 'fieldsizepixels'
         wvf.sizeOfFieldPixels = val;          % In pixels?  No units?
@@ -81,7 +83,16 @@ switch parm
     case 'defocusdiopters'
         % Stored this way, but can be accessed in distance units.
         wvf.defocusDiopters = val;           % Defocus
-
+    case 'strehl'
+        % Not sure why this is set.  It is derived
+        wvf.strehl = val;
+        
+    case 'defocusmicrons'
+        % Hmmm.  Someone decided to have two ways of specifying defocus.
+        % This is unfortunate.  Anyway, we are supposed to be able to set
+        % the defocus in microns as well as in diopters.  This happens in
+        % wvfComputePSF.
+        wvf.defocusMicrons = val;
     case 'weightspectrum'
         wvf.weightingSpectrum = val;         % Defocus
 

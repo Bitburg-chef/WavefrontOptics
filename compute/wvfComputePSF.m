@@ -49,18 +49,18 @@ function wvfP = wvfComputePSF(wvfP)
 % aberration (LCA), and do not incoporate transverse chromatic aberration
 % (TCA).
 %
-% Note: If this function is called with a zcoeffs vector that is composed
-% of only zeros the output monochromatic and polychromatic PSFs will be
-% limited only by diffraction and longitudinal chromatic aberration (and
-% the SCE if specified).
+% NOTES
+% 1. When zcoeffs is a vector of zeros, the output monochromatic and
+% polychromatic PSFs are diffraction-limited. and longitudinal chromatic
+% aberration (and the SCE if specified).
 %
-% Note: For better or worse, there are three ways that defocus can be
-% specified to this routine.  First, the value of the 4th zernike
-% coefficient is included.  Then, a value is computed based on the
-% differencebetween nominalFocusWl and the wavelength for which the PSF is
-% being computed. Finally, the value of defocusDiopters is added in
-% directly.  Although these are redundant, it is often most convenient to
-% think in terms of one of the three ways.
+% 2. There are three ways that defocus can be specified to this routine.  
+%   A. First, the value of the 4th zernike coefficient is included. 
+%   B. Second, value is computed based on the differencebetween nominalFocusWl
+%   and the wavelength for which the PSF is being computed. 
+%   C. Third, the value of defocusDiopters is added in directly.  
+% These are redundant, it is often most convenient to think in terms of one
+% of the three ways. 
 %
 % See also: wvfComputeConePSF, wvfComputePupilFunction, sceGetParamsParams,
 % wvfGetDefocusFromWavelengthDifference 
@@ -77,11 +77,13 @@ end
 
 %% Handle defocus relative to reference wavelength.
 defocusMicrons = wvfGet(wvfP,'defocus distance','um');
-wvfP.defocusMicrons = defocusMicrons;
+% wvfP.defocusMicrons = defocusMicrons; % Old
+wvfP = wvfSet(wvfP,'defocus microns',defocusMicrons);
+
 % wvfGetDefocusFromWavelengthDifference(wvfP);
 
-% Store the original value of defocus (wvfP.zcoeffs(4)) since it will
-% get changed later when changing wavelength
+% Get the original  defocus coefficient (wvfP.zcoeffs(4)).
+% It will get changed later when changing wavelength
 doriginal = wvfGet(wvfP,'zcoeffs',4);
 % doriginal = wvfP.zcoeffs(4);
 
@@ -167,8 +169,8 @@ for wl = 1:nWave
     areapixapod(wl) = tmpWvfParams.areapixapod;
 
     % Convert to psf
-    amp=fft2(pupilfunc(:,:,wl));
-    int=(amp .* conj(amp));
+    amp = fft2(pupilfunc(:,:,wl));
+    int = (amp .* conj(amp));
     psf(:,:,wl) = real(fftshift(int));
     
     % Get strehl ratio, based on Heidi's code
@@ -208,13 +210,21 @@ end
 % end
 
 %% Set output fields
-wvfP.psf = psf;
-wvfP.pupilfunc = pupilfunc;
-wvfP.arcminperpix = arcminperpix;
-wvfP.strehl = strehl;
-wvfP.sceFrac = sceFrac;
-wvfP.areapix = areapix;
-wvfP.areapixapod = areapixapod;
+% wvfP.psf = psf;
+wvfP = wvfSet(wvfP,'psf',psf);
+
+% wvfP.pupilfunc = pupilfunc;
+% wvfP = wvfSet(wvfP,'pupil function',pupilfunc);
+% 
+% % Not sure why this is set.  It is a derived value.
+% wvfP.arcminperpix = arcminperpix;
+% 
+wvfP = wvfSet(wvfP,'strehl',strehl);
+% wvfP.strehl = strehl;
+% 
+% wvfP.sceFrac = sceFrac;
+% wvfP.areapix = areapix;
+% wvfP.areapixapod = areapixapod;
 
 end
 
