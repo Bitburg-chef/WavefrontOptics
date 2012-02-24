@@ -41,7 +41,8 @@ wvfParams0 = wvfSet(wvfParams0,'sce params',sceCreate(theWavelength,'berendshot'
 wvfParams = wvfSet(wvfParams0,'sce params',[]);
 wvfParams = wvfComputePSF(wvfParams);
 
-vcNewGraphWin; hold on
+f = vcNewGraphWin; 
+hold on
 wvfPlot(wvfParams,'1d psf angle','min',maxMIN);
 
 % Make a graph of the PSF within 1 mm of center
@@ -55,7 +56,8 @@ wvfParams = wvfComputePSF(wvfParams0);
 % vcNewGraphWin;
 % wvfPlot(wvfParams,'2dpsf space','mm',maxMM);
 
-wvfPlot(wvfParams,'1d psf angle','min',maxMIN);
+[~,p] = wvfPlot(wvfParams,'1d psf angle','min',maxMIN);
+set(p,'color','b')
 hold on
 
 strehl = wvfGet(wvfParams,'strehl');

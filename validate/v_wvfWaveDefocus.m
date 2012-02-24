@@ -56,8 +56,11 @@ maxMM  = 1;
 
 %% Compute and plot the default
 wvfParams = wvfComputePSF(wvfParams0);
-vcNewGraphWin; hold on
-wvfPlot(wvfParams,'1d psf angle','min',maxMIN);
+
+f = vcNewGraphWin; 
+[~,p] = wvfPlot(wvfParams,'1d psf angle','min',maxMIN);
+set(p,'color','g','linestyle','-')
+str{1} = sprintf('wave %d',wvfGet(wvfParams,'wave'));
 
 %% Create a wavelength offset of 50 nm for the best focus
 
@@ -67,11 +70,14 @@ wavelengthOffset = 50;
 wvfParams = wvfSet(wvfParams0,'wave',inFocus - wavelengthOffset);
 wvfParams = wvfComputePSF(wvfParams);
 
-vcNewGraphWin;
-wvfPlot(wvfParams,'1d psf angle','min',maxMIN);
+vcNewGraphWin(f); 
+hold on
+[~,p] = wvfPlot(wvfParams,'1d psf angle','min',maxMIN);
+set(p,'color','b','linestyle','--')
+str{2} = sprintf('wave %d',wvfGet(wvfParams,'wave'));
 
-vcNewGraphWin;
-wvfPlot(wvfParams,'2dpsf space','mm',maxMM);
+% vcNewGraphWin;
+% wvfPlot(wvfParams,'2dpsf space','mm',maxMM);
 
 %% Now shift the offset the other way
 
@@ -80,15 +86,16 @@ wavelengthOffset = 50;
 wvfParams = wvfSet(wvfParams0,'wave',inFocus + wavelengthOffset);
 wvfParams = wvfComputePSF(wvfParams);
 
-wvfParams = wvfComputePSF(wvfParams);
-
-vcNewGraphWin;
-wvfPlot(wvfParams,'1d psf angle','min',maxMIN);
+hold on
+[~,p] = wvfPlot(wvfParams,'1d psf angle','min',maxMIN);
+set(p,'color','r','linestyle',':')
+str{3} = sprintf('wave %d',wvfGet(wvfParams,'wave'));
+legend(str)
 title(sprintf('Effect of defocus, + %0.1f nm',wavelengthOffset));
 
 
-vcNewGraphWin;
-wvfPlot(wvfParams,'2dpsf space','mm',maxMM);
+% vcNewGraphWin;
+% wvfPlot(wvfParams,'2dpsf space','mm',maxMM);
 
 
 %% End

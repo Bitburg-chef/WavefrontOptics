@@ -49,7 +49,7 @@ wvfPlot(wvfParams,'2dpsf angle','min',maxMIN);
 
 %% Plot the middle row of the psf, scaled to peak of 1
 vcNewGraphWin;
-wvfPlot(wvfParams,'1d psf angle','min',maxMIN);
+wvfPlot(wvfParams,'1d psf angle normalized','min',maxMIN);
 hold on
 
 % Used for plotting comparisons below
@@ -73,7 +73,7 @@ wvfParams1 = wvfSet(wvfParams1,'in focus wavelength', newWave);
 wvfParams = wvfComputePSF(wvfParams1);
 
 vcNewGraphWin;
-wvfPlot(wvfParams,'1d psf angle','min',maxMIN)
+wvfPlot(wvfParams,'1d psf angle normalized','min',maxMIN)
  
 hold on
 onedPSF2 = AiryPattern(radians,wvfParams.calcpupilMM,wvfParams.wls(1));
@@ -89,7 +89,7 @@ wvfParams2 = wvfSet(wvfParams2,'calculated pupil',pupilMM);
 wvfParams = wvfComputePSF(wvfParams2);
 
 vcNewGraphWin;
-wvfPlot(wvfParams,'1d psf angle','min',maxMIN);
+wvfPlot(wvfParams,'1d psf angle normalized','min',maxMIN);
 hold on;
 
 onedPSF2 = AiryPattern(radians,wvfParams.calcpupilMM,wvfParams.wls(1));
@@ -101,17 +101,17 @@ title(sprintf('Diffraction limited, %0.1f mm pupil, %0.f nm',wvfParams.calcpupil
 %% Put ISET diffraction comparisons here or insert above
 
 % ISET requires that we specify sizes.  So make a small scene and compute
-% through to the optical image
-scene = sceneCreate('lined65');
-scene = sceneSet(scene,'hfov',0.2);
-oi = oiCreate;
-oi = oiCompute(scene,oi);
-
-% For this scene we have fairly fine spatial angular resolution
-% oiGet(oi,'angular resolution')*60  % In minutes
-v = oiGet(oi,'angular support','min');
-xAng = v(:,1,2);
-yAng = v(1,:,1);
-
-optics = oiGet(oi,'optics');
-d = plotOTF(oi,'psf550');
+% % through to the optical image
+% scene = sceneCreate('lined65');
+% scene = sceneSet(scene,'hfov',0.2);
+% oi = oiCreate;
+% oi = oiCompute(scene,oi);
+% 
+% % For this scene we have fairly fine spatial angular resolution
+% % oiGet(oi,'angular resolution')*60  % In minutes
+% v = oiGet(oi,'angular support','min');
+% xAng = v(:,1,2);
+% yAng = v(1,:,1);
+% 
+% optics = oiGet(oi,'optics');
+% d = plotOTF(oi,'psf550');
