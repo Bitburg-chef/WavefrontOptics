@@ -63,12 +63,13 @@ for ii = 1:nSubjects
     wvfParams = wvfSet(wvfParams0,'zcoeffs',zeros(61,1));   
     wvfParams = wvfComputePSF(wvfParams);
     maxMIN = 6;
-    udataD = wvfPlot(wvfParams,'1d psf angle','min',maxMIN);  % Diffraction limited
+    udataD = wvfPlot(wvfParams,'1d psf angle normalized','min',maxMIN);  % Diffraction limited
     hold on;
     
     wvfParams = wvfSet(wvfParams0,'zcoeffs',theZernikeCoeffs(:,ii));
     wvfParams = wvfComputePSF(wvfParams);
-    [udataS, pData] = wvfPlot(wvfParams,'1d psf angle','min',maxMIN);  
+    % [udataS, pData] = wvfPlot(wvfParams,'2d psf space');  
+    [udataS, pData] = wvfPlot(wvfParams,'1d psf angle normalized','min',maxMIN);  
     set(pData,'color','b');
     hold on;
     

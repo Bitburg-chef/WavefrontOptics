@@ -170,7 +170,7 @@ for wl = 1:nWave
 
     % Convert to psf
     amp = fft2(pupilfunc(:,:,wl));
-    int = (amp .* conj(amp));
+    int = (amp .* conj(amp));   %Intensity
     psf(:,:,wl) = real(fftshift(int));
     
     % Get strehl ratio, based on Heidi's code

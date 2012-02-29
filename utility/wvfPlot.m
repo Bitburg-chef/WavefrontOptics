@@ -83,7 +83,7 @@ case {'2dpsf','2dpsfangle''2dpsfanglenormalized'}
         if ~isempty(strfind(pType,'normalized'))
             psf = psf(index,index)/max(psf(:));
         end
-        mesh(samp,samp,psf);
+        pData = mesh(samp,samp,psf);
         xlabel('Angle'); ylabel('Angle'); zlabel('PSF')
         s = sprintf('Angle (%s)',unit); 
         xlabel(s); ylabel(s);
@@ -145,7 +145,7 @@ case {'1dpsfspace','1dpsfspacenormalized'}
         
         % Scale to one or not
         
-        mesh(samp,samp,psf);
+        pData = mesh(samp,samp,psf);
         s = sprintf('Position (%s)',unit);
         xlabel(s); ylabel(s);
         zlabel('Relative amplitude')

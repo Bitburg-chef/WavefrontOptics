@@ -177,7 +177,7 @@ for ny = 1:wvfP.sizeOfFieldPixels
                 c(60) *sqrt(11)* (252 * norm_radius^10 - 630 * norm_radius^8 + 560 * norm_radius^6 - 210 * norm_radius^4 + 30 * norm_radius^2 - 1);
             
             %
-            wvfP.pupilfunc(nx,ny) = A(nx,ny).*exp(-i * 2 * 3.1416 * phase/wlInUM);
+            wvfP.pupilfunc(nx,ny) = A(nx,ny).*exp(-1i * 2 * 3.1416 * phase/wlInUM);
             k=k+1;  % Looks like we are counting pixels
         end
     end

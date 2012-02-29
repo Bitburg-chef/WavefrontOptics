@@ -24,7 +24,7 @@
 %% Clear
 clear; close all;
 
-%% Compare with diffraction in PTB
+%% Compare pointspread function in wvf with psf in Psych Toolbox
 
 % When the Zernike coefficients are all zero, the wvfComputePSF code should
 % return the diffraction limited PSF.  We test whether this works by
