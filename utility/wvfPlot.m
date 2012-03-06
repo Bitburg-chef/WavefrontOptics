@@ -59,7 +59,7 @@ switch(pType)
         uData.x = samp; uData.y = psfLine;
         set(gcf,'userdata',uData);
         
-case {'2dpsf','2dpsfangle''2dpsfanglenormalized'}
+case {'2dpsf','2dpsfangle','2dpsfanglenormalized'}
         % Plot of the psf as a mesh, within a range
         % Samples are in arc minutes
         %   wvfPlot(wvfP,'2d psf',unit,pRange)
