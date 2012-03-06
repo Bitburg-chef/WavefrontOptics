@@ -118,6 +118,10 @@ switch parm
         else
             val = wvf.zcoeffs(varargin{1});
         end
+    case {'pupilfunction','pupilfunc','pupfun'}
+        % Pupil function derived from Zernicke coefficients in the routine
+        % wvfComputePupilFunction
+        if isfield(wvf,'pupilfunc'), val = wvf.pupilfunc; end
     case 'defocusdiopters'
         val = wvf.defocusDiopters;           % Defocus
     case {'defocusmicrons','defocusdistance'}

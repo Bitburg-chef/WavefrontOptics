@@ -141,7 +141,7 @@ setScaleWl = 550;   % Nanometers
 %
 % This is probably close, but not quite right.  Maybe we can fix this
 % comment.
-arcminperpix = (180*60/3.1416)*setScaleWl*.001*.001/wvfP.sizeOfFieldMM; 
+% arcminperpix = (180*60/3.1416)*setScaleWl*.001*.001/wvfP.sizeOfFieldMM; 
 
 wave    = wvfGet(wvfP,'wave');
 nWave   = wvfGet(wvfP,'nwave');

@@ -40,7 +40,7 @@ wvfParams0 = wvfCreate('measured pupil',6,'calculated pupil',3);
 sDataFile = fullfile(wvfRootPath,'data','sampleZernikeCoeffs.txt');
 theZernikeCoeffs = load(sDataFile);
 
-whichSubjects = 1:3;
+whichSubjects = 1:2;
 theZernikeCoeffs = theZernikeCoeffs(:,whichSubjects);
 nSubjects = size(theZernikeCoeffs,2);
 nRows = ceil(sqrt(nSubjects));
@@ -57,47 +57,47 @@ end
 f = vcNewGraphWin;
 for ii = 1:nSubjects
     fprintf('** Subject %d\n',ii)
-    figure(f); subplot(nRows,nCols,ii)
+
     
     % Compute the diffraction limited version of the PSF
-    wvfParams = wvfSet(wvfParams0,'zcoeffs',zeros(61,1));   
-    wvfParams = wvfComputePSF(wvfParams);
-    maxMIN = 6;
-    udataD = wvfPlot(wvfParams,'1d psf angle normalized','min',maxMIN);  % Diffraction limited
-    hold on;
+%     wvfParams = wvfSet(wvfParams0,'zcoeffs',zeros(61,1));   
+%     wvfParams = wvfComputePSF(wvfParams);
+%     maxMIN = 6;
+%     udataD = wvfPlot(wvfParams,'1d psf angle normalized','min',maxMIN);  % Diffraction limited
+%     hold on;
     
     wvfParams = wvfSet(wvfParams0,'zcoeffs',theZernikeCoeffs(:,ii));
     wvfParams = wvfComputePSF(wvfParams);
     % [udataS, pData] = wvfPlot(wvfParams,'2d psf space');  
-    [udataS, pData] = wvfPlot(wvfParams,'1d psf angle normalized','min',maxMIN);  
-    set(pData,'color','b');
-    hold on;
+%     [udataS, pData] = wvfPlot(wvfParams,'1d psf angle normalized','min',maxMIN);  
+%     set(pData,'color','b');
+%     hold on;
     
     strehlDirect = max(udataS.y(:))/max(udataD.y(:));
     fprintf('Strehl ratio with no defocus:  %.3f\n',strehlDirect);
     
     % Optimize strehl by varying defocus
-    bestStrehl = 0;
-    defocusDiopters = -2:0.25:2;
-    thisStrehl = zeros(1,length(defocusDiopters));
-    for jj = 1:length(defocusDiopters)
-        %         wvfParams3 = wvfParams0;
-        %         wvfParams3.zcoeffs = theZernikeCoeffs(:,ii);
-        wvfParams = wvfSet(wvfParams,'defocus diopters',defocusDiopters(jj));
-        wvfParams = wvfComputePSF(wvfParams);
-        thisStrehl(jj) = wvfGet(wvfParams,'strehl');
-        if thisStrehl(jj) == max(thisStrehl)
-            wvfParamsBest = wvfParams;
-        end
-    end
+%     bestStrehl = 0;
+%     defocusDiopters = -2:0.25:2;
+%     thisStrehl = zeros(1,length(defocusDiopters));
+%     for jj = 1:length(defocusDiopters)
+%         %         wvfParams3 = wvfParams0;
+%         %         wvfParams3.zcoeffs = theZernikeCoeffs(:,ii);
+%         wvfParams = wvfSet(wvfParams,'defocus diopters',defocusDiopters(jj));
+%         wvfParams = wvfComputePSF(wvfParams);
+%         thisStrehl(jj) = wvfGet(wvfParams,'strehl');
+%         if thisStrehl(jj) == max(thisStrehl)
+%             wvfParamsBest = wvfParams;
+%         end
+%     end
     
     % Show the best optical correction (defocus) for this pointspread
-    vcNewGraphWin; plot(defocusDiopters,thisStrehl,'-o');
-    title('Defocus effect on peak of the PSF');
+%     vcNewGraphWin; plot(defocusDiopters,thisStrehl,'-o');
+%     title('Defocus effect on peak of the PSF');
     
     % Best defocus
-    vcNewGraphWin;
-    wvfPlot(wvfParamsBest,'1d psf angle','min',maxMIN);
+    figure(f); subplot(nRows,nCols,ii)
+    wvfPlot(wvfParamsBest,'2d psf angle','min',maxMIN);
     
     % A little slow, probably interesting.  Deal with this later.
     % Perhaps put it in a separate script.
