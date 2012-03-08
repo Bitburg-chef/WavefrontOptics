@@ -56,22 +56,23 @@ end
 %%
 f = vcNewGraphWin;
 for ii = 1:nSubjects
+    vcNewGraphWin
     fprintf('** Subject %d\n',ii)
 
     
     % Compute the diffraction limited version of the PSF
-%     wvfParams = wvfSet(wvfParams0,'zcoeffs',zeros(61,1));   
-%     wvfParams = wvfComputePSF(wvfParams);
-%     maxMIN = 6;
-%     udataD = wvfPlot(wvfParams,'1d psf angle normalized','min',maxMIN);  % Diffraction limited
-%     hold on;
+    wvfParams = wvfSet(wvfParams0,'zcoeffs',zeros(61,1));   
+    wvfParams = wvfComputePSF(wvfParams);
+    maxMIN = 6;
+    udataD = wvfPlot(wvfParams,'1d psf angle normalized','min',maxMIN);  % Diffraction limited
+    hold on;
     
     wvfParams = wvfSet(wvfParams0,'zcoeffs',theZernikeCoeffs(:,ii));
     wvfParams = wvfComputePSF(wvfParams);
-    % [udataS, pData] = wvfPlot(wvfParams,'2d psf space');  
-%     [udataS, pData] = wvfPlot(wvfParams,'1d psf angle normalized','min',maxMIN);  
-%     set(pData,'color','b');
-%     hold on;
+    %    [udataS, pData] = wvfPlot(wvfParams,'2d psf space');
+    [udataS, pData] = wvfPlot(wvfParams,'1d psf angle normalized','min',maxMIN);
+    set(pData,'color','b');
+    hold on;
     
     strehlDirect = max(udataS.y(:))/max(udataD.y(:));
     fprintf('Strehl ratio with no defocus:  %.3f\n',strehlDirect);
@@ -96,9 +97,9 @@ for ii = 1:nSubjects
 %     title('Defocus effect on peak of the PSF');
     
     % Best defocus
-    figure(f); subplot(nRows,nCols,ii)
-    wvfPlot(wvfParamsBest,'2d psf angle','min',maxMIN);
-    
+    %     figure(f); subplot(nRows,nCols,ii)
+    %     wvfPlot(wvfParamsBest,'2d psf angle','min',maxMIN);
+    %
     % A little slow, probably interesting.  Deal with this later.
     % Perhaps put it in a separate script.
     % - BW

@@ -1,10 +1,19 @@
-function [wvfP] = wvfComputePupilFunction(wvfP)
-% Compute the monochromatic pupil fuction (amplitude and phase) over the
-% calculated pupil size for 10 orders of Zernike coeffcients specified to
+function [wvfP, phase, A] = wvfComputePupilFunction(wvfP)
+% Compute the monochromatic pupil fuction 
+%
+%    [wvfP,phase,amplitude] = wvfComputePupilFunction(wvfP)
+%
+% The pupil function is a complex number that represents the amplitude and
+% phase of the wavefront across the pupil.  The returned pupil function at
+% a specific wavelength (in microns) is
+%    
+%    pupilF = A exp(-1i 2 pi (phase/wavelength));
+%
+% The amplitude is calculated entirely based on the assumed properties of
+% the Stiles-Crawford effect. 
+%
+% These functions are calculated for 10 orders of Zernike coeffcients specified to
 % the OSA standard. Includes SCE (Stiles-Crawford Effect) if specified. 
-%
-%    [wvfP] = wvfComputePupilFunction(wvfP)
-%
 %
 % Required input fields for wvfP struct
 %   zcoeffs -           Zernike coefficients. Expects 65 coefficients numbered with the osa j index.
@@ -28,12 +37,18 @@ function [wvfP] = wvfComputePupilFunction(wvfP)
 % Optional input fields for wvfP struct 
 %   sceParams -         Parameter structure for Stiles-Crawford correction.  If missing or set to empty,
 %                       no correction and is set to empty on return.  See sceGetParamsParams.
-%
+% 
 % Output fields set in wvfP struct 
 %   pupilfunc -     Calcuated pupil function
 %   areapix -       Number of pixels within the computed pupil aperture
 %   areapixapod -   Number of pixels within the computed pupil aperture,
 %                   multiplied by the Stiles-Crawford aopdization.
+%
+% PROGRAMMING NOTE:  The notion of pixel isn't so good.  We need to replace
+% it with a measure that has a clear physical description throughout.  If
+% it is always sample, then the sample must have a spatial size in um or
+% mm. The good news is I think this is the last item that doesn't have an
+% easily identified physical unit.
 %
 % All aberrations other than defocus (including astigmatism) are assumed
 % to be constant with wavelength, as variation with wavelength in other
@@ -43,7 +58,7 @@ function [wvfP] = wvfComputePupilFunction(wvfP)
 % or tilt, has also not been included. 
 %
 % Dividing the psf computed from the returned pupil function by areapix
-% (or areapixapod) squared effects a normalization so that the peak reflects
+% (or areapixapod) squared effects a normalization so that the peak is
 % the strehl ratio.
 %
 % See also: wvfComputePSF, sceGetParamsParams.
@@ -58,26 +73,35 @@ c = zeros(65,1);
 c(1:length(wvfP.zcoeffs)) = wvfP.zcoeffs;
 
 % Convert wavelengths in nanometers to wavelengths in microns
-wlInUM = wvfP.wls/1000;
-
+% wlInUM = wvfP.wls/1000;
 % Sanity check
 if (wvfP.calcpupilMM > wvfP.measpupilMM)
     error('Requested size for calculation cannot exceed size over which measuremnts were made');
 end
-if (length(wvfP.wls) ~= 1)
-    error('Only handles one wavelength at a time');
+
+wave = wvfGet(wvfP,'wave','um');
+if (length(wave) ~= 1)
+    warning('Only handles one wavelength at a time.  Using first one: %f\n',wave(1));
+    wave = wave(1);
 end
 
 % Set SCE correction params, if desired
 xo = wvfGet(wvfP,'scex0');
 yo = wvfGet(wvfP,'scey0');
-thisWave = wvfGet(wvfP,'wave');
-rho      = wvfGet(wvfP,'sce rho',thisWave);
+thisWave = wvfGet(wvfP,'wave','nm');
+rho      = wvfGet(wvfP,'sce rho');
 
-% Set up SCE correction
+% Set up the amplitude of the pupil function.
+% This appears to depend entirely on the SCE correction
 if all(rho) == 0, A=ones(wvfP.sizeOfFieldPixels);
 else
-    % Comment please 
+    % Get the wavelength-specific value of rho for the Stiles-Crawford
+    % effect.
+    rho      = wvfGet(wvfP,'sce rho',thisWave);
+    
+    % For the x,y positions within the pupil, the value of rho is used to
+    % set the amplitude.  I guess this is where the SCE stuff matters.  We
+    % should have a way to expose this for teaching and in the code.
     A = zeros(wvfP.sizeOfFieldPixels,wvfP.sizeOfFieldPixels);
     for ny = 1:wvfP.sizeOfFieldPixels
         for nx = 1:wvfP.sizeOfFieldPixels  
@@ -177,7 +201,7 @@ for ny = 1:wvfP.sizeOfFieldPixels
                 c(60) *sqrt(11)* (252 * norm_radius^10 - 630 * norm_radius^8 + 560 * norm_radius^6 - 210 * norm_radius^4 + 30 * norm_radius^2 - 1);
             
             %
-            wvfP.pupilfunc(nx,ny) = A(nx,ny).*exp(-1i * 2 * 3.1416 * phase/wlInUM);
+            wvfP.pupilfunc(nx,ny) = A(nx,ny).*exp(-1i * 2 * 3.1416 * phase/wave);
             k=k+1;  % Looks like we are counting pixels
         end
     end

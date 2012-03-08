@@ -19,7 +19,7 @@ function val = wvfGet(wvf,parm,varargin)
 %     'name' - Name of this wavefront parameter structure
 %     'type' - Always 'wvf'
 %
-% Spectral 
+% Spectral
 %     'wavelength' - wavelength samples
 %     'nwave' - Number of wavelength samples
 %     'infocus wavelength'
@@ -65,7 +65,7 @@ switch parm
         val = wvf.name;
     case 'type'
         val = wvf.type;
-   
+        
         % Spectral matters
     case {'wave','wavelength','wavelengths'}
         % wvfGet(wvf,'wave',unit)
@@ -77,8 +77,8 @@ switch parm
             unit = varargin{1};
             val = val*(1e-9)*ieUnitScaleFactor(unit);
         end
-
-    % Wavelength related
+        
+        % Wavelength related
     case 'weightspectrum'
         val = wvf.weightingSpectrum;         % Defocus
     case 'nwave'
@@ -108,7 +108,7 @@ switch parm
             % Convert to meters and then scale
             val = (val*1e-3)*ieUnitScaleFactor(varargin{1});
         end
-             
+        
         % Focus parameters
     case {'zcoeffs'}
         % wvfGet(wvf,'zcoef',list)
@@ -134,13 +134,13 @@ switch parm
             % Convert to meters and then scale
             val = (val/10^6)*ieUnitScaleFactor(varargin{1});
         end
-              
+        
         % Stiles Crawford Effect
     case 'sceparams'
         if isfield(wvf,'sceParams'), val = wvf.sceParams; end
     case 'scex0'
         if checkfields(wvf,'sceParams','xo'), val = wvf.sceParams.xo;
-        else val = 0; 
+        else val = 0;
         end
     case 'scey0'
         if checkfields(wvf,'sceParams','yo'), val = wvf.sceParams.yo;
@@ -174,35 +174,35 @@ switch parm
             else error('Passed wavelength not contained in sceParams');
             end
         end
-    
+        
     case 'scefrac'
         % Note what this is or when it is calculated
-        if checkfields(wvf,'sceFrac'), val = wvf.sceFrac; 
+        if checkfields(wvf,'sceFrac'), val = wvf.sceFrac;
         else warning('No sceFrac field');
         end
         
-       % Point and line spread data
+        % Point and line spread data
     case 'psf'
         val = wvf.psf;
     case 'psfcentered'
-        % Centered so that peak is at middle position in coordinate grid 
+        % Centered so that peak is at middle position in coordinate grid
         val = psfCenter(wvfGet(wvf,'psf'));
     case '1dpsf'
         % wvfGet(wvf,'1d psf',row)
         psf = psfCenter(wvfGet(wvf,'psf'));
-
+        
         if isempty(varargin)
             whichRow = floor(wvfGet(wvf,'npixels')/2) + 1;
         else
             whichRow = varargin{1};
         end
         val = psf(whichRow,:);
-     case 'strehl'
+    case 'strehl'
         % Strehl ratio.  Not sure when it is calculated
         if isfield(wvf,'strehl'),  val = wvf.strehl;
         else                       disp('No strehl parameter present');
         end
-   
+        
         % Spatial and angular support
     case {'fieldsizepixels','npixels'}
         % In pixels?  No units?  Why not a distance or an angle or
@@ -247,13 +247,23 @@ switch parm
         nPixels = wvfGet(wvf,'npixels');
         val = anglePerPix*((1:nPixels)-middleRow);
     case {'middlerow'}
-        val = floor(wvfGet(wvf,'npixels')/2) + 1;    
+        val = floor(wvfGet(wvf,'npixels')/2) + 1;
     case {'fieldsizemm','fieldsizespace','fieldsize'}
         val = wvf.sizeOfFieldMM;
         if ~isempty(varargin)
             % Convert to meters and then scale
             val = (val/1000)*ieUnitScaleFactor(varargin{1});
         end
+        
+        % These pixel related measures computed in wvfComputePSF.  Not sure
+        % what they are.
+    case {'areapix'}
+        % Don't know what this is.
+        if isfield(wvf,'areapix'), val = wvf.areapix; end
+    case {'areapixapod'}
+        % Don't know what this is.
+        if isfield(wvf,'areapix'), val = wvf.areapixapod; end
+        
     case {'distanceperpix','distperpix','distanceperpixel'}
         % Distance per pixel in specified unit ('mm')
         %   wvf(wvf,'distance per pixel','um');

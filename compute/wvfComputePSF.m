@@ -154,21 +154,27 @@ strehl  = zeros(nWave,1);
 sceFrac = zeros(nWave,1);
 
 for wl = 1:nWave
-    % Get the pupil function
+    
+    % Get the pupil function.  
+    
+    % Set up a tmp parameter structure so we can do it one wave at a time.
     tmpWvfParams = wvfP;
     tmpWvfParams = wvfSet(tmpWvfParams,'wave',wave(wl));
     
     % Add in the appropriate LCA to the initial zernike defocus
+    % Don't understand the following.
     tmpWvfParams.zcoeffs(4) = doriginal + wvfP.defocusMicrons(wl); 
     
     % Rescaling so that PSF pixel dimension is constant with wavelength.
     tmpWvfParams.sizeOfFieldMM = wvfP.sizeOfFieldMM*tmpWvfParams.wls/setScaleWl;
+    
+    % Compute the pupil function
     tmpWvfParams = wvfComputePupilFunction(tmpWvfParams);
-    pupilfunc(:,:,wl) = tmpWvfParams.pupilfunc;
-    areapix(wl) = tmpWvfParams.areapix;
-    areapixapod(wl) = tmpWvfParams.areapixapod;
+    pupilfunc(:,:,wl) = wvfGet(tmpWvfParams,'pupil function');
+    areapix(wl)       = wvfGet(tmpWvfParams,'area pix');
+    areapixapod(wl)   = wvfGet(tmpWvfParams,'area pixapod');
 
-    % Convert to psf
+    % Convert to the pupil function to the PSF  Just this simple.
     amp = fft2(pupilfunc(:,:,wl));
     int = (amp .* conj(amp));   %Intensity
     psf(:,:,wl) = real(fftshift(int));
@@ -183,46 +189,15 @@ for wl = 1:nWave
     psf(:,:,wl) = psf(:,:,wl)/sum(sum(psf(:,:,wl)));
 end
 
-% setScaleWl = 550;
-% arcminperpix = (180*60/3.1416)*setScaleWl*.001*.001/sizeOfFieldMM; 
-% psf = zeros(sizeOfFieldPixels,sizeOfFieldPixels,length(wls));
-% areapix = zeros(length(wls));
-% areapixapod = zeros(length(wls));
-% for wl = 1:length(wls)
-%     % Get the pupil function
-%     zcoeffs(4) = doriginal + microns(wl);                      % Add in the appropriate LCA to the initial zernike defocus
-% 	tempSizeOfFieldMM = sizeOfFieldMM*wls(wl)/setScaleWl;      % Rescaling so that PSF pixel dimension is constant with wavelength.
-%     [pupilfunc,areapix(wl),areapixapod(wl)] = ComputePupilFunction(zcoeffs,measpupilMM,calcpupilMM,wls(wl),sizeOfFieldPixels,tempSizeOfFieldMM,sceParams);
-% 
-%     % Convert to psf
-%     amp=fft2(pupilfunc);
-%     int=(amp .* conj(amp));
-%     psf(:,:,wl) = real(fftshift(int));
-%     
-%     % Get strehl ratio, based on Heidi's code
-%     strehl(wl) = max(max(psf(:,:,wl)))./(areapixapod(wl)^2);
-%     
-%     % Scale so that psf sums to unity before SCE.  
-%     % The variable sceFrac tells you how much light
-%     % is lost if you correct for the SCE.
-%     sceFrac(wl) = (areapixapod(wl)/areapix(wl));
-%     psf(:,:,wl) = psf(:,:,wl)/sum(sum(psf(:,:,wl)));
-% end
-
 %% Set output fields
-% wvfP.psf = psf;
+wvfP = wvfSet(wvfP,'pupil function',pupilfunc);
 wvfP = wvfSet(wvfP,'psf',psf);
-
-% wvfP.pupilfunc = pupilfunc;
-% wvfP = wvfSet(wvfP,'pupil function',pupilfunc);
-% 
-% % Not sure why this is set.  It is a derived value.
-% wvfP.arcminperpix = arcminperpix;
-% 
 wvfP = wvfSet(wvfP,'strehl',strehl);
+
+% Derived, not needed? wvfP.arcminperpix = arcminperpix;
 % wvfP.strehl = strehl;
-% 
 % wvfP.sceFrac = sceFrac;
+% Don't understand yet. (BW)
 % wvfP.areapix = areapix;
 % wvfP.areapixapod = areapixapod;
 
