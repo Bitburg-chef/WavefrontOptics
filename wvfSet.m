@@ -106,6 +106,15 @@ switch parm
     case 'psf'
         wvf.psf = val;
 
+        % These pixel related measures computed in wvfComputePSF.  Not sure
+        % what they are.
+    case {'areapix'}
+        % Don't know what this is.
+        wvf.areapix = val;
+    case {'areapixapod'}
+        % Don't know what this is.
+        wvf.areapixapod = val; 
+        
     otherwise
         error('Unknown parameter %s\n',parm);
 end

@@ -176,8 +176,8 @@ for wl = 1:nWave
 
     % Convert to the pupil function to the PSF  Just this simple.
     amp = fft2(pupilfunc(:,:,wl));
-    int = (amp .* conj(amp));   %Intensity
-    psf(:,:,wl) = real(fftshift(int));
+    inten = (amp .* conj(amp));   %intensity
+    psf(:,:,wl) = real(fftshift(inten));
     
     % Get strehl ratio, based on Heidi's code
     strehl(wl) = max(max(psf(:,:,wl)))./(areapixapod(wl)^2);

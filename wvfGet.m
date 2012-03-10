@@ -100,7 +100,7 @@ switch parm
     case 'measuredpupil'
         % Measurements - maximum value in mm
         % Default is in millimeters
-        % wvfGet(wvf,'measured pupil','m')
+        % wvfGet(wvf,'measured pupil','mm')
         % wvfGet(wvf,'measured pupil')
         val = wvf.measpupilMM;               % Default pupil diameter?
         % Scale for unit
@@ -110,7 +110,7 @@ switch parm
         end
         
         % Focus parameters
-    case {'zcoeffs'}
+    case {'zcoeffs','zcoeff','zcoef'}
         % wvfGet(wvf,'zcoef',list)
         % wvfGet(wvf,'zcoef',4)
         if isempty(varargin)
