@@ -41,7 +41,9 @@ wave = wvfGet(wvfP,'wave');
 diopters = zeros (size(wave));
 
 % What is the reference for the value of this constant?  
-constant = 1.8859 - (0.63346/(0.001*wvfP.nominalFocusWl-0.2141));
+nominalFocusWl = wvfGet(wvfP,'infocuswave');
+% constant = 1.8859 - (0.63346/(0.001*wvfP.nominalFocusWl-0.2141));
+constant = 1.8859 - (0.63346/(0.001*nominalFocusWl-0.2141));
 
 % This appears to be a formula that calculates a defocus in diopters for
 % each sample wavelength.
@@ -51,11 +53,13 @@ end
 % vcNewGraphWin; plot(wave,diopters); grid on
 
 % Add in extra defocus
-diopters = diopters + wvfP.defocusDiopters;
+defocusDiopters = wvfGet(wvfP,'defocusdiopters');
+% diopters = diopters + wvfP.defocusDiopters;
+diopters = diopters + defocusDiopters;
 
 % Convert defocus in diopters to defocus of the wavefront in microns.  We
 % need a reference here to explain this.
-wvfP.defocusMicrons = zeros(size(wave));
+wvfP.defocusMicrons = zeros(size(wave)); %this looks unused
 
 pupilMM = wvfGet(wvfP,'measured pupil','mm');
 defocusMicrons = diopters * (pupilMM)^2/(16*sqrt(3));

@@ -80,7 +80,9 @@ defocusMicrons = wvfGet(wvfP,'defocus distance','um');
 % wvfP.defocusMicrons = defocusMicrons; % Old
 wvfP = wvfSet(wvfP,'defocus microns',defocusMicrons);
 
-% wvfGetDefocusFromWavelengthDifference(wvfP);
+% wvfGetDefocusFromWavelengthDifference(wvfP)
+% is used in wvfGet(wvfP, 'defocus distance','um') to calculate
+% defocusMicrons
 
 % Get the original  defocus coefficient (wvfP.zcoeffs(4)).
 % It will get changed later when changing wavelength

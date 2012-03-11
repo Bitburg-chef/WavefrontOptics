@@ -81,7 +81,10 @@ switch parm
     case {'zcoef','zcoeffs'}
         wvf.zcoeffs = val;
     case 'defocusdiopters'
-        % Stored this way, but can be accessed in distance units.
+        % Does not look like defocus is ever stored in diopters.
+        % wvfComputePSF uses wvfGet to call
+        % wvfGetDefocusFromWavelengthDifference, which then
+        % calculates defocus in microns, which is then stored with Set 
         wvf.defocusDiopters = val;           % Defocus
     case 'strehl'
         % Not sure why this is set.  It is derived
