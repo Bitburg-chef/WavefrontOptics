@@ -164,15 +164,15 @@ for wl = 1:nWave
     tmpWvfParams = wvfSet(tmpWvfParams,'wave',wave(wl));
     
     % Add in the appropriate LCA to the initial zernike defocus
-    % Don't understand the following.
-    
+   
     % 3/10/12 KP: this looks like they are adjusting the defocus term in
     % the zernike coefficients (term #4) by adding Longitudinal Chromatic 
     % Aberration.
-    % Takes the original value of defocus and adds the additional 
+    % Takes the original Zernike coeff of defocus and adds the additional 
     % defocus caused by measuring the PSF for the specified wavelength (wl)
     % rather than the given nominal focus wavelength (nominalFocuswl) using 
-    % wvfGetDefocusFromWavelengthDifference
+    % wvfGetDefocusFromWavelengthDifference (which also adds in
+    % contribution from "defocus diopter" value in wvfP)
     tmpWvfParams.zcoeffs(4) = doriginal + wvfP.defocusMicrons(wl); 
     
     % Rescaling so that PSF pixel dimension is constant with wavelength.

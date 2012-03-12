@@ -42,7 +42,6 @@ diopters = zeros (size(wave));
 
 % What is the reference for the value of this constant?  
 nominalFocusWl = wvfGet(wvfP,'infocuswave');
-% constant = 1.8859 - (0.63346/(0.001*wvfP.nominalFocusWl-0.2141));
 constant = 1.8859 - (0.63346/(0.001*nominalFocusWl-0.2141));
 
 % This appears to be a formula that calculates a defocus in diopters for
@@ -52,16 +51,26 @@ for ww = 1:length(wave)
 end
 % vcNewGraphWin; plot(wave,diopters); grid on
 
-% Add in extra defocus
+% Add in extra defocus from using non-nominal focus wavelength 
+% to the original wvfP-specified defocus 
 defocusDiopters = wvfGet(wvfP,'defocusdiopters');
-% diopters = diopters + wvfP.defocusDiopters;
 diopters = diopters + defocusDiopters;
 
-% Convert defocus in diopters to defocus of the wavefront in microns.  We
-% need a reference here to explain this.
-wvfP.defocusMicrons = zeros(size(wave)); %this looks unused
+% Convert defocus in diopters to defocus of the wavefront in microns.
+wvfP.defocusMicrons = zeros(size(wave)); %this looks unused (KP)
 
 pupilMM = wvfGet(wvfP,'measured pupil','mm');
 defocusMicrons = diopters * (pupilMM)^2/(16*sqrt(3));
+% References for equation:
+% http://www.telescope-optics.net/monochromatic_eye_aberrations.htm
+% (accessed 3/11/12) 
+% http://www.journalofvision.org/content/10/5/4.full (accessed 3/11/12)
+% (under Zernike defocus eqn 1)
+% Several other references, like Thibos, have referred to the same equation
+% but I have not found a full derivation.
+% http://research.opt.indiana.edu/Library/HVO/Handbook.html
+% (accessed 3/11/12) comes close in the "numerical example: defocus"
+% section, but is still missing a factor of 2 in the denominator.
+% (KP)
 
 return
