@@ -15,6 +15,9 @@ function [uData, pData] = wvfPlot(wvfP,pType,varargin)
 %   1d psf space normalized - 
 %   2d psf space - 
 %   2d psf space normalized - 
+%   
+%   2d pupil function space (KP 3/11/12, in progress)
+%   call with '2d pupil function space' for now. uses MM.
 %
 % Examples
 %    [~,p]=wvfPlot(wvfP,'1d psf space',unit,maxVal);
@@ -152,6 +155,23 @@ case {'1dpsfspace','1dpsfspacenormalized'}
         
         uData.x = samp; uData.y = samp; uData.z = psf;
         set(gcf,'userdata',uData);
+        
+    case {'2dpupilfunctionspace'}
+        %plots the 2d pupil function PHASE for calculated pupil
+        %
+        %some things to potentially fix: 
+        %1. modify colormap so that periodicity of phase is accounted for.
+        %2. code in other plotting scales (distances or angles)
+        %3. confirm plotting: currently 90deg flipped of wikipedia 
+        %4. somehow remove the 0 phase areas outside of calculated pupil
+        
+        samp = wvfGet(wvfP,'samples space');
+        pupilfunc = wvfGet(wvfP,'pupil function');
+        
+        pData = imagesc(samp,samp,angle(pupilfunc));
+        s = sprintf('Position mm');
+        xlabel(s); ylabel(s);
+        zlabel('Phase'); title('Pupil Function Phase'); colorbar;
 
     otherwise
         error('Unknown plot type %s\n',pType);
