@@ -159,14 +159,28 @@ case {'1dpsfspace','1dpsfspacenormalized'}
     case {'2dpupilfunctionspace'}
         %plots the 2d pupil function PHASE for calculated pupil
         %
+        %wvfPlot(wvfP,'2d pupil function space','mm',pRange)
+        %
         %some things to potentially fix: 
         %1. modify colormap so that periodicity of phase is accounted for.
         %2. code in other plotting scales (distances or angles)
         %3. confirm plotting: currently 90deg flipped of wikipedia 
         %4. somehow remove the 0 phase areas outside of calculated pupil
+                
+        if isempty(varargin), unit = 'mm';
+        else unit = varargin{1};
+        end
         
         samp = wvfGet(wvfP,'samples space');
         pupilfunc = wvfGet(wvfP,'pupil function');
+        
+        % Extract within the range
+        if length(varargin) > 1
+         pRange = varargin{2}; 
+         index = (abs(samp) < pRange);
+         samp = samp(index);
+         pupilfunc = pupilfunc(index,index);
+        end
         
         pData = imagesc(samp,samp,angle(pupilfunc));
         s = sprintf('Position mm');
