@@ -61,6 +61,9 @@ function wvfP = wvfComputePSF(wvfP)
 %   C. Third, the value of defocusDiopters is added in directly.  
 % These are redundant, it is often most convenient to think in terms of one
 % of the three ways. 
+% KP 3/12/12: Only A and C are redundant? B is the result of longitudinal
+% chromatic aberration (LCA) for using non-nominal wavelength to measure
+% PSF. A and C are defocus due to monochromatic aberrations.
 %
 % See also: wvfComputeConePSF, wvfComputePupilFunction, sceGetParamsParams,
 % wvfGetDefocusFromWavelengthDifference 
@@ -168,7 +171,7 @@ for wl = 1:nWave
     % 3/10/12 KP: this looks like they are adjusting the defocus term in
     % the zernike coefficients (term #4) by adding Longitudinal Chromatic 
     % Aberration.
-    % Takes the original Zernike coeff of defocus and adds the additional 
+    % Takes the original Zernike coeff of "Defocus" and adds the additional 
     % defocus caused by measuring the PSF for the specified wavelength (wl)
     % rather than the given nominal focus wavelength (nominalFocuswl) using 
     % wvfGetDefocusFromWavelengthDifference (which also adds in

@@ -25,6 +25,18 @@ function [uData, pData] = wvfPlot(wvfP,pType,varargin)
 %    [u,p]=wvfPlot(wvfP,'1d psf space',unit,maxVal);
 %    figure; plot(u.x,u.y)
 %
+% Note: wvfPlot currently can only handle PSFs and Pupil Functions which 
+% are only calculated for 1 wavelength at a time (2d matrix instead of 3rd
+% dimension of wavelengths). 
+% For wvfP with PSFs and Pupil Functions calculated over multiple
+% wavelengths, it will be necessary to call wvfPlot on a separate wvf
+% which only has PSF/pupilfunction for single wavelength.
+% Ex: psf = wvfGet(wvfP,'psf'); %3d psf matrix with 3rd dim of wls
+%     psf = psf(:,:,1) %pulls out 2d psf for 1 wavelength
+%     wvftemp = wvfSet(wvfP,'psf',psf); %temp wvf with single wl psf
+%     wvfPlot(wvftemp,'2dpsfspacenormalized','mm',3); %plots single wl
+% KP 3/12/12
+%
 % (c) Wavefront Toolbox Team 2012
 
 if ieNotDefined('wvfP'), error('Wavefront structure required.'); end

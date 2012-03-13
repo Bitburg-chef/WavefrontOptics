@@ -55,8 +55,11 @@ switch parm
 
         % Spectral matters
     case {'wave','wavelist','wavelength'}
-        % Vector of wavelengths  e.g., w = StoWls([400 5 61])
-        wvf.wls = val(:);
+        % Vector of wavelengths  e.g., w = SToWls([400 5 61])
+        % or single wavelength e.g. w = SToWls([550 1 1]) or w = 550;
+        wls = SToWls(val);
+%         wvf.wls = val(:);
+        wvf.wls = wls;
     case {'infocuswavelength','nominalfocuswl'}
         % In focus wavelength nm.  Single value.
         wvf.nominalFocusWl = val; 
@@ -81,10 +84,9 @@ switch parm
     case {'zcoef','zcoeffs'}
         wvf.zcoeffs = val;
     case 'defocusdiopters'
-        % Does not look like defocus is ever stored in diopters.
-        % wvfComputePSF uses wvfGet to call
-        % wvfGetDefocusFromWavelengthDifference, which then
-        % calculates defocus in microns, which is then stored with Set 
+        % Does not look like defocus is ever stored in diopters in other
+        % functions. Only for user to set defocus diopters as an
+        % alternative to using 4th term of zernike coeffs.
         wvf.defocusDiopters = val;           % Defocus
     case 'strehl'
         % Not sure why this is set.  It is derived
@@ -95,6 +97,13 @@ switch parm
         % This is unfortunate.  Anyway, we are supposed to be able to set
         % the defocus in microns as well as in diopters.  This happens in
         % wvfComputePSF.
+        % defocusMicrons is set by wvfGetDefocusFromWavelengthDifference.
+        % It calculates additional longitudinal chromatic aberration (LCA)
+        % from using non-nominal focus wavelengths and adds it to 
+        % user-specified defocus diopters, then converts it all to um.
+        % wvfComputePSF adds in this defocus microns (same units as rest of
+        % pupil function calculations) to zcoeff(4)/defocus if present.
+        % KP 3/12/12
         wvf.defocusMicrons = val;
     case 'weightspectrum'
         wvf.weightingSpectrum = val;         % Defocus

@@ -31,6 +31,10 @@ function [wvfP, phase, A] = wvfComputePupilFunction(wvfP)
 %   caclpupilMM -       Size over which returned pupil function is calculated, in MM.
 %                       Must be smaller than measpupilMM.
 %   wls -               Wavelength to compute for, in NM.  Can only pass one wavelenth, despite plural in the name.
+%                       This is because wvfComputePupilFunction(tmpwvfParams) is passed a temporary wvf by wvfComputePSF 
+%                       which only has 1 wavelength. wvfComputePSF handles the loop through the vector of wls
+%                       that the original wvfP contains.
+%                       
 %   sizeOfFieldPixels - Linear size of square image over which the pupil function is computed.
 %                       Note that this is not the number of pixels across the pupil unless
 %                       the sizeOfFieldMM parameter is equal to the calpupilMM parameter.

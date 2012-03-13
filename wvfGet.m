@@ -70,6 +70,7 @@ switch parm
     case {'wave','wavelength','wavelengths'}
         % wvfGet(wvf,'wave',unit)
         % wvfGet(wvf,'wave','um')
+        % May be a vector or single wavelength
         val = wvf.wls;
         
         % Adjust units

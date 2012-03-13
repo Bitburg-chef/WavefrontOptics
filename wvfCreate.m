@@ -18,7 +18,10 @@ function wvfP = wvfCreate(varargin)
 
 % Wavelength samples - Default is 550, monochromatic
 S = [550 1 1]; 
-% Considering removing this and specifying only 1 wl at a time (KP)
+% S is a length 3 vector of the format: [start spacing Nsamples]
+% ex: S = [400 50 5]; 5 wavelength samples 400, 450, 500, 550, 600
+% wvfP = wvfCreate('wave',S); will have column of wavelength samples as
+%                             specified by S
 
 % Book-keeping
 wvfP.name = 'default';
@@ -62,7 +65,7 @@ wvfP.sizeOfFieldMM = 16.212;        % Not sure which field
 % Specifies the wavelength(s) over which the pupil function and PSF will 
 % be calculated. Needed in order to find axial aberration (LCA) caused
 % by not necessarily using nominal focus wavelength.
-% Will modify zcoeffs(4) "Defocus" term.
+% Contributes additional defocus to zcoeffs(4)/"defocus" in wvfComputePSF
 wls = SToWls(S);
 wvfP.wls         = wls;             % Wavelength samples
 
