@@ -178,6 +178,7 @@ case {'1dpsfspace','1dpsfspacenormalized'}
         %2. code in other plotting scales (distances or angles)
         %3. confirm plotting: currently 90deg flipped of wikipedia 
         %4. somehow remove the 0 phase areas outside of calculated pupil
+        %5. fix units of pupil function plot
                 
         if isempty(varargin), unit = 'mm';
         else unit = varargin{1};
@@ -196,6 +197,7 @@ case {'1dpsfspace','1dpsfspacenormalized'}
         
         pData = imagesc(samp,samp,angle(pupilfunc));
         s = sprintf('Position mm');
+        % this is a placeholder, need to fix with actual units
         xlabel(s); ylabel(s);
         zlabel('Phase'); title('Pupil Function Phase'); colorbar;
 
