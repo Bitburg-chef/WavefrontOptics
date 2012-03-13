@@ -195,7 +195,7 @@ case {'1dpsfspace','1dpsfspacenormalized'}
          pupilfunc = pupilfunc(index,index);
         end
         
-        pData = imagesc(samp,samp,angle(pupilfunc));
+        pData = imagesc(samp,samp,angle(pupilfunc),[-pi pi]);
         s = sprintf('Position mm');
         % this is a placeholder, need to fix with actual units
         xlabel(s); ylabel(s);

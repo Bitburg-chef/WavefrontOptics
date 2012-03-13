@@ -123,7 +123,7 @@ Zcoeffs(3) = 0.75; %just a non-zero weight
 
 % We create a new wvf with this coefficient weighting
 
-wvf3 = wvfSet(wvf0,'zcoeffs',Zcoeff);
+wvf3 = wvfSet(wvf0,'zcoeffs',Zcoeffs);
 % Here we have started with the default, wvf0, and chosen to set the
 % zcoeff column vector to be our new non-zero vector. 
 
@@ -191,10 +191,11 @@ wvfPlot(wvf5,'2d psf space normalized','mm',maxMM);
 clear all; close all;
 
 wvf0 = wvfCreate;
+wvf0 = wvfSet(wvf0,'calculated pupil',wvfGet(wvf0,'measured pupil','mm'));
 
-jindices = 3:9;
+jindices = 3:9;  %3:14;
 % figure;
-PupilFuncRange = 2; 
+PupilFuncRange = 4;  %2;
 maxMM = 3; 
 for ii = jindices
     vcNewGraphWin;
