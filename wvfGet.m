@@ -84,7 +84,7 @@ switch parm
         val = wvf.weightingSpectrum;         % Defocus
     case 'nwave'
         val = length(wvf.wls);
-    case {'infocuswavelength','infocuswave'}
+    case {'infocuswavelength','infocuswave','nominalfocuswl'}
         val = wvf.nominalFocusWl;            % In focus wavelength (nm)
         
         % Pupil parameters

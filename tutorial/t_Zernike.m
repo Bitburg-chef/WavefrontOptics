@@ -217,13 +217,87 @@ end
 
 %_______________________________________________________________________
 %
-% How chromatic aberration affects the PSF
+% How chromatic aberration affects the PSF / "Defocus"
 %
 
-    
-% All aberrations other than defocus (including astigmatism) are assumed
-% to be constant with wavelength, as variation with wavelength in other
-% aberrations is known to be small.
+clear all; close all;
+
+% What happens if we want to know how the PSF looks for different wavelengths?
+% You may have learned that optical systems can have chromatic aberration,
+% where one wavelength is brought into focus but others may be blurry
+% because they are refracted closer or farther from the imaging plane. In
+% this case, the PSF is dependent on wavelength. 
+
+% We can always set this into "in-focus" wavelength into our wvf:
+
+wvf0 = wvfCreate;
+wvf0 = wvfSet(wvf0,'nominalfocuswl',550); 
+% This indicates that the data is given for a nominal focus of 550nm, which
+% is also the default in wvfCreate. 
+
+% It turns out that all aberrations other than "Defocus" have variations
+% with wavelength that are known to be small. As a result, the Zernike
+% coefficients don't have to be modified, apart from one.
+% zcoeff(4) is the "Defocus" of a pupil. It is what typical eyeglasses
+% correct for using + or - diopters lenses. The wavefront toolbox combines
+% the longitudinal chromatic aberration (LCA) into this coefficient.
+
+% We can first make a diffraction-limited PSF from wvf0:
+wvf0 = wvfComputePSF(wvf0);
+vcNewGraphWin;
+maxMM = 3; 
+wvfPlot(wvf0,'1dpsfspacenormalized','mm',maxMM);
+hold on;
+
+% Let's keep the calculated wavelength at default 550nm but change
+% the in focus wavelength:
+
+wvf1 = wvfCreate;
+wvf1 = wvfSet(wvf1,'nominalfocuswl',600); %sets nominal wavelength to 600nm
+wvf1 = wvfComputePSF(wvf1);
+wvfPlot(wvf1,'1dpsfspacenormalized','mm',maxMM);
+
+% The new plot looks wider due to the chromatic aberration, even though
+% it's still just the diffraction-limited wavefront function (the Zernike
+% coefficients are still 0).
+
+% Let's see how this LCA effect is contained solely within the Defocus
+% coefficient.
+
+defocusMicrons = wvfGetDefocusFromWavelengthDifference(wvf1);
+% This function takes in a wavefront which contains information about the
+% specified nominal wavelength and calculated wavelength. It computes the
+% defocus in diopters from using unmatched wavelengths, and returns the
+% defocus converted into microns. This is important because Zernike
+% coefficients are assumed to be given in microns.
+
+% Now that we can make a new wavefront which does not have the mismatched
+% wavelengths:
+wvf2 = wvfCreate;
+nominalWl = wvfGet(wvf2,'nominalfocuswl')
+calcWl = wvfGet(wvf2,'wave')
+% We can see that unlike before, the two wavelengths are identical.
+
+% Instead, we will make our adjustment purely to the j=4 Zernike
+% coefficient (you may remember from our earlier plotting that this term on
+% its own has a radially symmetric PSF which widens the diffraction limited
+% PSF). 
+
+Zcoeffs = zeros(65,1);
+Zcoeffs(4) = defocusMicrons;
+
+wvf2 = wvfSet(wvf2,'zcoeffs',Zcoeffs);
+wvf2 = wvfComputePSF(wvf2);
+wvfPlot(wvf2,'1dpsfspacenormalized','mm',maxMM);
+
+% The two aberrated plots are identical. The defocus of a pupil can be
+% measured separately, whether using Zernike coeffs or in diopters, but any
+% chromatic aberration is added solely into this coefficient.
+
+
+
+
+
 
 
 
