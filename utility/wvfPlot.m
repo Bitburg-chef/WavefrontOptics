@@ -168,7 +168,7 @@ case {'1dpsfspace','1dpsfspacenormalized'}
         uData.x = samp; uData.y = samp; uData.z = psf;
         set(gcf,'userdata',uData);
         
-    case {'2dpupilfunctionspace'}
+    case {'2dpupilfunction'}
         %plots the 2d pupil function PHASE for calculated pupil
         %
         %wvfPlot(wvfP,'2d pupil function space','mm',pRange)
@@ -183,6 +183,8 @@ case {'1dpsfspace','1dpsfspacenormalized'}
         if isempty(varargin), unit = 'mm';
         else unit = varargin{1};
         end
+        % need to change this, pupil function shouldn't be an mm related
+        % plot...
         
         samp = wvfGet(wvfP,'samples space');
         pupilfunc = wvfGet(wvfP,'pupil function');
@@ -196,8 +198,8 @@ case {'1dpsfspace','1dpsfspacenormalized'}
         end
         
         pData = imagesc(samp,samp,angle(pupilfunc),[-pi pi]);
-        s = sprintf('Position mm');
-        % this is a placeholder, need to fix with actual units
+        s = sprintf('Normalized coordinate');
+        % this is a placeholder, need to fix with actual units?
         xlabel(s); ylabel(s);
         zlabel('Phase'); title('Pupil Function Phase'); colorbar;
 

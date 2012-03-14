@@ -137,7 +137,7 @@ wvf3 = wvfComputePupilFunction(wvf3);
 % Now we plot the pupil function, which captures phase information about
 % the wavefront aberrations
 
-pupilfuncrange = 2;
+pupilfuncrange = 5;
 
 vcNewGraphWin;
 wvfPlot(wvf3,'2d pupil function space','mm',pupilfuncrange);
@@ -196,7 +196,7 @@ wvf0 = wvfSet(wvf0,'calculated pupil',wvfGet(wvf0,'measured pupil','mm'));
 jindices = 3:9;  %3:14;
 % figure;
 PupilFuncRange = 4;  %2;
-maxMM = 3; 
+maxMM = 4; 
 for ii = jindices
     vcNewGraphWin;
     zcoeffs = zeros(65,1);
@@ -204,9 +204,13 @@ for ii = jindices
     wvf = wvfSet(wvf0,'zcoeffs',zcoeffs);
     wvf = wvfComputePSF(wvf);
 %     subplot(2,7,ii-2);
-    wvfPlot(wvf,'2d pupil function space','mm',PupilFuncRange);
+    subplot(2,1,1);
+    wvfPlot(wvf,'2d pupil function','mm',PupilFuncRange);
 %     subplot(2,7,ii+5);
-%     wvfPlot(wvf,'2d psf space','mm',maxMM);
+    subplot(2,1,2);
+    wvfPlot(wvf,'2d psf space','mm',maxMM);
+%     psf = wvfGet(wvf,'psf');
+%     imagesc(psf);
 end
 
 % this subplotting is really ugly. need to consider another way.
@@ -217,7 +221,9 @@ end
 %
 
     
-
+% All aberrations other than defocus (including astigmatism) are assumed
+% to be constant with wavelength, as variation with wavelength in other
+% aberrations is known to be small.
 
 
 
