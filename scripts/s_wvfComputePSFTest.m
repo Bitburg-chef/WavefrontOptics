@@ -12,6 +12,7 @@
 % See also: wvfComputePSF, wvfComputePupilFunction,
 %           sceCreate, wvfGetDefocusFromWavelengthDifference
 %
+% 3/15/12  MDL  Updated to use wvfSet and fieldSampleSizeMMperPixel
 % 8/21/11  dhb  Wrote it, based on code provided by Heidi Hofer.
 % 9/7/11   dhb  Got this working with wvfParams i/o.
 %
@@ -65,11 +66,11 @@ index = find(abs(arcminutes) < 2);
 radians = (pi/180)*(arcminutes/60);
 
 % Compare to what we get from PTB AiryPattern function -- should match
-onedPSF2 = AiryPattern(radians,wvfParams.calcpupilMM,wvfParams.wls(1));
+onedPSF2 = AiryPattern(radians,wvfGet(wvfParams,'calculated pupil'),wvfParams.wls(1));
 plot(arcminutes(index),onedPSF2(index),'b','LineWidth',2);
 xlabel('Arc Minutes');
 ylabel('Normalized PSF');
-title(sprintf('Diffraction limited, %0.1f mm pupil, %0.f nm',wvfParams.calcpupilMM,wvfParams.wls(1)));
+title(sprintf('Diffraction limited, %0.1f mm pupil, %0.f nm',wvfGet(wvfParams,'calculated pupil'),wvfParams.wls(1)));
 
 %% Repeat the calculation with a wavelength offset
 
@@ -83,11 +84,11 @@ vcNewGraphWin;
 wvfPlot(wvfParams,'1d psf angle','min',maxMIN)
  
 hold on
-onedPSF2 = AiryPattern(radians,wvfParams.calcpupilMM,wvfParams.wls(1));
+onedPSF2 = AiryPattern(radians,wvfGet(wvfParams,'calculated pupil'),wvfParams.wls(1));
 plot(arcminutes(index),onedPSF2(index),'b','LineWidth',2);
 xlabel('Arc Minutes');
 ylabel('Normalize PSF');
-title(sprintf('Diffraction limited, %0.1f mm pupil, %0.f nm',wvfParams.calcpupilMM,wvfParams.wls(1)));
+title(sprintf('Diffraction limited, %0.1f mm pupil, %0.f nm',wvfGet(wvfParams,'calculated pupil'),wvfParams.wls(1)));
 
 %% Repeat the calculation with a different pupil size
 pupilMM = 7;   % In millimeters?
@@ -99,11 +100,11 @@ vcNewGraphWin;
 wvfPlot(wvfParams,'1d psf angle','min',maxMIN);
 hold on;
 
-onedPSF2 = AiryPattern(radians,wvfParams.calcpupilMM,wvfParams.wls(1));
+onedPSF2 = AiryPattern(radians,wvfGet(wvfParams,'calculated pupil'),wvfParams.wls(1));
 plot(arcminutes(index),onedPSF2(index),'b','LineWidth',2);
 xlabel('Arc Minutes');
 ylabel('Normalized PSF');
-title(sprintf('Diffraction limited, %0.1f mm pupil, %0.f nm',wvfParams.calcpupilMM,wvfParams.wls(1)));
+title(sprintf('Diffraction limited, %0.1f mm pupil, %0.f nm',wvfGet(wvfParams,'calculated pupil'),wvfParams.wls(1)));
 
 %% Put ISET diffraction comparisons here or insert above
 
@@ -127,7 +128,7 @@ title(sprintf('Diffraction limited, %0.1f mm pupil, %0.f nm',wvfParams.calcpupil
 
 nominalFocusWavelength = 550;
 theWavelength = 550;
-sizeOfFieldPixels = 201;
+fieldSampleSizeMMperPixel = 16.212/201;
 sizeOfFieldMM = 16.212;
 measpupilMM = 8;
 calcpupilMM = 3;
@@ -142,7 +143,7 @@ wvfParams0 = wvfSet(wvfParams0,'infocus wavelength',nominalFocusWavelength);
 wvfParams0 = wvfSet(wvfParams0,'defocus diopters',defocusDiopters);
 
 % This looks like it might be redundant and should be removed
-wvfParams0 = wvfSet(wvfParams0,'field size pixels',sizeOfFieldPixels);
+wvfParams0 = wvfSet(wvfParams0,'fieldsamplesize',fieldSampleSizeMMperPixel);
 wvfParams0 = wvfSet(wvfParams0,'field size mm',sizeOfFieldMM);
 
 wavelengthOffset = 50;
@@ -150,9 +151,9 @@ arcminPerPix = wvfGet(wvfParams1,'arcmin per pix');
 
 figure; clf; hold on
 wvfParams1 = wvfComputePSF(wvfParams0);
-whichRow = floor(wvfParams1.sizeOfFieldPixels/2) + 1;
+whichRow = floor(wvfGet(wvfParams1,'npixels')/2) + 1;
 onedPSF1 = wvfParams1.psf(whichRow,:);
-arcminutes = arcminPerPix*((1:wvfParams1.sizeOfFieldPixels)-whichRow);
+arcminutes = arcminPerPix*((1:wvfGet(wvfParams1,'npixels'))-whichRow);
 index = find(abs(arcminutes) < 2);
 plot(arcminutes(index),onedPSF1(index),'r','LineWidth',4);
 wvfParams2 = wvfParams0;
@@ -182,7 +183,7 @@ wvfParams0.calcpupilMM = 8;
 wvfParams0.wls = 550;
 wvfParams0.nominalFocusWl = 550;
 wvfParams0.defocusDiopters = 0;
-wvfParams0.sizeOfFieldPixels = 201;
+wvfParams0.fieldSampleSizeMMperPixel = 16.212/201;
 wvfParams0.sizeOfFieldMM = 16.212;
 wvfParams0.sceParams = sceCreate(theWavelength,'berendshot');
 
@@ -191,9 +192,9 @@ wvfParams1 = wvfParams0;
 wvfParams1 = rmfield(wvfParams1,'sceParams');
 % wvfParams1.sceParams = [];
 [wvfParams1] = wvfComputePSF(wvfParams1);
-whichRow = floor(wvfParams1.sizeOfFieldPixels/2) + 1;
+whichRow = floor(wvfGet(wvfParams1,'npixels')/2) + 1;
 onedPSF1 = wvfParams1.psf(whichRow,:);
-arcminutes = wvfParams1.arcminPerPix*((1:wvfParams1.sizeOfFieldPixels)-whichRow);
+arcminutes = arcminPerPix*((1:wvfGet(wvfParams1,'npixels'))-whichRow);
 index = find(abs(arcminutes) < 4);
 plot(arcminutes(index),onedPSF1(index),'r','LineWidth',4);
 wvfParams2 = wvfParams0;
@@ -237,7 +238,7 @@ wvfParams0.calcpupilMM = 3;
 wvfParams0.wls = 550;
 wvfParams0.nominalFocusWl = 550;
 wvfParams0.defocusDiopters = 0;
-wvfParams0.sizeOfFieldPixels = 201;
+wvfParams0.fieldSampleSizeMMperPixel = 16.212/201;
 wvfParams0.sizeOfFieldMM = 16.212;
 theZernikeCoeffs = load('sampleZernikeCoeffs.txt');
 DOSCE = 0;
@@ -261,8 +262,8 @@ for i = 1:9
     wvfParams1 = wvfParams0;
     wvfParams1.zcoeffs = zeros(61,1);
     wvfParams1 = wvfComputePSF(wvfParams1);
-    whichRow = floor(wvfParams1.sizeOfFieldPixels/2) + 1;
-    arcminutes = wvfParams1.arcminPerPix*((1:wvfParams1.sizeOfFieldPixels)-whichRow);
+    whichRow = floor(wvfGet(wvfParams1,'npixels')/2) + 1;
+    arcminutes = arcminPerPix*((1:wvfGet(wvfParams1,'npixels'))-whichRow);
     diffracPSF1 = wvfParams1.psf;
     onedPSF1 = wvfParams1.psf(whichRow,:);
     index = find(abs(arcminutes) < 6);

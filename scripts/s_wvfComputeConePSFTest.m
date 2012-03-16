@@ -9,6 +9,7 @@
 % The circular averaging is not a good idea for a single subject, but if
 % you want to obtain an average over subjects it seems like a good idea.
 %
+% 3/15/12  MDL  Edited to use wvfSet. Also updated to use fieldSampleSizeMMperPixel
 % 8/21/11  dhb  Wrote it.
 
 %% Clear
@@ -31,7 +32,7 @@ whichSubject = 1;
 theZernikeCoeffs = load('sampleZernikeCoeffs.txt');
 
 wvfParams0 = wvfCreate;
-wvfParams0.zcoeffs = theZernikeCoeffs(:,whichSubject);
+wvfParams0 = wvfSet(wvfParams0,'zcoeffs',theZernikeCoeffs(:,whichSubject));
 
 % Set in the create call.
 % wvfParams0.measpupilMM = 6;
@@ -39,19 +40,19 @@ wvfParams0.zcoeffs = theZernikeCoeffs(:,whichSubject);
 % wvfParams0.wls = wls;
 % wvfParams0.nominalFocusWl = 550;
 % wvfParams0.defocusDiopters = 0;
-% wvfParams0.sizeOfFieldPixels = 201;
+% wvfParams0.fieldSampleSizeMMperPixel = 16.212/201;
 % wvfParams0.sizeOfFieldMM = 16.212;
 % wvfParams0.T_cones = T_cones;
 % wvfParams0.weightingSpectrum = weightingSpectrum;
 
-wls = wvfParams0.wls;
+wls = wvfGet(wvfParams0,'wave');
 diffracZcoeffs = zeros(65,1);
 plotLimit = 2;
 
 % Stiles-Crawford effect
 DOSCE = 0;
-if (DOSCE), wvfParams0.sceParams = sceGetParams(wls,'berendshot');
-else        wvfParams0.sceParams = sceGetParams(wls,'none');
+if (DOSCE), wvfParams0 = wvfSet(wvfParams0,'sceParams',sceCreate(wls,'berendshot'));
+else        wvfParams0 = wvfSet(wvfParams0,'sceParams',sceCreate(wls,'none'));
 end
 
 CIRCULARLYAVERAGE = 1;
@@ -78,8 +79,8 @@ if (CIRCULARLYAVERAGE)
     mpsfd = psfCircularlyAverage(mpsfd);
     spsfd = psfCircularlyAverage(spsfd);
 end
-whichRow = floor(wvfParams1.sizeOfFieldPixels/2) + 1;
-arcminutes = wvfParams1.arcminperpix*((1:wvfParams1.sizeOfFieldPixels)-whichRow);
+whichRow = floor(wvfGet(wvfParams1,'npixels')/2) + 1;
+arcminutes = wvfParams1.arcminperpix*((1:wvfGet(wvfParams1,'npixels'))-whichRow);
 
 % Make a plot through the peak of the returned PSFs.
 theFig = figure; clf;

@@ -22,7 +22,8 @@ function wvfParams = wvfComputeOptimizedPSF(wvfParams)
 %   wls -               Column vector of wavelengths over which to compute, in NANOMETERS.
 %   nominalFocusWl -    Wavelength (in nm) of nominal focus.
 %   defocusDiopters -   Defocus to add in (signed), in diopters.
-%   sizeOfFieldPixels - Linear size of square image over which the pupil function is computed.
+%   fieldSampleSizeMMperPixel - Size in mm of each pixel of the pupil
+%                       function.
 %   sizeOfFieldMM -     Size of square image over which the pupile function is computed in MM.
 %
 % Optional input fields for wvfParams struct

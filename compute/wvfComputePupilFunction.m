@@ -28,18 +28,19 @@ function [wvfP, phase, A] = wvfComputePupilFunction(wvfP)
 %                       through zcoeffs(5) are astigmatism and defocus.  You can pass fewer than the full 65
 %                       coefficients, in which case the trailing coefficients are set to zero.
 %   measpupilMM -       Size of pupil characterized by the coefficients, in MM.
+%                       This is how large the physical pupil is and
+%                       determines the normalized scaling of rho and the
+%                       Zernike polynomals.
 %   caclpupilMM -       Size over which returned pupil function is calculated, in MM.
-%                       Must be smaller than measpupilMM.
+%                       Must be smaller than measpupilMM. The pupil
+%                       function is set to zero outside this radius.
 %   wls -               Wavelength to compute for, in NM.  Can only pass one wavelenth, despite plural in the name.
 %                       This is because wvfComputePupilFunction(tmpwvfParams) is passed a temporary wvf by wvfComputePSF 
 %                       which only has 1 wavelength. wvfComputePSF handles the loop through the vector of wls
 %                       that the original wvfP contains.
 %                       
-%   sizeOfFieldPixels - Linear size of square image over which the pupil function is computed.
-%                       Note that this is not the number of pixels across the pupil unless
-%                       the sizeOfFieldMM parameter is equal to the calpupilMM parameter.
-%                       Indeed, the number of pixels across the calculated pupil is this number
-%                       times the ratio (calcpupilMM/sizeOfFieldMM).
+%   fieldSampleSizeMMperPixel - Size in mm of each pixel of the pupil
+%                       function.
 %   sizeOfFieldMM -     Size of square image over which the pupil function is computed in MM.
 %                       Setting this larger than the calculated pupil size prevents undersampling
 %                       of the PSF that will ultimately be computed from the pupil function.

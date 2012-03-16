@@ -26,7 +26,8 @@ function wvfP = wvfComputePSF(wvfP)
 %   wls -               Column vector of wavelengths over which to compute, in NANOMETERS.
 %   nominalFocusWl -    Wavelength (in nm) of nominal focus.
 %   defocusDiopters -   Defocus to add in (signed), in diopters.
-%   sizeOfFieldPixels - Linear size of square image over which the pupil function is computed.
+%   fieldSampleSizeMMperPixel - Size in mm of each pixel of the pupil
+%                       function.
 %   sizeOfFieldMM -     Size of square image over which the pupile function is computed in MM.
 %
 % Optional input fields for wvfP struct
@@ -179,7 +180,9 @@ for wl = 1:nWave
     tmpWvfParams.zcoeffs(4) = doriginal + wvfP.defocusMicrons(wl); 
     
     % Rescaling so that PSF pixel dimension is constant with wavelength.
-    tmpWvfParams.sizeOfFieldMM = wvfP.sizeOfFieldMM*tmpWvfParams.wls/setScaleWl;
+    npixels = wvfGet(wvfP,'npixels');
+    tmpWvfParams = wvfSet(tmpWvfParams,'fieldSampleSize',wvfGet(wvfP,'field sample size mm')*tmpWvfParams.wls/setScaleWl);
+    tmpWvfParams = wvfSet(tmpWvfParams,'field size mm',wvfGet(tmpWvfParams,'field sample size mm')*npixels);
     
     % Compute the pupil function
     tmpWvfParams = wvfComputePupilFunction(tmpWvfParams);

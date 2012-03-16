@@ -12,7 +12,7 @@ wvfParams0 = wvfCreate;
 % In focus wavelength and other parameters
 nominalFocusWavelength = 550;
 theWavelength = 550;
-sizeOfFieldPixels = 201;
+fieldSampleSizeMMperPixel = 16.212/201;
 sizeOfFieldMM = 16.212;
 measpupilMM = 8;
 calcpupilMM = 8;  % Bigger pupil to see the effect
@@ -27,7 +27,7 @@ wvfParams0 = wvfSet(wvfParams0,'infocus wavelength',nominalFocusWavelength);
 wvfParams0 = wvfSet(wvfParams0,'defocus diopters',defocusDiopters);
 
 % This looks like it might be redundant and should be removed
-wvfParams0 = wvfSet(wvfParams0,'field size pixels',sizeOfFieldPixels);
+wvfParams0 = wvfSet(wvfParams0,'field sample size',fieldSampleSizeMMperPixel);
 wvfParams0 = wvfSet(wvfParams0,'field size mm',sizeOfFieldMM);
 
 % For plotting limits

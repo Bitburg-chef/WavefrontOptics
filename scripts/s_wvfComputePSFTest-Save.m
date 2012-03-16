@@ -6,6 +6,7 @@
 % See also: wvfComputePSF, wvfComputePupilFunction,
 %           sceCreate, wvfGetDefocusFromWavelengthDifference
 %
+% 3/16/12  MDL  Updated to use wvfSet and fieldSampleSizeMMperPixel
 % 8/21/11  dhb  Wrote it, based on code provided by Heidi Hofer.
 % 9/7/11   dhb  Got this working with wvfParams i/o.
 %
@@ -37,10 +38,10 @@ wvfParams = wvfComputePSF(wvfParams0);
 % vcNewGraphWin; mesh(wvfParams.psf)
 
 %% Extract a row of the psf
-whichRow = floor(wvfParams.sizeOfFieldPixels/2) + 1;
+whichRow = floor(wvfGet(wvfParams,'npixels')/2) + 1;
 onedPSF1 = wvfParams.psf(whichRow,:);
 onedPSF1 = onedPSF1/max(onedPSF1(:));
-arcminutes = wvfParams.arcminperpix*((1:wvfParams.sizeOfFieldPixels)-whichRow);
+arcminutes = wvfParams.arcminperpix*((1:wvfGet(wvfParams,'npixels')/2)-whichRow);
 index = find(abs(arcminutes) < 2);
 
 % Make a plot through the peak of the returned PSF, normalized to peak of 1.
@@ -66,10 +67,10 @@ wvfParams1.wls = wvfParams1.wls - wavelengthOffset;
 wvfParams1.nominalFocusWl = wvfParams1.nominalFocusWl - wavelengthOffset;
 
 [wvfParams] = wvfComputePSF(wvfParams1);
-whichRow = floor(wvfParams.sizeOfFieldPixels/2) + 1;
+whichRow = floor(wvfGet(wvfParams,'npixels')/2) + 1;
 onedPSF1 = wvfParams.psf(whichRow,:);
 onedPSF1 = onedPSF1/max(onedPSF1(:));
-arcminutes = wvfParams.arcminperpix*((1:wvfParams.sizeOfFieldPixels)-whichRow);
+arcminutes = wvfParams.arcminperpix*((1:wvfGet(wvfParams,'npixels')/2)-whichRow);
 index = find(abs(arcminutes) < 2);
 
 subplot(1,3,2); hold on
@@ -87,10 +88,10 @@ pupilOffset = 4;   % In millimeters?
 wvfParams2 = wvfParams0;
 wvfParams2.calcpupilMM = wvfParams2.calcpupilMM + pupilOffset;
 [wvfParams] = wvfComputePSF(wvfParams2);
-whichRow = floor(wvfParams.sizeOfFieldPixels/2) + 1;
+whichRow = floor(wvfGet(wvfParams,'npixels')/2) + 1;
 onedPSF1 = wvfParams.psf(whichRow,:);
 onedPSF1 = onedPSF1/max(onedPSF1(:));
-arcminutes = wvfParams.arcminperpix*((1:wvfParams.sizeOfFieldPixels)-whichRow);
+arcminutes = wvfParams.arcminperpix*((1:wvfGet(wvfParams,'npixels')/2)-whichRow);
 index = find(abs(arcminutes) < 2);
 
 subplot(1,3,3); hold on
@@ -121,7 +122,7 @@ title(sprintf('Diffraction limited, %0.1f mm pupil, %0.f nm',wvfParams.calcpupil
 
 nominalFocusWavelength = 550;
 theWavelength = 550;
-sizeOfFieldPixels = 201;
+fieldSampleSizeMMperPixel = 16.212/201;
 sizeOfFieldMM = 16.212;
 measpupilMM = 8;
 calcpupilMM = 3;
@@ -136,7 +137,7 @@ wvfParams0 = wvfSet(wvfParams0,'infocus wavelength',nominalFocusWavelength);
 wvfParams0 = wvfSet(wvfParams0,'defocus diopters',defocusDiopters);
 
 % This looks like it might be redundant and should be removed
-wvfParams0 = wvfSet(wvfParams0,'field size pixels',sizeOfFieldPixels);
+wvfParams0 = wvfSet(wvfParams0,'field sample size mm',fieldSampleSizeMMperPixel);
 wvfParams0 = wvfSet(wvfParams0,'field size mm',sizeOfFieldMM);
 
 wavelengthOffset = 50;
@@ -144,9 +145,9 @@ wavelengthOffset = 50;
 figure; clf; hold on
 wvfParams1 = wvfParams0;
 [wvfParams1] = wvfComputePSF(wvfParams0);
-whichRow = floor(wvfParams1.sizeOfFieldPixels/2) + 1;
+whichRow = floor(wvfGet(wvfParams1,'npixels')/2) + 1;
 onedPSF1 = wvfParams1.psf(whichRow,:);
-arcminutes = wvfParams1.arcminperpix*((1:wvfParams1.sizeOfFieldPixels)-whichRow);
+arcminutes = wvfParams1.arcminperpix*((1:wvfGet(wvfParams1,'npixels'))-whichRow);
 index = find(abs(arcminutes) < 2);
 plot(arcminutes(index),onedPSF1(index),'r','LineWidth',4);
 wvfParams2 = wvfParams0;
@@ -176,7 +177,7 @@ wvfParams0.calcpupilMM = 8;
 wvfParams0.wls = 550;
 wvfParams0.nominalFocusWl = 550;
 wvfParams0.defocusDiopters = 0;
-wvfParams0.sizeOfFieldPixels = 201;
+wvfParams0.fieldSampleSizeMMperPixel = 16.212/201;
 wvfParams0.sizeOfFieldMM = 16.212;
 wvfParams0.sceParams = sceCreate(theWavelength,'berendshot');
 
@@ -184,9 +185,9 @@ figure; clf; hold on
 wvfParams1 = wvfParams0;
 wvfParams1.sceParams = [];
 [wvfParams1] = wvfComputePSF(wvfParams1);
-whichRow = floor(wvfParams1.sizeOfFieldPixels/2) + 1;
+whichRow = floor(wvfGet(wvfParams1,'npixels')/2) + 1;
 onedPSF1 = wvfParams1.psf(whichRow,:);
-arcminutes = wvfParams1.arcminperpix*((1:wvfParams1.sizeOfFieldPixels)-whichRow);
+arcminutes = wvfParams1.arcminperpix*((1:wvfGet(wvfParams1,'npixels'))-whichRow);
 index = find(abs(arcminutes) < 4);
 plot(arcminutes(index),onedPSF1(index),'r','LineWidth',4);
 wvfParams2 = wvfParams0;
@@ -230,7 +231,7 @@ wvfParams0.calcpupilMM = 3;
 wvfParams0.wls = 550;
 wvfParams0.nominalFocusWl = 550;
 wvfParams0.defocusDiopters = 0;
-wvfParams0.sizeOfFieldPixels = 201;
+wvfParams0.fieldSampleSizeMMperPixel = 16.212/201;
 wvfParams0.sizeOfFieldMM = 16.212;
 theZernikeCoeffs = load('sampleZernikeCoeffs.txt');
 DOSCE = 0;
@@ -254,8 +255,8 @@ for i = 1:9
     wvfParams1 = wvfParams0;
     wvfParams1.zcoeffs = zeros(61,1);
     wvfParams1 = wvfComputePSF(wvfParams1);
-    whichRow = floor(wvfParams1.sizeOfFieldPixels/2) + 1;
-    arcminutes = wvfParams1.arcminperpix*((1:wvfParams1.sizeOfFieldPixels)-whichRow);
+    whichRow = floor(wvfGet(wvfParams1,'npixels')/2) + 1;
+    arcminutes = wvfParams1.arcminperpix*((1:wvfGet(wvfParams1,'npixels'))-whichRow);
     diffracPSF1 = wvfParams1.psf;
     onedPSF1 = wvfParams1.psf(whichRow,:);
     index = find(abs(arcminutes) < 6);

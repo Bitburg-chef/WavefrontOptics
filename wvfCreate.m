@@ -54,9 +54,9 @@ wvfP.nominalFocusWl = 550;          % In focus wavelength (nm)
 wvfP.defocusDiopters = 0;           % Defocus
 
 % What field are we talking about here?
-% KP: Square field over which pupil function is computed, typically
-% larger than the calculated pupil MM
-wvfP.sizeOfFieldPixels = 201;       % In pixels?  No units?
+% KP&MDL: Square computational area over which pupil's transmission function is 
+% computed, typically larger than the calculated pupil MM
+wvfP.fieldSampleSizeMMperPixel = 16.212/201;
 wvfP.sizeOfFieldMM = 16.212;        % Not sure which field
 
 % Should this be just 1 wavelength or a vector? DHB seems to use wls as the

@@ -10,6 +10,8 @@
 %   ComputePSFTest, wvfComputePSF, wvfComputePupilFunction,
 %   sceGetParamsParams, wvfGetDefocusFromWavelengthDifference
 %
+% 3/14/12  MDL  Changed most struct field assignments to use wvfSet(). Updated
+%               to set fieldSampleRateMMperPixel instead of sizeOfFieldPixels
 % 8/29/11  dhb  Wrote it.
 
 %% Clear
@@ -28,23 +30,24 @@ zernikeFile = 'sampleZernikeCoeffs.txt';
 measpupilMM = 6;
 theZernikeCoeffs = load(zernikeFile);
 
-wvfParams0.measpupilMM = measpupilMM;
-wvfParams0.calcpupilMM = 3;
-wvfParams0.wls = wls;
-wvfParams0.nominalFocusWl = 550;
-wvfParams0.defocusDiopters = 0;
-wvfParams0.sizeOfFieldPixels = 201;
-wvfParams0.sizeOfFieldMM = 16.212;
+wvfParams0 = wvfCreate;
+wvfParams0 = wvfSet(wvfParams0,'measured pupil',measpupilMM);
+wvfParams0 = wvfSet(wvfParams0,'calculated pupil',3);
+wvfParams0 = wvfSet(wvfParams0,'wave',wls);
+wvfParams0 = wvfSet(wvfParams0,'nominalFocusWl',550);
+wvfParams0 = wvfSet(wvfParams0,'defocusDiopters',0);
+wvfParams0 = wvfSet(wvfParams0,'fieldSampleSize',16.212/201);
+wvfParams0 = wvfSet(wvfParams0,'fieldsizemm',16.212);
 wvfParams0.T_cones = T_cones;
-wvfParams0.weightingSpectrum = weightingSpectrum;
-whichRow = floor(wvfParams0.sizeOfFieldPixels/2) + 1;
+wvfParams0 = wvfSet(wvfParams0,'weightspectrum',weightingSpectrum);
+whichRow = floor(wvfGet(wvfParams0,'npixels')/2) + 1;
 
 plotLimit = 2;
 DOSCE = 1;
 if (DOSCE)
-    wvfParams0.sceParams = sceCreate(wls,'berendshot');
+    wvfParams0 = wvfSet(wvfParams0,'sceparams',sceCreate(wls,'berendshot'));
 else
-    wvfParams0.sceParams = sceCreate(wls,'none');
+    wvfParams0 = wvfSet(wvfParams0,'sceparams',sceCreate(wls,'none'));
 end
 CIRCULARLYAVERAGE = 1;
 wvfParams0.coneWeights = [1 1 0];
@@ -92,7 +95,7 @@ onedMPSFd = mpsfd(whichRow,:);
 onedSPSFd = spsfd(whichRow,:);
 maxY = max(max([onedLPSFo(:) onedMPSFo(:) onedSPSFo(:) onedLPSFd(:) onedMPSFd(:) onedSPSFd(:)]));
 
-arcminutes = arcminperpixel(1)*((1:wvfParams0.sizeOfFieldPixels)-whichRow);
+arcminutes = arcminperpixel(1)*((1:wvfGet(wvfParams0,'npixels'))-whichRow);
 index = find(abs(arcminutes) < plotLimit);
 figure; clf;
 subplot(1,3,1); hold on

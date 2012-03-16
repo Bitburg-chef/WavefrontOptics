@@ -27,8 +27,7 @@ function val = wvfGet(wvf,parm,varargin)
 % Pupil parameters
 %     'calculated pupil'
 %     'measured pupil'
-%
-% Field?
+%     'field sample size mm'
 %     'field size pixels'
 %     'field size mm'
 %
@@ -206,9 +205,9 @@ switch parm
         
         % Spatial and angular support
     case {'fieldsizepixels','npixels'}
-        % In pixels?  No units?  Why not a distance or an angle or
-        % something?
-        val = wvf.sizeOfFieldPixels;
+        val = wvf.sizeOfFieldMM/wvf.fieldSampleSizeMMperPixel;
+    case {'fieldsamplesize','fieldsamplesizemm'}
+        val = wvf.fieldSampleSizeMMperPixel;
     case {'angleperpixel','angperpix'}
         % wvfGet(wvf,'angle per pixel',unit)
         %  unit = 'min', 'deg', or 'sec'

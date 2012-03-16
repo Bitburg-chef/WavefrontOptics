@@ -27,9 +27,7 @@ function wvf = wvfSet(wvf,parm,val,varargin)
 %  % Pupil parameters
 %     'calculatedpupil'
 %     'measuredpupil'
-%     
-%  % Field?
-%     'fieldsizepixels'
+%     'fieldSampleSize'
 %     'fieldsizemm'
 %
 %  % Focus parameters
@@ -72,13 +70,24 @@ switch parm
         % Largest measured pupil diameter in mm
         wvf.measpupilMM = val;               
     case {'pupilfunction','pupilfunc'}
+        % pupil field amplitude/phase function
         wvf.pupilfunc = val;
-        
-        % Field?
-    case 'fieldsizepixels'
-        wvf.sizeOfFieldPixels = val;          % In pixels?  No units?
+    case {'fieldsamplesize','fieldsamplesizemmperpixel'}
+        % pixel size of sample pupil field, used to calculate number of
+        % pixels of computed field
+        wvf.fieldSampleSizeMMperPixel = val;         
+        % need to make sure field size is integer multiple of sample size
+        % (so that there are an integer number of pixels)
+        nPixels = ceil(wvf.sizeOfFieldMM/val);
+        wvf.sizeOfFieldMM = val*nPixels;
     case 'fieldsizemm'
+        % total size of computed field in pupil plane, used to calculate
+        % number of pixels of computed field
         wvf.sizeOfFieldMM = val;
+        % need to make sure field size is integer multiple of sample size
+        % (so that there are an integer number of pixels)
+        nPixels = ceil(val/wvf.fieldSampleSizeMMperPixel);
+        wvf.fieldSampleSizeMMperPixel = val/nPixels;
         
         % Focus parameters
     case {'zcoef','zcoeffs'}
