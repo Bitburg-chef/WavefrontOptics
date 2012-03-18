@@ -16,7 +16,8 @@ function [uData, pData] = wvfPlot(wvfP,pType,varargin)
 %   2d psf space - 
 %   2d psf space normalized - 
 %   
-%   2d pupil function space (KP 3/11/12, in progress)
+%   2d pupil amplitude space (KP 3/11/12, in progress)
+%   2d pupil phase space (MDL 3/18/12, in progress)
 %   call with '2d pupil function space' for now. uses MM.
 %
 % Examples
@@ -168,10 +169,43 @@ case {'1dpsfspace','1dpsfspacenormalized'}
         uData.x = samp; uData.y = samp; uData.z = psf;
         set(gcf,'userdata',uData);
         
-    case {'2dpupilfunction'}
+    case {'2dpupilamplitudespace'}
+        %plots the 2d pupil function amplitude for calculated pupil
+        %
+        %wvfPlot(wvfP,'2d pupil amplitude space','mm',pRange)
+        %
+        %some things to potentially fix: 
+        %1. code in other plotting scales (distances or angles)
+        %2. fix units of pupil function plot
+                
+        if isempty(varargin), unit = 'mm';
+        else unit = varargin{1};
+        end
+        % need to change this, pupil function shouldn't be an mm related
+        % plot...
+        
+        samp = wvfGet(wvfP,'samples space');
+        pupilfunc = wvfGet(wvfP,'pupil function');
+        
+        % Extract within the range
+        if length(varargin) > 1
+         pRange = varargin{2}; 
+         index = (abs(samp) < pRange);
+         samp = samp(index);
+         pupilfunc = pupilfunc(index,index);
+        end
+        
+        pData = imagesc(samp,samp,abs(pupilfunc),[0 max(abs(pupilfunc(:)))]);
+        s = sprintf('Position (%s)',unit);
+        % this is a placeholder, need to fix with actual units?
+        xlabel(s); ylabel(s);
+        zlabel('Phase'); title('Pupil Function Amplitude'); colorbar;
+        axis image;
+
+    case {'2dpupilphasespace'}
         %plots the 2d pupil function PHASE for calculated pupil
         %
-        %wvfPlot(wvfP,'2d pupil function space','mm',pRange)
+        %wvfPlot(wvfP,'2d pupil phase space','mm',pRange)
         %
         %some things to potentially fix: 
         %1. modify colormap so that periodicity of phase is accounted for.
@@ -198,10 +232,11 @@ case {'1dpsfspace','1dpsfspacenormalized'}
         end
         
         pData = imagesc(samp,samp,angle(pupilfunc),[-pi pi]);
-        s = sprintf('Normalized coordinate');
+        s = sprintf('Position (%s)',unit);
         % this is a placeholder, need to fix with actual units?
         xlabel(s); ylabel(s);
         zlabel('Phase'); title('Pupil Function Phase'); colorbar;
+        axis image;
 
     otherwise
         error('Unknown plot type %s\n',pType);
