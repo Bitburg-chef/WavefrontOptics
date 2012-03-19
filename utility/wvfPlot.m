@@ -217,8 +217,7 @@ case {'1dpsfspace','1dpsfspacenormalized'}
         if isempty(varargin), unit = 'mm';
         else unit = varargin{1};
         end
-        % need to change this, pupil function shouldn't be an mm related
-        % plot...
+
         
         samp = wvfGet(wvfP,'samples space');
         pupilfunc = wvfGet(wvfP,'pupil function');
