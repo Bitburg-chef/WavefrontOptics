@@ -14,14 +14,9 @@ function wvfP = wvfCreate(varargin)
 % (c) WVF Toolbox Team 2011
 
 % Should have a switch for reading varargin param, val pairs.
-% Param reading/setting seems to be handled in wvfSet instead (KP 3/11/12)
+% Param reading/setting seems to be handled in wvfSet instead, switch
+% is used there. (KP 3/11/12)
 
-% Wavelength samples - Default is 550, monochromatic
-S = [550 1 1]; 
-% S is a length 3 vector of the format: [start spacing Nsamples]
-% ex: S = [400 50 5]; 5 wavelength samples 400, 450, 500, 550, 600
-% wvfP = wvfCreate('wave',S); will have column of wavelength samples as
-%                             specified by S
 
 % Book-keeping
 wvfP.name = 'default';
@@ -59,12 +54,16 @@ wvfP.defocusDiopters = 0;           % Defocus
 wvfP.fieldSampleSizeMMperPixel = 16.212/201;
 wvfP.sizeOfFieldMM = 16.212;        % Not sure which field
 
-% Should this be just 1 wavelength or a vector? DHB seems to use wls as the
-% wavelength list and S as a 3-vector of [start sample number]
+% Wavelength samples - Default is 550, monochromatic
+S = [550 1 1]; 
+% S is a length 3 vector of the format: [start spacing Nsamples]
+% ex: S = [400 50 5]; 5 wavelength samples 400, 450, 500, 550, 600
+% wvfP = wvfCreate('wave',S); will have column of wavelength samples as
+%                             specified by S
 
-% Specifies the wavelength(s) over which the pupil function and PSF will 
-% be calculated. Needed in order to find axial aberration (LCA) caused
-% by not necessarily using nominal focus wavelength.
+% Specifies the wavelength (or wavelength vector) over which the pupil 
+% function and PSF will be calculated. Needed in order to find axial 
+% aberration (LCA) caused by not necessarily using nominal focus wavelength.
 % Contributes additional defocus to zcoeffs(4)/"defocus" in wvfComputePSF
 wls = SToWls(S);
 wvfP.wls         = wls;             % Wavelength samples

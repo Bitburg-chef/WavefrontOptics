@@ -65,6 +65,11 @@ function [wvfP, phase, A] = wvfComputePupilFunction(wvfP)
 % it is always sample, then the sample must have a spatial size in um or
 % mm. The good news is I think this is the last item that doesn't have an
 % easily identified physical unit.
+% 3/16/12 MDL has changed the sizeOfFieldPixels to
+% fieldSampleSizeMMPerPixel as the complement to sizeOfFieldMM. 
+% This should reinforce the notion of a physical unit behind the code, where
+% the size of the field can be specified in MM, as well as a sampling rate
+% of MM/pixel. The code then computes the pixel value from that.
 %
 % All aberrations other than defocus (including astigmatism) are assumed
 % to be constant with wavelength, as variation with wavelength in other
