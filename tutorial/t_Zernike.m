@@ -470,6 +470,9 @@ end
 % How do the corrected PSFs compare to the uncorrected ones? their peaks?
 % their widths?
 
+% Try changing the whichSubjects array to look at other sample data. Do
+% eyeglasses help correct the aberrations in those subjects?
+
 % If you were to spend thousands of dollars on laser eye surgery, would you
 % want them to only correct the first order of wavefront aberrations, like
 % eyeglasses, or do a full wavefront measurement?
