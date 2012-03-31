@@ -3,22 +3,29 @@ function wvf = wvfSet(wvf,parm,val,varargin)
 %
 %     wvf = wvfSet(wvf,parm,val,varargin)
 %
-% Wavefront properties are either stored as parameters or computed from those
-% parameters. We generally store only unique values and  calculate all
-% derived values.
+% Wavefront properties are either stored as parameters or computed from
+% those parameters. We generally store only unique values and  calculate
+% all derived values.
 %
-% A '*' indicates that the syntax wvfGet(wvf,param,unit) can be used, where
-% unit specifies the spatial scale of the returned value:  'm', 'cm', 'mm',
-% 'um', 'nm'.  Default is always meters ('m').  (REALLY?  NOT YET).
+% A '*' indicates that the syntax wvfGet(wvf,param,unit) can be used; the
+% parameter 'unit' specifies the spatial scale of the returned value:  'm',
+% 'cm', 'mm', 'um', 'nm'.  There is not always a default in meters ('m'),
+% as there should be.
+%
+% Parameter names can be written with spaces and upper/lower case.  The
+% strings are converted to lower case and all the spaces are removed by
+% this routine.
 %
 % Examples:
-%
+%   wvf = wvfSet(wvf,'measured pupil',3);   % Default is mm, I think
+%   wvf = wvfSet(wvf,'stiles crawford',sce);
+%   wvf = wvfSet(wvf,'psf',psf);
+%   wvf = wvfSet(wvf,'infocus wavelength',550);
 %
 % Parameters
 %  % General
-%     'name'
-%     'type'
-%     'pupilsize'
+%     'name' - Name of this object
+%     'type' - 
 % 
 %  % Spectral matters
 %     'wave'
@@ -46,17 +53,17 @@ parm = ieParamFormat(parm);
 
 switch parm
     case 'name'
+        % This specific object name
         wvf.name = val;
     case 'type'
+        % Should always be wvf.  
         wvf.type = val;
-    case 'pupilsize'
 
         % Spectral matters
     case {'wave','wavelist','wavelength'}
         % Vector of wavelengths  e.g., w = SToWls([400 5 61])
         % or single wavelength e.g. w = SToWls([550 1 1]) or w = 550;
         wls = SToWls(val);
-%         wvf.wls = val(:);
         wvf.wls = wls;
     case {'infocuswavelength','nominalfocuswl'}
         % In focus wavelength nm.  Single value.
@@ -91,6 +98,7 @@ switch parm
         
         % Focus parameters
     case {'zcoef','zcoeffs'}
+        % Zernicke coefficients.
         wvf.zcoeffs = val;
     case 'defocusdiopters'
         % Does not look like defocus is ever stored in diopters in other
@@ -115,20 +123,24 @@ switch parm
         % KP 3/12/12
         wvf.defocusMicrons = val;
     case 'weightspectrum'
+        % Used for calculating defocus to white light with many spectral
+        % terms. 
         wvf.weightingSpectrum = val;         % Defocus
 
         % Special cases
     case {'sceparams','stilescrawford'}
-        % The structure of sce should be:
-        %
+        % The structure of sce is defined in sceCreate
         wvf.sceParams = val;
         
         % Derived parameters
     case 'psf'
+        % Point spread function.  Not sure how many different wavelengths
+        % are handled.  Define, please.
         wvf.psf = val;
 
         % These pixel related measures computed in wvfComputePSF.  Not sure
-        % what they are.
+        % what they are and whether they need to be here.  Perhaps we could
+        % move them from that function into here?
     case {'areapix'}
         % Don't know what this is.
         wvf.areapix = val;
