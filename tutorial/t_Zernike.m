@@ -1,14 +1,16 @@
 % t_Zernike
-% Tutorial on representing wavefront aberrations using Zernike polynomials
+%
+% Representing wavefront aberrations using Zernike polynomials
 %
 % Class:     Psych 221/EE 362
 % Tutorial:  Wavefront Toolbox - Zernike Polynomials
 % Author:    BW, MDL, KP
 % Purpose:   Introduce the concept of Zernike polynomials; show the pupil
-% function and how it is formed using Zernkie polynomials; show the
-% associated point-spread functions for given pupil functions; demonstrate and 
-% explain Stiles-Crawford effect; look at measured human data and show how 
-% eyeglasses only allow us to correct certain wavefront aberrations
+%   function and how it is formed using Zernkie polynomials; show the
+%   associated point-spread functions for given pupil functions;
+%   demonstrate and explain Stiles-Crawford effect; look at measured human
+%   data and show how eyeglasses only allow us to correct certain wavefront
+%   aberrations
 %
 %
 % Date:      3/12/2012	
@@ -23,15 +25,16 @@
 % - anything else??
 %
 %
-% This tutorial is meant to explain a method of representing the wavefront
-% aberration function using a set of functions known as Zernike polynomials.  
-% The wavefront aberration function models the effect of the human cornea,
+% This tutorial explains a method of representing the wavefront aberration
+% function using a set of functions known as Zernike polynomials. The
+% wavefront aberration function models the effect of the human cornea,
 % lens, and pupil on the optical wavefront propagating through them.
 % Absorption is modeled by an amplitude < 1, and phase aberrations are
-% modeled by a complex phasor of the form exp(i*2*pi*[summation of Zernike polynomials]/wavelength).
-% From Fourier optics, the eye's point spread function (PSF) can be computed 
-% from the wavefront aberration function, or pupil function, by taking the
-% Fourier transform: PSF = fft2(pupil function).
+% modeled by a complex phasor of the form exp(i*2*pi*[summation of Zernike
+% polynomials]/wavelength). From Fourier optics, the eye's point spread
+% function (PSF) can be computed from the wavefront aberration function, or
+% pupil function, by taking the Fourier transform: PSF = fft2(pupil
+% function).
 %
 % The Zernike polynomials form an orthogonal basis set over a unit disk.
 % They are useful because they can isolate aberrations into separate
@@ -41,29 +44,29 @@
 % direction and how it contributes to the PSF on its own by knowing the
 % measured Zernike coefficient associated with it.
 %
-%%
-%________________________________________________________________________
-% Some details about Zernike polynomials that will be helpful for
-% understanding the rest of the tutorial:
+%% Zernike polynomials
 %
 % Zernike polynomials consist of:
-% -a weighting coefficient (Zernike coeff),
-% -a normalization factor,
-% -a radially-dependent polynomial, and
-% -an azimuthally-dependent sinusoid
+%   -a weighting coefficient (Zernike coeff),
+%   -a normalization factor,
+%   -a radially-dependent polynomial, and
+%    -an azimuthally-dependent sinusoid
+% 
 % For example, one such polynomial (known as Astigmatism along 45degrees) 
 % is given by:
-% Z3 * sqrt(6) * rho^2 * cos(2*theta)
+%
+%          Z3 * sqrt(6) * rho^2 * cos(2*theta)
+%
 % where rho and theta are natural polar coordinates representing radial norm
 % and angle on a disk. These can be easily converted to rectangular
 % coordinates, making the Zernike polynomial representation useful for
 % computing the wavefront aberrations. 
 %
-%
 % Zernike polynomials can be expressed using two indices, one representing
 % the highest order of the radial polynomial term (n), and the other 
 % representing the frequency of the azimuthal sinusoid (m). 
 % (See wiki for more details.)
+%
 % The polynomials can also be represented in a single-indexing scheme (j) 
 % using OSA standards, which is easier to manage in vector form for Matlab,
 % so we will use it here.
@@ -81,13 +84,9 @@
 % unlike the j=0 term, which is removed from the index. 
 % (Which is also convenient because Matlab indexes starting from 1!)
 %_________________________________________________________________________
-%%
-% Looking at how each Zernike polynomial specifies a pupil function and a
-% point spread function
-
-
-clear all; close all;
-
+%% How  Zernike polynomials specifies a pupil and point spread function
+%
+%
 % We start by specifying a column vector of Zernike polynomial weighting
 % coefficents:
 
@@ -193,8 +192,6 @@ wvfPlot(wvf5,'2d psf space normalized','mm',maxMM);
 % for different Zernike polynomials of 2nd and 3rd orders
 % (j index 3 through 9)
 
-clear all; close all;
-
 wvf0 = wvfCreate;
 wvf0 = wvfSet(wvf0,'calculated pupil',wvfGet(wvf0,'measured pupil','mm'));
 
@@ -223,8 +220,6 @@ end
 %%
 % How chromatic aberration affects the PSF / "Defocus"
 %
-
-clear all; close all;
 
 % What happens if we want to know how the PSF looks for different wavelengths?
 % You may have learned that optical systems can have chromatic aberration,
@@ -301,11 +296,8 @@ set(pData,'color','b','linewidth',2);
 
 
 %_______________________________________________________________________
-%%
-% How cone geometry affects the PSF: the Stiles-Crawford effect (SCE)
+%%  How cone geometry affects the PSF: the Stiles-Crawford effect (SCE)
 %
-
-clear all; close all;
 
 % The cones that line our retinas are tall rod-shaped cells. They act like
 % waveguides, such that rays parallel to their long axis excite the photoreceptors
@@ -394,12 +386,9 @@ wvfPlot(wvf5SCE,'2d psf space','mm',maxMM);
 
 
 %_______________________________________________________________________
-%%
-% Studying wavefront measurements of human eyes and the effects of
-% single-vision corrective eyeglasses
+%% Wavefront measurements of human eyes and the effects of single-vision
+%% corrective eyeglasses 
 %
-
-clear all; close all;
 
 % In this wavefront toolbox, we have access to measurements of the pupil
 % function of real human eyes. Many of these eyes are not perfect, so they
@@ -477,3 +466,4 @@ end
 % want them to only correct the first order of wavefront aberrations, like
 % eyeglasses, or do a full wavefront measurement?
 
+%% End
