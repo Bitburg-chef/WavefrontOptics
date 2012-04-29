@@ -50,7 +50,11 @@ function val = wvfGet(wvf,parm,varargin)
 %     '1d psf'
 %     'strehl'
 %
-% (c) Wavefront Toolbox Team 2011
+% History:
+%   4/29/12  dhb  Allow wls as a synonym for wavelength, because that was
+%                 my first guess given the name of the field.
+%
+% (c) Wavefront Toolbox Team 2011, 2012
 
 if ~exist('parm','var') || isempty(parm), error('Parameter must be defined.'); end
 
@@ -66,7 +70,7 @@ switch parm
         val = wvf.type;
         
         % Spectral matters
-    case {'wave','wavelength','wavelengths'}
+    case {'wave','wavelength','wavelengths','wls'}
         % wvfGet(wvf,'wave',unit)
         % wvfGet(wvf,'wave','um')
         % May be a vector or single wavelength
