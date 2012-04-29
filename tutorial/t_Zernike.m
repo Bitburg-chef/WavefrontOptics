@@ -46,10 +46,8 @@
 %
 % NOTES
 %   a) Add and call a pathdef file which includes the wavefront toolbox?
-%   b) Include explicit 1d comparison of diffraction limited
-%   psf computed using Zernike coeefs to that computed for an Airy disk.
 %   See function AiryPattern in PTB, or perhaps function airy that comes with Matlab.
-%   c) Introduce notion of a figure of merit for quality of PSF, and compute
+%   b) Introduce notion of a figure of merit for quality of PSF, and compute
 %   some explicitly for various cases considered.
 %   d) The fact that for an aberrated eye, the best optical quality does not occur
 %   when nominal defocus wl matches the calculated wavelength is not considered
@@ -107,6 +105,10 @@ clear; close all;
 % Notice that the calcpupilMM is by default 3, meaning we are simulating
 % the wavefront PSF for a pupil of 3MM diameter.  This code dumps
 % out the structure so you can get a sense of what is in it.
+% 
+% The validation script v_wvfDiffractionPSF compares the diffraction
+% limited PSFs obtained in this manner with those obtained by
+% computing an Airy disk and shows that they match.
 wvf0 = wvfCreate                    
 
 % Compute the PSF for this wavefront and store it in the structure.
