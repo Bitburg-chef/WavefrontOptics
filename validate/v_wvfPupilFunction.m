@@ -26,13 +26,13 @@ nSubjects = size(theZernikeCoeffs,2);
 nRows = ceil(sqrt(nSubjects));
 nCols = ceil(nSubjects/nRows);
 
-% Initialize Stiles Crawford
-wvfParams0 = wvfSet(wvfParams0,'sce params',sceCreate(theWavelength,'none'));
-
 %% Show the diffraction limited case
 theWavelength = wvfGet(wvfParams0,'wave');
 [wvfParams0, ph, amp] = wvfComputePupilFunction(wvfParams0);
 vcNewGraphWin; imagesc(angle(wvfGet(wvfParams0,'pupil function')))
+
+% Initialize Stiles Crawford
+wvfParams0 = wvfSet(wvfParams0,'sce params',sceCreate(theWavelength,'none'));
 
 % This is for 550 nm
 thisSubject  = 1;
