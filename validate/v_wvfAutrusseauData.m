@@ -1,19 +1,17 @@
-% v_AutruesseauData
+% Script:  v_AutruesseauData
 %
 % Recreate Figure 11 from Autrusseau et al.
 % History:
 %   4/29/12	 dhb  Created.
 %
 % (c) Wavefront Toolbox Team 2011, 2012
-
-%% Clear
-clear; close all;
-
-%% Read in coefficients of Autrusseau standard observer, and
-% set up wvf structure.  The coefficients are from their
-% Table 1.  We think these are the OSA coefficients.  They provide
-% 14 coefficients, which we think go into our zcoeefs 1-13.  That's
-% because they label the first coefficient as 0 and we ignore that.
+%
+% Notes:
+%
+% The coefficients are from their Table 1.  We think these are the OSA
+% coefficients.  They provide 14 coefficients, which we think go into our
+% zcoeefs 1-13.  That's because they label the first coefficient as 0 and
+% we ignore that.
 %
 % When I asked her what her best guess was, Heidi wrote:
 %   The code and coefficients I provided were set up to use Zernike
@@ -32,36 +30,55 @@ clear; close all;
 % computed for a 6 mm pupil as well, but that isn't quite so clear.  (The
 % functions for EES in Figure 11 look a lot like those in Figure 10, and
 % Figure 10 is for a 6 mm pupil.)
+
+%% Clear your work space
+clear; close all;
+
+%% Or reinitialize ISET.  Different people do different things
+s_initISET
+
+
+
+%% Read in coefficients of Autrusseau standard observer and set up wvf
+
+% Load 'em up
 autStandardObsZcoeffs = load('autrusseauStandardObserver.txt');
 zcoeffs = zeros(65,1);
 zcoeffs(1:13) = autStandardObsZcoeffs(2:14);
-wvfStandardObs = wvfCreate;                    
-wvfStandardObs = wvfSet(wvfStandardObs,'zcoeffs',zcoeffs);
-wvfStandardObs = wvfSet(wvfStandardObs,'measuredpupil',6);
-wvfStandardObs = wvfSet(wvfStandardObs,'calculatedpupil',6);
+
+% Place them
+wvfStandardObs = wvfCreate;                                 % Initialize
+wvfStandardObs = wvfSet(wvfStandardObs,'zcoeffs',zcoeffs);  % Zernike
+wvfStandardObs = wvfSet(wvfStandardObs,'measuredpupil',6);  % Data
+wvfStandardObs = wvfSet(wvfStandardObs,'calculatedpupil',6);% What we calculate
 
 %% Compute the PSF at 550 nm from their data, and look at it.
 %
 % NOTE.  The plot of PSF gets unhappy if I give it a max scale
 % value of much smaller than 20 minutes.  I am not sure why
 % it doesn't handle that gracefully.  Probably a failure on
-% my par to grok the ISET way (dhb).
+% my part to grok the ISET way (dhb).
+
 wvfStandardObs = wvfComputePSF(wvfStandardObs); 
-vcNewGraphWin;
 pupilfuncrangeMM = 6;
 psffuncmaxMin = 1/3;
+
+vcNewGraphWin;
 wvfPlot(wvfStandardObs,'2d pupil phase space','mm',pupilfuncrangeMM);
+
 vcNewGraphWin;
 wvfPlot(wvfStandardObs,'2d psf angle normalized','deg',psffuncmaxMin);
 
-%% Compute the polychromatic PSF
+%% Fails below here.  Let's get the multiple wavelength stuff working.
+
+% Compute the polychromatic PSF
 wls = (400:10:700)';
 wvfStandardObs = wvfSet(wvfStandardObs,'wavelength',wls);
 wvfStandardObs = wvfComputePSF(wvfStandardObs); 
 psfSamples = wvfGet(wvfP,'samples angle','deg');
 polyPsf = wvfGet(wvfP,'psf');
 
-return
+%% End
 
 %% THIS IS STUFF FROM THE TUTORIAL, WHICH I LEFT SO I COULD COPY/PASTE.
 

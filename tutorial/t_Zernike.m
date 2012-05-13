@@ -29,6 +29,9 @@
 % data and shows how eyeglasses only allow us to correct certain wavefront
 % aberrations.
 %
+% See:
+%  http://white.stanford.edu/teach/index.php/Wavefront_optics_toolbox
+%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % Class:     Psych 221/EE 362
@@ -46,12 +49,16 @@
 %
 % NOTES
 %   a) Add and call a pathdef file which includes the wavefront toolbox?
-%   See function AiryPattern in PTB, or perhaps function airy that comes with Matlab.
-%   b) Introduce notion of a figure of merit for quality of PSF, and compute
-%   some explicitly for various cases considered.
-%   d) The fact that for an aberrated eye, the best optical quality does not occur
-%   when nominal defocus wl matches the calculated wavelength is not considered
-%   here, but can be quite important when thinking about real optical quality.
+%   See function AiryPattern in PTB, or perhaps function airy that comes
+%   with Matlab.
+%
+%   b) Introduce notion of a figure of merit for quality of PSF, and
+%   compute some explicitly for various cases considered.
+%
+%   c) The fact that for an aberrated eye, the best optical quality does
+%   not occur when nominal defocus wl matches the calculated wavelength is
+%   not considered here, but can be quite important when thinking about
+%   real optical quality.
 
 %% Zernike polynomials
 %
@@ -66,33 +73,33 @@
 %
 %          Z3 * sqrt(6) * rho^2 * cos(2*theta)
 %
-% where rho and theta are natural polar coordinates representing radial norm
-% and angle on a disk. These can be easily converted to rectangular
+% where rho and theta are natural polar coordinates representing radial
+% norm and angle on a disk. These can be easily converted to rectangular
 % coordinates, making the Zernike polynomial representation useful for
-% computing the wavefront aberrations. 
+% computing the wavefront aberrations.
 %
 % Zernike polynomials can be expressed using two indices, one representing
-% the highest order of the radial polynomial term (n), and the other 
-% representing the frequency of the azimuthal sinusoid (m). 
-% (See wiki for more details.)
+% the highest order of the radial polynomial term (n), and the other
+% representing the frequency of the azimuthal sinusoid (m). (See wiki for
+% more details.)
 %
-% The polynomials can also be represented in a single-indexing scheme (j) 
+% The polynomials can also be represented in a single-indexing scheme (j)
 % using OSA standards, which is easier to manage in vector form for Matlab,
 % so we will use it here.
 %
-% Each radial order has (order+1) number of polynomial terms (and therefore,
-% order+1 number of Zernike coefficients to represent them). Thus, 0th order has 1
-% term, 1st order has 2 terms, etc. 
+% Each radial order has (order+1) number of polynomial terms (and
+% therefore, order+1 number of Zernike coefficients to represent them).
+% Thus, 0th order has 1 term, 1st order has 2 terms, etc.
 %
 % In this tutorial we will be working with up to 10 orders of Zernike
 % polynomials. Counted out, this represents 1+2+3+...+11 = 66 terms for
 % orders 0 through 10. We will actually treat this as 65 coefficients since
-% the 0th order term (j=0) is constant. Additionally, the 1st order terms 
+% the 0th order term (j=0) is constant. Additionally, the 1st order terms
 % (coeffs 1 and 2, known as tip and tilt) only serve to shift the PSF along
 % the x or y axis, and don't represent true aberrations. They will be left
 % at 0 for this tutorial, although they still make up the 65 coefficients,
-% unlike the j=0 term, which is removed from the index (which is also convenient
-% because Matlab indexes starting from 1!)
+% unlike the j=0 term, which is removed from the index (which is also
+% convenient because Matlab indexes starting from 1!)
 
 %% Clear
 clear; close all;
@@ -205,11 +212,11 @@ end
 
 %% How longitudinal chromatic aberration (LCA) affects the PSF / "Defocus"
 %
-% What happens if we want to know how the PSF looks for different wavelengths?
-% You may have learned that optical systems can have chromatic aberration,
-% where one wavelength is brought into focus but others may be blurry
-% because they are refracted closer or farther from the imaging plane. In
-% this case, the PSF is dependent on wavelength. 
+% What happens if we want to know how the PSF looks for different
+% wavelengths? You may have learned that optical systems can have chromatic
+% aberration, where one wavelength is brought into focus but others may be
+% blurry because they are refracted closer or farther from the imaging
+% plane. In this case, the PSF is dependent on wavelength.
 
 % We can set this using the  "in-focus wavelength" of our wvf.
 % This code indicates that the data is given for a nominal focus of 550 nm,
