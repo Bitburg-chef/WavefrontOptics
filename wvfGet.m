@@ -117,15 +117,28 @@ switch parm
     case {'zcoeffs','zcoeff','zcoef'}
         % wvfGet(wvf,'zcoef',list)
         % wvfGet(wvf,'zcoef',4)
-        if isempty(varargin)
-            val = wvf.zcoeffs;
-        else
-            val = wvf.zcoeffs(varargin{1});
+        if isempty(varargin),   val = wvf.zcoeffs;
+        else                    val = wvf.zcoeffs(varargin{1});
         end
     case {'pupilfunction','pupilfunc','pupfun'}
-        % Pupil function derived from Zernicke coefficients in the routine
-        % wvfComputePupilFunction
-        if isfield(wvf,'pupilfunc'), val = wvf.pupilfunc; end
+        % wvfGet(wvf,'pupilfunc',idx)  (idx <= nWave)
+        %
+        % The pupil function is derived from Zernicke coefficients in the
+        % routine wvfComputePupilFunction If there are multiple
+        % wavelengths, then this is a cell array of matrices. The sizes can
+        % be a little different across wavelengths (see wvfComputePSF for
+        % the relevant code). It has to do with scaling the pixel size to
+        % be wavelength independent.  More explanation needed.
+        if isempty(varargin)
+            % This is the whole cell array (if there are multiple) or just
+            % the single matrix if there is only one wavelength.
+            if isfield(wvf,'pupilfunc'), val = wvf.pupilfunc; end
+        else
+            idx = varargin{1}; nWave = wvfGet(wvf,'nwave');
+            if idx > nWave, error('idx (%d) > nWave',idx,nWave);
+            else val = wvf.pupilfunc{idx};
+            end
+        end
     case 'defocusdiopters'
         val = wvf.defocusDiopters;           % Defocus
     case {'defocusmicrons','defocusdistance'}
@@ -182,27 +195,44 @@ switch parm
     case 'scefrac'
         % Note what this is or when it is calculated
         if checkfields(wvf,'sceFrac'), val = wvf.sceFrac;
-        else warning('No sceFrac field');
+        else warning('WVFGET:scefract','No sceFrac field');
         end
         
         % Point and line spread data
     case 'psf'
-        val = wvf.psf;
+        % wvfGet(wvf,'psf',idx)  (idx <= nWave)
+        % The point spread function is calculated from the pupilfunction. I
+        % almost think we should not store it, but always calculate it.
+        % Computers are fast enough to deal with the fft, and the whole
+        % computation is just a few lines long.
+        if isempty(varargin)
+            % This is the whole cell array (if there are multiple) or just
+            % the single matrix if there is only one wavelength.
+            if isfield(wvf,'psf'), val = wvf.psf; end
+        else
+            idx = varargin{1}; nWave = wvfGet(wvf,'nwave');
+            if idx > nWave, error('idx (%d) > nWave',idx,nWave);
+            else val = wvf.psf{idx};
+            end
+        end
     case 'psfcentered'
         % Centered so that peak is at middle position in coordinate grid
         val = psfCenter(wvfGet(wvf,'psf'));
     case '1dpsf'
-        % wvfGet(wvf,'1d psf',row)
-        psf = psfCenter(wvfGet(wvf,'psf'));
+        % wvfGet(wvf,'1d psf',waveIdx,row)
         
-        if isempty(varargin)
-            whichRow = floor(wvfGet(wvf,'npixels')/2) + 1;
-        else
-            whichRow = varargin{1};
-        end
+        waveIdx = 1;
+        whichRow = floor(wvfGet(wvf,'npixels')/2) + 1;
+        if length(varargin) > 1, whichRow = varargin{2}; end
+        if ~isempty(varargin),   waveIdx = varargin{1}; end
+        
+        psf = psfCenter(wvfGet(wvf,'psf',waveIdx));
         val = psf(whichRow,:);
     case 'strehl'
         % Strehl ratio.  Not sure when it is calculated
+        % It seems to be wrong mostly.  We should fix it.
+        % The strehl is the ratio of the peak of diff limited and the
+        % existing.
         if isfield(wvf,'strehl'),  val = wvf.strehl;
         else                       disp('No strehl parameter present');
         end
@@ -210,6 +240,11 @@ switch parm
         % Spatial and angular support
     case {'fieldsizepixels','npixels'}
         val = wvf.sizeOfFieldMM/wvf.fieldSampleSizeMMperPixel;
+        if   val ~= round(val)
+            warning('WVFGET:npixels','npixels not an integer.');
+        else val = round(val);
+        end
+        
     case {'fieldsamplesize','fieldsamplesizemm'}
         val = wvf.fieldSampleSizeMMperPixel;
     case {'angleperpixel','angperpix'}
@@ -259,14 +294,35 @@ switch parm
             val = (val/1000)*ieUnitScaleFactor(varargin{1});
         end
         
-        % These pixel related measures computed in wvfComputePSF.  Not sure
-        % what they are.
+        % These pixel related measures used to be computed in wvfComputePSF
+        % and wvfComputePupilFunction.
     case {'areapix'}
-        % Don't know what this is.
-        if isfield(wvf,'areapix'), val = wvf.areapix; end
+        % Not sure about the physical significance of this
+        % If we know the area of each pixel, I suppose we can calculate the
+        % area covered by the pupil function.
+        if isempty(varargin)
+            nWave = wvfGet(wvf,'n wave');
+            val = zeros(nWave,1);
+            for ii = 1:nWave
+                val(ii) = numel(wvfGet(wvf,'pupil function',ii));
+            end
+        else
+            val = numel(wvfGet(wvf,'pupil function',varargin{1}));
+        end
+        
     case {'areapixapod'}
-        % Don't know what this is.
-        if isfield(wvf,'areapix'), val = wvf.areapixapod; end
+        % Not sure about the physical significance of this
+        % Something like the area underneath the absolute value of the
+        % pupil function.
+        if isempty(varargin)
+            nWave = wvfGet(wvf,'n wave');
+            val = zeros(nWave,1);
+            for ii = 1:nWave
+                val(ii) = sum(sum(abs(wvfGet(wvf,'pupil function',ii))));
+            end
+        else 
+            val = sum(sum(abs(wvfGet(wvf,'pupil function',varargin{1}))));
+        end
         
     case {'distanceperpix','distperpix','distanceperpixel'}
         % Distance per pixel in specified unit ('mm')
@@ -282,10 +338,22 @@ switch parm
         if isempty(varargin), unit = 'mm';
         else unit = varargin{1};
         end
-        distPerPix = wvfGet(wvf,'distperpix',unit);
-        middleRow = wvfGet(wvf,'middle row');
-        nPixels = wvfGet(wvf,'npixels');
-        val = distPerPix*((1:nPixels)-middleRow);
+        % Get the samples in degrees
+        val = wvfGet(wvf,'samples angle','deg');
+        
+        % Convert to meters and then to selected spatial scale
+        val = val*(300*10^-6);  % Sample in meters assuming 300 um / deg
+        val = val*ieUnitScaleFactor(unit);
+
+        % Old code.  This used the distance in the pupil plane, which is
+        % wrong (I think).  I think that the angle calculation is probably
+        % correct.  We should use the fact that we know that 1 deg in the
+        % human eye is 300 um, and then get the better calculation (based
+        % on numerical aperture?) from HH or DHB or someone.
+        %         distPerPix = wvfGet(wvf,'distperpix',unit);
+        %         middleRow  = wvfGet(wvf,'middle row');
+        %         nPixels    = wvfGet(wvf,'npixels');
+        %         val = distPerPix*((1:nPixels)-middleRow);
         
     otherwise
         error('Unknown parameter %s\n',parm);

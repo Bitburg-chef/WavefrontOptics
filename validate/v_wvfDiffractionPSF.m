@@ -22,7 +22,10 @@
 % (c) Wavefront Toolbox Team, 2012
 
 %% Clear
-clear; close all;
+% clear; close all;
+
+%% Or
+s_initISET
 
 %% Compare pointspread function in wvf with psf in Psych Toolbox
 
@@ -34,22 +37,28 @@ clear; close all;
 % Set up parameters structure
 wvfParams0 = wvfCreate;
 
+% Plotting ranges for MM, UM, and Minutes of angle
+maxMM = 1;
+maxUM = 20;
+maxMIN = 2;
+
+% Which wavelength index (wave(idx)) (there is only one) to plot
+waveIdx = 1;
+
 % Calculate the PSF, normalized to peak of 1.
 wvfParams = wvfComputePSF(wvfParams0);
 
 % Make a graph of the PSF within 1 mm of center
 vcNewGraphWin;
-maxMM = 1;
-wvfPlot(wvfParams,'2dpsf space','mm',maxMM);
+wvfPlot(wvfParams,'2dpsf space','um',waveIdx,maxUM);
 
 % Make a graph of the PSF within 2 arc min
 vcNewGraphWin;
-maxMIN = 2;
-wvfPlot(wvfParams,'2dpsf angle','min',maxMIN);
+wvfPlot(wvfParams,'2dpsf angle','min',waveIdx,maxMIN);
 
 %% Plot the middle row of the psf, scaled to peak of 1
 vcNewGraphWin;
-wvfPlot(wvfParams,'1d psf angle normalized','min',maxMIN);
+wvfPlot(wvfParams,'1d psf angle normalized','min',waveIdx,maxMIN);
 hold on
 
 % Used for plotting comparisons below
@@ -66,6 +75,10 @@ title(sprintf('Diffraction limited, %0.1f mm pupil, %0.f nm',wvfParams.calcpupil
 
 %% Repeat the calculation with a wavelength offset
 
+% OK, we seem to have a problem.  Probably because I didn't do the right
+% correction in wvfComputePupilFunction.  See the notes in there.  The
+% stuff only runs right at 550, not at other wavelengths.
+
 newWave = 400;  
 wvfParams1 = wvfParams0;
 wvfParams1 = wvfSet(wvfParams1,'wave',newWave);
@@ -73,7 +86,7 @@ wvfParams1 = wvfSet(wvfParams1,'in focus wavelength', newWave);
 wvfParams = wvfComputePSF(wvfParams1);
 
 vcNewGraphWin;
-wvfPlot(wvfParams,'1d psf angle normalized','min',maxMIN)
+wvfPlot(wvfParams,'1d psf angle normalized','min',waveIdx,maxMIN)
  
 hold on
 onedPSF2 = AiryPattern(radians,wvfParams.calcpupilMM,wvfParams.wls(1));
@@ -89,7 +102,7 @@ wvfParams2 = wvfSet(wvfParams2,'calculated pupil',pupilMM);
 wvfParams = wvfComputePSF(wvfParams2);
 
 vcNewGraphWin;
-wvfPlot(wvfParams,'1d psf angle normalized','min',maxMIN);
+wvfPlot(wvfParams,'1d psf angle normalized','min',waveIdx,maxMIN);
 hold on;
 
 onedPSF2 = AiryPattern(radians,wvfParams.calcpupilMM,wvfParams.wls(1));
@@ -98,20 +111,6 @@ xlabel('Arc Minutes');
 ylabel('Normalized PSF');
 title(sprintf('Diffraction limited, %0.1f mm pupil, %0.f nm',wvfParams.calcpupilMM,wvfParams.wls(1)));
 
-%% Put ISET diffraction comparisons here or insert above
+%% Put ISET diffraction comparisons here or in the next script
 
-% ISET requires that we specify sizes.  So make a small scene and compute
-% % through to the optical image
-% scene = sceneCreate('lined65');
-% scene = sceneSet(scene,'hfov',0.2);
-% oi = oiCreate;
-% oi = oiCompute(scene,oi);
-% 
-% % For this scene we have fairly fine spatial angular resolution
-% % oiGet(oi,'angular resolution')*60  % In minutes
-% v = oiGet(oi,'angular support','min');
-% xAng = v(:,1,2);
-% yAng = v(1,:,1);
-% 
-% optics = oiGet(oi,'optics');
-% d = plotOTF(oi,'psf550');
+

@@ -13,6 +13,9 @@
 %
 % (c) Stanford VISTA Team, 2012
 
+%% 
+s_initISET
+
 %% Set values in millimeters
 wvfParams0 = wvfCreate('measured pupil',6,'calculated pupil',3);
 
@@ -43,6 +46,7 @@ vcNewGraphWin;  mesh(angle(pupilF))
 % Add the x,y units, which describe the pupil, I think, in some scale
 % related to mm, but not sure which.
 
+% Now for 650nm
 theWavelength = 650;
 wvfParams = wvfSet(wvfParams,'wave',theWavelength);
 wvfParams = wvfSet(wvfParams,'sce params',sceCreate(theWavelength,'none'));

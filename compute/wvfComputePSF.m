@@ -47,8 +47,8 @@ function wvfP = wvfComputePSF(wvfP)
 %   defocusMicrons -    Defocus added in to zcoeffs(4) at each wavelength, in microns.
 %
 % Note: These calculations only account for longitudinal chromatic
-% aberration (LCA), and do not incoporate transverse chromatic aberration
-% (TCA).
+% aberration (LCA); they do NOT incoporate transverse chromatic aberration
+% (TCA) or off-axis at all.
 %
 % NOTES
 % 1. When zcoeffs is a vector of zeros, the output monochromatic and
@@ -59,12 +59,13 @@ function wvfP = wvfComputePSF(wvfP)
 %   A. First, the value of the 4th zernike coefficient is included. 
 %   B. Second, value is computed based on the differencebetween nominalFocusWl
 %   and the wavelength for which the PSF is being computed. 
-%   C. Third, the value of defocusDiopters is added in directly.  
-% These are redundant, it is often most convenient to think in terms of one
-% of the three ways. 
-% KP 3/12/12: Only A and C are redundant? B is the result of longitudinal
-% chromatic aberration (LCA) for using non-nominal wavelength to measure
-% PSF. A and C are defocus due to monochromatic aberrations.
+%   C. Third, the value of defocusDiopters is added in directly. 
+%
+%  These are redundant, it is often most convenient to think in terms of
+%  one of the three ways.
+%  KP 3/12/12: Only A and C are redundant? B is the result of longitudinal
+%  chromatic aberration (LCA) for using non-nominal wavelength to measure
+%  PSF. A and C are defocus due to monochromatic aberrations.
 %
 % See also: wvfComputeConePSF, wvfComputePupilFunction, sceGetParamsParams,
 % wvfGetDefocusFromWavelengthDifference 
@@ -73,6 +74,8 @@ function wvfP = wvfComputePSF(wvfP)
 %
 % 8/20/11 dhb      Rename function and pull out of supplied routine. Reformat comments.
 % 9/5/11  dhb      Rename.  Rewrite for wvfP i/o.
+%
+% Copyright Wavefront Toolbox Team 2012
 
 %% Check optional fields
 if (~isfield(wvfP,'sceParams') || isempty(wvfP.sceParams))
@@ -81,7 +84,7 @@ end
 
 %% Handle defocus relative to reference wavelength.
 defocusMicrons = wvfGet(wvfP,'defocus distance','um');
-% wvfP.defocusMicrons = defocusMicrons; % Old
+
 wvfP = wvfSet(wvfP,'defocus microns',defocusMicrons);
 
 % wvfGetDefocusFromWavelengthDifference(wvfP)
@@ -95,10 +98,9 @@ doriginal = wvfGet(wvfP,'zcoeffs',4);
 
 %% Get the pupil function, correcting defocus at each wavelength
 %
-% The value of arcminperpix is set depending on a wavelength chosen
-% to set the scale.  Here is what Heidi says about this process,
-% and about the renormalization of scale for each call to
-% wvfComputePupilFunction:
+% The value of arcminperpix is set depending on a wavelength chosen to set
+% the scale.  Here is what Heidi says about this process, and about the
+% renormalization of scale for each call to wvfComputePupilFunction:
 %
 %   The setting of the scale and then the change in the loop with
 %   wavelength is to make sure that the scale on the psfs stays the same as
@@ -130,6 +132,16 @@ doriginal = wvfGet(wvfP,'zcoeffs',4);
 %   worked right all the time (the psfs weren't aligned all the time, I
 %   guess I was having rounding issues or something).
 
+% This is now unused, but that is probably bad.  I removed it because I
+% also removed the bit about making something wavelength independent below.
+% Someone who understands the physics should fix the whole thing.
+% The problem is that when we scale for wavelength we change the number of
+% pixels and this screws up the psf/pupilfunc.  If those were cell arrays,
+% instead of 3D matrices, then it wouldn't matter if they have slightly
+% different size.   So, I think that is what I should do to fix it (next).
+% Then this will come back in and the other stuff below will come back in.
+% FIX THIS.  The v_wvfDiffractionPSF is off now when we change
+% wavelengths.  
 setScaleWl = 550;   % Nanometers
 
 % It looks like this has three parts
@@ -151,20 +163,24 @@ setScaleWl = 550;   % Nanometers
 
 wave    = wvfGet(wvfP,'wave');
 nWave   = wvfGet(wvfP,'nwave');
-nPixels = wvfGet(wvfP,'npixels');
+% nPixels = wvfGet(wvfP,'npixels');
 
-psf     = zeros(nPixels,nPixels,nWave);
+psf         = cell(nWave,1);
+pupilfunc   = cell(nWave,1);
+
 areapix = zeros(nWave,1);
 areapixapod = zeros(nWave,1);
 strehl  = zeros(nWave,1);
 sceFrac = zeros(nWave,1);
 
+% We will set tmpWvfParams to a single wavelength and loop.
+tmpWvfParams = wvfP;
+w = waitbar(0,'Pupil functions');
 for wl = 1:nWave
     
-    % Get the pupil function.  
+    waitbar(wl/nWave,w,sprintf('Pupil function %d',wave(wl)));
     
-    % Set up a tmp parameter structure so we can do it one wave at a time.
-    tmpWvfParams = wvfP;
+    % Set up a tmp parameter structure so we can loop on wavelength
     tmpWvfParams = wvfSet(tmpWvfParams,'wave',wave(wl));
     
     % Add in the appropriate LCA to the initial zernike defocus
@@ -180,35 +196,46 @@ for wl = 1:nWave
     tmpWvfParams.zcoeffs(4) = doriginal + wvfP.defocusMicrons(wl); 
     
     % Rescaling so that PSF pixel dimension is constant with wavelength.
+    % OK, this needs a much better explanation and justification.  It
+    % probably breaks some of the wavelength-dependent calculations - BW.   
     npixels = wvfGet(wvfP,'npixels');
-    tmpWvfParams = wvfSet(tmpWvfParams,'fieldSampleSize',wvfGet(wvfP,'field sample size mm')*tmpWvfParams.wls/setScaleWl);
-    tmpWvfParams = wvfSet(tmpWvfParams,'field size mm',wvfGet(tmpWvfParams,'field sample size mm')*npixels);
+    
+    newFieldSampleSize = wvfGet(wvfP,'field sample size mm')*wave(wl)/setScaleWl;
+    tmpWvfParams       = wvfSet(tmpWvfParams,'fieldSampleSize',newFieldSampleSize);
+    
+    newFieldSizeMM = wvfGet(tmpWvfParams,'field sample size mm')*npixels;
+    tmpWvfParams   = wvfSet(tmpWvfParams,'field size mm',newFieldSizeMM);
     
     % Compute the pupil function
-    tmpWvfParams = wvfComputePupilFunction(tmpWvfParams);
-    pupilfunc(:,:,wl) = wvfGet(tmpWvfParams,'pupil function');
+    tmpWvfParams      = wvfComputePupilFunction(tmpWvfParams);
+    pupilfunc{wl}     = wvfGet(tmpWvfParams,'pupil function',1); 
     areapix(wl)       = wvfGet(tmpWvfParams,'area pix');
     areapixapod(wl)   = wvfGet(tmpWvfParams,'area pixapod');
 
     % Convert to the pupil function to the PSF  Just this simple.
-    amp = fft2(pupilfunc(:,:,wl));
+    % Scale so that psf sums to unity before SCE is applied.
+    amp = fft2(pupilfunc{wl});
     inten = (amp .* conj(amp));   %intensity
-    psf(:,:,wl) = real(fftshift(inten));
+    psf{wl} = real(fftshift(inten));
+    psf{wl} = psf{wl}/sum(sum(psf{wl}));
     
     % Get strehl ratio, based on Heidi's code
-    strehl(wl) = max(max(psf(:,:,wl)))./(areapixapod(wl)^2);
+    strehl(wl) = max(max(psf{wl}))./(areapixapod(wl)^2);
     
-    % Scale so that psf sums to unity before SCE.  
     % The variable sceFrac tells you how much light
     % is lost if you correct for the SCE.
     sceFrac(wl) = (areapixapod(wl)/areapix(wl));
-    psf(:,:,wl) = psf(:,:,wl)/sum(sum(psf(:,:,wl)));
 end
+close(w);  %Waitbar
 
-%% Set output fields
+%% Set output fields - these are vectors or 3D matrices
 wvfP = wvfSet(wvfP,'pupil function',pupilfunc);
 wvfP = wvfSet(wvfP,'psf',psf);
 wvfP = wvfSet(wvfP,'strehl',strehl);
+wvfP = wvfSet(wvfP,'areapix',areapix);
+wvfP = wvfSet(wvfP,'areapixapod',areapixapod);
+
+% Shouldn't we be setting areapixapod and areapix, too?
 
 % Derived, not needed? wvfP.arcminperpix = arcminperpix;
 % wvfP.strehl = strehl;

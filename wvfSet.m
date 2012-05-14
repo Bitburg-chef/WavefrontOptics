@@ -25,12 +25,12 @@ function wvf = wvfSet(wvf,parm,val,varargin)
 % Parameters
 %  % General
 %     'name' - Name of this object
-%     'type' - 
-% 
+%     'type' -
+%
 %  % Spectral matters
 %     'wave'
 %     'infocuswavelength'
-% 
+%
 %  % Pupil parameters
 %     'calculatedpupil'
 %     'measuredpupil'
@@ -50,6 +50,10 @@ function wvf = wvfSet(wvf,parm,val,varargin)
 %
 % (c) Wavefront Toolbox Team 2011, 2012
 
+% Programming Notes
+%   The Strehl ratio, http://en.wikipedia.org/wiki/Strehl_ratio
+%
+
 if ~exist('parm','var') || isempty(parm), error('Parameter must be defined.'); end
 if ~exist('val','var'), error('val must be defined.'); end
 
@@ -60,33 +64,66 @@ switch parm
         % This specific object name
         wvf.name = val;
     case 'type'
-        % Should always be wvf.  
+        % Should always be wvf.
         wvf.type = val;
-
+        
         % Spectral matters
     case {'wave','wavelist','wavelength','wls'}
-        % Vector of wavelengths  e.g., w = SToWls([400 5 61])
-        % or single wavelength e.g. w = SToWls([550 1 1]) or w = 550;
+        % Vector of wavelengths
+        % e.g., w = SToWls([400 5 61])
+        % or single wavelength
+        % e.g. w = SToWls([550 1 1]) or w = 550;
         wls = SToWls(val);
         wvf.wls = wls;
     case {'infocuswavelength','nominalfocuswl'}
         % In focus wavelength nm.  Single value.
-        wvf.nominalFocusWl = val; 
-
+        wvf.nominalFocusWl = val;
+        
         % Pupil parameters
     case {'calculatedpupil','calculatedpupildiameter'}
         % Pupil diameter in mm - must be smaller than measurements
-        wvf.calcpupilMM = val;               
+        wvf.calcpupilMM = val;
     case {'measuredpupil','measuredpupildiameter'}
         % Largest measured pupil diameter in mm
-        wvf.measpupilMM = val;               
+        wvf.measpupilMM = val;
     case {'pupilfunction','pupilfunc'}
-        % pupil field amplitude/phase function
-        wvf.pupilfunc = val;
+        % wvfSet(wvf,'pupil function',pf) - pf is a cell array of pupil
+        % functions, one for each wavelength
+        %
+        % pupil function is a point spread function matrix for the
+        % wave(idx). wvfSet(wvf,'pupil function',pf,[idx])
+        %
+        % Convert between pupil function and psf using wvfComputePSF.
+
+        if isempty(varargin)  % Cell array of pupilfuncs
+            % This is a cell array of pupil functions if there are multiple
+            % wavelengths, or just a matrix
+            if iscell(val)
+                % Check cell array dimension
+                n = length(val); nWave = wvfGet(wvf,'nWave');
+                if n ~= nWave
+                    error('pupilfunc dim (%d) ~= nWave (%d)', n, nWave);            
+                end
+                wvf.pupilfunc = val;
+            else  % Just a matrix, not a cell array.  
+                % No idx specified, so we put it in the first cell.
+                warning('WVFSET:pupilfuncset','Assigning pupil function to first cell array dim');
+                wvf.pupilfunc{1} = val;
+            end
+        else  % The wavelength index was sent in
+            % wvfSet(wvf,'pupilfunc',val,idx)
+            % This is the pupilfunc for wave(idx)
+            idx = varargin{1};
+            nWave = wvfGet(wvf,'n wave');
+            if idx > nWave, error('idx (%d) > nWave (%d)',idx,nWave);
+            else            wvf.pupilfunc{idx} = val;
+            end
+        end
+        
     case {'fieldsamplesize','fieldsamplesizemmperpixel'}
         % pixel size of sample pupil field, used to calculate number of
         % pixels of computed field
-        wvf.fieldSampleSizeMMperPixel = val;         
+        wvf.fieldSampleSizeMMperPixel = val;
         % need to make sure field size is integer multiple of sample size
         % (so that there are an integer number of pixels)
         nPixels = ceil(wvf.sizeOfFieldMM/val);
@@ -120,7 +157,7 @@ switch parm
         % wvfComputePSF.
         % defocusMicrons is set by wvfGetDefocusFromWavelengthDifference.
         % It calculates additional longitudinal chromatic aberration (LCA)
-        % from using non-nominal focus wavelengths and adds it to 
+        % from using non-nominal focus wavelengths and adds it to
         % user-specified defocus diopters, then converts it all to um.
         % wvfComputePSF adds in this defocus microns (same units as rest of
         % pupil function calculations) to zcoeff(4)/defocus if present.
@@ -128,9 +165,9 @@ switch parm
         wvf.defocusMicrons = val;
     case 'weightspectrum'
         % Used for calculating defocus to white light with many spectral
-        % terms. 
+        % terms.
         wvf.weightingSpectrum = val;         % Defocus
-
+        
         % Special cases
     case {'sceparams','stilescrawford'}
         % The structure of sce is defined in sceCreate
@@ -138,20 +175,55 @@ switch parm
         
         % Derived parameters
     case 'psf'
-        % Point spread function.  Not sure how many different wavelengths
-        % are handled.  Define, please.
-        wvf.psf = val;
-
-        % These pixel related measures computed in wvfComputePSF.  Not sure
-        % what they are and whether they need to be here.  Perhaps we could
-        % move them from that function into here?
+        % wvfSet(wvf,'psf',psf) - psf is a cell array of point spreads, one
+        % for each wavelength
+        %
+        % psf is a point spread function matrix for the wave(idx).
+        % wvfSet(wvf,'psf',psf,[idx])
+        %
+        % Point spread function.  Handled as cell array because of
+        % potential differences in dimension due to wavelength.  See
+        % pupilfunc.  
+        if isempty(varargin)  % Cell array of pupilfuncs
+            % This is a cell array of pupil functions if there are multiple
+            % wavelengths, or just a matrix
+            if iscell(val)
+                % Check cell array dimension
+                n = length(val); nWave = wvfGet(wvf,'nWave');
+                if n ~= nWave, error('psf dim (%d) ~= nWave (%d)', n, nWave);
+                else           wvf.psf = val;
+                end
+            else  % Just a matrix, not a cell array.  
+                % No idx specified, so we put it in the first cell.
+                warning('WVFSET:pupilfuncset','Assigning pupil function to first cell array dim');
+                wvf.psf{1} = val;
+            end
+        else  % The wavelength index was sent in
+            % wvfSet(wvf,'pupilfunc',val,idx)
+            % This is the pupilfunc for wave(idx)
+            idx = varargin{1};
+            nWave = wvfGet(wvf,'n wave');
+            if idx > nWave, error('idx (%d) > nWave (%d)',idx,nWave);
+            else            wvf.psf{idx} = val;
+            end
+        end
+        
+        % These pixel related measures computed in wvfComputePupilFunction
+        % and stored in wvComputePSF.  Not sure what they are and whether
+        % they need to be here.  Perhaps we could move them from that
+        % function into here?  They probably should never be set, but they
+        % should always be a get based on pupilfunc.
+        % BW, May 2012.
     case {'areapix'}
-        % Don't know what this is.
+        % This is a vector the same length as wavelength
+        % Don't know what this is. It is computed for the first time in
+        % wvfComputePupilFunction as numel(pupilfunc))
         wvf.areapix = val;
     case {'areapixapod'}
-        % Don't know what this is.
-        wvf.areapixapod = val; 
-        
+        % Don't know what this represents. It is a vector the same length
+        % as wavelength. It is computed for the first time in
+        % wvfComputePupilFunction sum(sum(abs(pupilfunc)))
+        wvf.areapixapod = val;
     otherwise
         error('Unknown parameter %s\n',parm);
 end

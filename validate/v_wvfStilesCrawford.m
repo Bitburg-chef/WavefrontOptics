@@ -7,56 +7,38 @@
 % Note from HH: This looks about right.
 
 %%
-wvfParams0 = wvfCreate;
-
-% In focus wavelength and other parameters
-nominalFocusWavelength = 550;
-theWavelength = 550;
-fieldSampleSizeMMperPixel = 16.212/201;
-sizeOfFieldMM = 16.212;
-measpupilMM = 8;
-calcpupilMM = 8;  % Bigger pupil to see the effect
-defocusDiopters = 0;
-
-% Set up parameters structure for basic wavefront
-wvfParams0 = wvfSet(wvfParams0,'zcoeffs',zeros(65,1));
-wvfParams0 = wvfSet(wvfParams0,'measured pupil',measpupilMM);
-wvfParams0 = wvfSet(wvfParams0,'calculated pupil',calcpupilMM);
-wvfParams0 = wvfSet(wvfParams0,'wave',theWavelength);
-wvfParams0 = wvfSet(wvfParams0,'infocus wavelength',nominalFocusWavelength);
-wvfParams0 = wvfSet(wvfParams0,'defocus diopters',defocusDiopters);
-
-% This looks like it might be redundant and should be removed
-wvfParams0 = wvfSet(wvfParams0,'field sample size',fieldSampleSizeMMperPixel);
-wvfParams0 = wvfSet(wvfParams0,'field size mm',sizeOfFieldMM);
+s_initISET
 
 % For plotting limits
 maxMIN = 2;
 maxMM  = 1;
+waveIdx = 1;
+theWavelength = 550;
 
-wvfParams0 = wvfSet(wvfParams0,'sce params',sceCreate(theWavelength,'berendshot'));
+%%
+wvfParams = wvfCreate;
+sceP = sceCreate(theWavelength,'berendshot');
 
 %% No Stiles Crawford effect
-
-wvfParams = wvfSet(wvfParams0,'sce params',[]);
+wvfParams = wvfSet(wvfParams,'sce params',[]);
 wvfParams = wvfComputePSF(wvfParams);
 
 f = vcNewGraphWin; 
 hold on
-wvfPlot(wvfParams,'1d psf angle','min',maxMIN);
+wvfPlot(wvfParams,'1d psf angle','min',waveIdx,maxMIN);
 
 % Make a graph of the PSF within 1 mm of center
 % vcNewGraphWin;
 % wvfPlot(wvfParams,'2dpsf space','mm',maxMM);
 
-%%  Leave the SCE in place
-
-wvfParams = wvfComputePSF(wvfParams0);
+%%  Include the SCE in place
+wvfParams = wvfSet(wvfParams,'sce params',sceP);
+wvfParams = wvfComputePSF(wvfParams);
 
 % vcNewGraphWin;
 % wvfPlot(wvfParams,'2dpsf space','mm',maxMM);
 
-[~,p] = wvfPlot(wvfParams,'1d psf angle','min',maxMIN);
+[~,p] = wvfPlot(wvfParams,'1d psf angle','min',waveIdx,maxMIN);
 set(p,'color','b')
 hold on
 

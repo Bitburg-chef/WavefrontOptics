@@ -22,7 +22,13 @@
 
 %%
 
-%s_initISET
+s_initISET
+
+% Ranges for plotting
+maxMIN = 2;
+maxMM  = 1;
+maxUM  = 20;
+waveIdx = 1;
 
 %% Calculate point spread for wavelength defocus
 
@@ -30,35 +36,31 @@
 wvfParams0 = wvfCreate;
 
 % In focus wavelength and other parameters
-nominalFocusWavelength = 550;
-theWavelength = 550;
-fieldSampleSizeMMperPixel = 16.212/201;
-sizeOfFieldMM = 16.212;
-measpupilMM = 8;
-calcpupilMM = 3;
-defocusDiopters = 0;
-
-% Set up parameters structure for basic wavefront
-wvfParams0 = wvfSet(wvfParams0,'zcoeffs',zeros(65,1));
-wvfParams0 = wvfSet(wvfParams0,'measured pupil',measpupilMM);
-wvfParams0 = wvfSet(wvfParams0,'calculated pupil',calcpupilMM);
-wvfParams0 = wvfSet(wvfParams0,'wave',theWavelength);
-wvfParams0 = wvfSet(wvfParams0,'infocus wavelength',nominalFocusWavelength);
-wvfParams0 = wvfSet(wvfParams0,'defocus diopters',defocusDiopters);
+% nominalFocusWavelength = 550;
+% theWavelength = 550;
+% fieldSampleSizeMMperPixel = 16.212/201;
+% sizeOfFieldMM = 16.212;
+% measpupilMM = 8;
+% calcpupilMM = 3;
+% defocusDiopters = 0;
+% 
+% % Set up parameters structure for basic wavefront
+% wvfParams0 = wvfSet(wvfParams0,'zcoeffs',zeros(65,1));
+% wvfParams0 = wvfSet(wvfParams0,'measured pupil',measpupilMM);
+% wvfParams0 = wvfSet(wvfParams0,'calculated pupil',calcpupilMM);
+% wvfParams0 = wvfSet(wvfParams0,'wave',theWavelength);
+% wvfParams0 = wvfSet(wvfParams0,'infocus wavelength',nominalFocusWavelength);
+% wvfParams0 = wvfSet(wvfParams0,'defocus diopters',defocusDiopters);
 
 % This looks like it might be redundant and should be removed
-wvfParams0 = wvfSet(wvfParams0,'field sample size',fieldSampleSizeMMperPixel);
-wvfParams0 = wvfSet(wvfParams0,'field size mm',sizeOfFieldMM);
-
-% For plotting limits
-maxMIN = 2;
-maxMM  = 1;
+% wvfParams0 = wvfSet(wvfParams0,'field sample size',fieldSampleSizeMMperPixel);
+% wvfParams0 = wvfSet(wvfParams0,'field size mm',sizeOfFieldMM);
 
 %% Compute and plot the default
 wvfParams = wvfComputePSF(wvfParams0);
 
 f = vcNewGraphWin; 
-[~,p] = wvfPlot(wvfParams,'1d psf angle','min',maxMIN);
+[~,p] = wvfPlot(wvfParams,'1d psf angle','min',waveIdx,maxMIN);
 set(p,'color','g','linestyle','-')
 str{1} = sprintf('wave %d',wvfGet(wvfParams,'wave'));
 
@@ -72,7 +74,7 @@ wvfParams = wvfComputePSF(wvfParams);
 
 vcNewGraphWin(f); 
 hold on
-[~,p] = wvfPlot(wvfParams,'1d psf angle','min',maxMIN);
+[~,p] = wvfPlot(wvfParams,'1d psf angle','min',waveIdx,maxMIN);
 set(p,'color','b','linestyle','--')
 str{2} = sprintf('wave %d',wvfGet(wvfParams,'wave'));
 
@@ -87,12 +89,11 @@ wvfParams = wvfSet(wvfParams0,'wave',inFocus + wavelengthOffset);
 wvfParams = wvfComputePSF(wvfParams);
 
 hold on
-[~,p] = wvfPlot(wvfParams,'1d psf angle','min',maxMIN);
+[~,p] = wvfPlot(wvfParams,'1d psf angle','min',waveIdx,maxMIN);
 set(p,'color','r','linestyle',':')
 str{3} = sprintf('wave %d',wvfGet(wvfParams,'wave'));
 legend(str)
 title(sprintf('Effect of defocus, + %0.1f nm',wavelengthOffset));
-
 
 % vcNewGraphWin;
 % wvfPlot(wvfParams,'2dpsf space','mm',maxMM);

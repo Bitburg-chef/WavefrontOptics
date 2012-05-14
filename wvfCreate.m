@@ -11,7 +11,7 @@ function wvfP = wvfCreate(varargin)
 %    wvfP = wvfCreate('wave',[400:10:700]);
 %    wvfP = wvfCreate('
 %
-% (c) WVF Toolbox Team 2011
+% (c) Wavefront Toolbox Team 2011, 2012
 
 % Should have a switch for reading varargin param, val pairs.
 % Param reading/setting seems to be handled in wvfSet instead, switch
@@ -48,11 +48,12 @@ wvfP.calcpupilMM = 3;               % Used for this calculation
 wvfP.nominalFocusWl = 550;          % In focus wavelength (nm)
 wvfP.defocusDiopters = 0;           % Defocus
 
-% What field are we talking about here?
-% KP&MDL: Square computational area over which pupil's transmission function is 
-% computed, typically larger than the calculated pupil MM
-wvfP.fieldSampleSizeMMperPixel = 16.212/201;
+% What field are we talking about here? 
+% KP&MDL: Square computational area over which pupil's transmission
+% function is computed, typically larger than the calculated pupil in MM
+% (pupilMM)
 wvfP.sizeOfFieldMM = 16.212;        % Not sure which field
+wvfP.fieldSampleSizeMMperPixel = 16.212/201;
 
 % Wavelength samples - Default is 550, monochromatic
 S = [550 1 1]; 
