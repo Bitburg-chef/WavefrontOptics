@@ -27,13 +27,15 @@ function [wvfP, phase, A] = wvfComputePupilFunction(wvfP, varargin)
 %                       tilt, and are not entered into the calculations (i.e. treated as zero ). zcoeffs(3)
 %                       through zcoeffs(5) are astigmatism and defocus.  You can pass fewer than the full 65
 %                       coefficients, in which case the trailing coefficients are set to zero.
-%   measpupilMM -       Size of pupil characterized by the coefficients, in MM.
-%                       This is how large the physical pupil is and
-%                       determines the normalized scaling of rho and the
-%                       Zernike polynomals.
-%   caclpupilMM -       Size over which returned pupil function is calculated, in MM.
-%                       Must be smaller than measpupilMM. The pupil
-%                       function is set to zero outside this radius.
+%
+%   measpupilMM -       Size of pupil characterized by the coefficients, in
+%     MM. This is how large the physical pupil is and determines the
+%     normalized scaling of rho and the Zernike polynomals.
+%
+%   caclpupilMM -       Size over which returned pupil function is
+%     calculated, in MM. Must be smaller than measpupilMM. The pupil function
+%     is set to zero outside this radius.
+%
 %   wls -               Wavelength to compute for, in NM.  Can only pass one wavelenth, despite plural in the name.
 %                       This is because wvfComputePupilFunction(tmpwvfParams) is passed a temporary wvf by wvfComputePSF
 %                       which only has 1 wavelength. wvfComputePSF handles the loop through the vector of wls
@@ -41,6 +43,7 @@ function [wvfP, phase, A] = wvfComputePupilFunction(wvfP, varargin)
 %
 %   fieldSampleSizeMMperPixel - Size in mm of each pixel of the pupil
 %                       function.
+%
 %   sizeOfFieldMM -     Size of square image over which the pupil function is computed in MM.
 %                       Setting this larger than the calculated pupil size prevents undersampling
 %                       of the PSF that will ultimately be computed from the pupil function.
@@ -56,9 +59,6 @@ function [wvfP, phase, A] = wvfComputePupilFunction(wvfP, varargin)
 %
 % Output fields set in wvfP struct
 %   pupilfunc -     Calcuated pupil function
-%   areapix -       Number of pixels within the computed pupil aperture
-%   areapixapod -   Number of pixels within the computed pupil aperture,
-%                   multiplied by the Stiles-Crawford aopdization.
 %
 % PROGRAMMING NOTE:  The notion of pixel isn't so good.  We need to replace
 % it with a measure that has a clear physical description throughout.  If
@@ -87,7 +87,8 @@ function [wvfP, phase, A] = wvfComputePupilFunction(wvfP, varargin)
 %
 % Code provided by Heidi Hofer.
 %
-% 8/20/11 dhb      Rename function and pull out of supplied routine. Reformat comments.
+% 8/20/11 dhb      Rename function and pull out of supplied routine.
+% Reformat comments. 
 % 9/5/11  dhb      Rewrite for wvfP struct i/o.  Rename.
 %
 % (c) Wavefront Toolbox Team 2011, 2012
@@ -114,9 +115,9 @@ for ii=1:nWave
     thisWave = waveNM(ii);
     
     % Set SCE correction params, if desired
-    xo = wvfGet(wvfP,'scex0');
-    yo = wvfGet(wvfP,'scey0');
-    rho      = wvfGet(wvfP,'sce rho');
+    xo  = wvfGet(wvfP,'scex0');
+    yo  = wvfGet(wvfP,'scey0');
+    rho = wvfGet(wvfP,'sce rho');
     
     % set up pupil coordinates to compute A and phase
     % Create arrays that represent the length coordinates of the pupil
@@ -221,14 +222,16 @@ for ii=1:nWave
         c(61) .*sqrt(22).* (210 .* norm_radius.^10 - 504 .* norm_radius.^8 + 420 .* norm_radius.^6 - 140 .* norm_radius.^4 + 15 .* norm_radius.^2) .* cos(2 .* theta) + ...
         c(59) .*sqrt(22).* (210 .* norm_radius.^10 - 504 .* norm_radius.^8 + 420 .* norm_radius.^6 - 140 .* norm_radius.^4 + 15 .* norm_radius.^2) .* sin(2 .* theta) + ...
         c(60) .*sqrt(11).* (252 .* norm_radius.^10 - 630 .* norm_radius.^8 + 560 .* norm_radius.^6 - 210 .* norm_radius.^4 + 30 .* norm_radius.^2 - 1);
+    
+    % Here is the pupil function
     pupilfunc = A.*exp(-1i * 2 * pi * phase/waveUM(ii));
+    
+    % Set values outside the radius to to 0
     pupilfunc(norm_radius > calcPupilSizeMM/measPupilSizeMM)=0;
+    
+    % Attach the function the the proper wavelength slot
     wvfP = wvfSet(wvfP,'pupilfunc',pupilfunc,ii);
     
-    % Are these needed?  What are they?  They shouldn't be set.  They
-    % should be only 'gets'.
-    %     wvfP = wvfSet(wvfP,'areapix',numel(pupilfunc));
-    %     wvfP = wvfSet(wvfP,'areapixapod',sum(sum(abs(pupilfunc))));
 end
 
 end

@@ -26,16 +26,15 @@ function defocusMicrons = wvfGetDefocusFromWavelengthDifference(wvfP)
 %    wvfP = wvfSet(wvfP,'wave',400:10:700);
 %    wvfP = wvfGetDefocusFromWavelengthDifference(wvfP)
 %
-% Note from DHB.  This magic code provided by Heidi Hofer.
-% It does have the feature that the adjustment is 0 when
-% the wavelength being evaluated matches the passed nominal
-% focus wavelength.  Heidi assures me that the constants
-% are correct for any pair of wavelengths.
-%
-% (c) Wavefront Toolbox Team 2011
+% Note from DHB.  This magic code provided by Heidi Hofer. It does have the
+% feature that the adjustment is 0 when the wavelength being evaluated
+% matches the passed nominal focus wavelength.  Heidi assures me that the
+% constants are correct for any pair of wavelengths.
 %
 % 8/21/11  dhb  Pulled out from code supplied by Heidi Hofer.
 % 9/5/11   dhb  Rename.  Rewrite for wvfPrams i/o.
+%
+% (c) Wavefront Toolbox Team 2011
 
 wave = wvfGet(wvfP,'wave'); 
 diopters = zeros (size(wave));
@@ -61,6 +60,7 @@ wvfP.defocusMicrons = zeros(size(wave)); %this looks unused (KP)
 
 pupilMM = wvfGet(wvfP,'measured pupil','mm');
 defocusMicrons = diopters * (pupilMM)^2/(16*sqrt(3));
+
 % References for equation:
 % http://www.telescope-optics.net/monochromatic_eye_aberrations.htm
 % (accessed 3/11/12) 

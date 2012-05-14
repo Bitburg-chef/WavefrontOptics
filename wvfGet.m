@@ -146,9 +146,12 @@ switch parm
         % The default is microns.
         % wvfGet(wvfP,'defocus distance','mm');
         val = wvfGetDefocusFromWavelengthDifference(wvf);
-        if isempty(varargin), return
+        if isempty(varargin)
+            % Return is in microns by default
+            return
         else
-            % Convert to meters and then scale
+            % There is a different unit.  So, convert to meters and then
+            % scale to microns. 
             val = (val/10^6)*ieUnitScaleFactor(varargin{1});
         end
         
@@ -277,7 +280,8 @@ switch parm
         % Sample support in angle ('min' default), centered on 0
         %    wvfGet(wvf,'samples angle','min')
         %  angle can also be 'deg' or 'sec'
-        
+        % This is apparently wavelength dependent.  We should use the same
+        % method here as we use in wvfComputePSF.  
         unit = 'min';
         if ~isempty(varargin),unit = varargin{1}; end
         anglePerPix = wvfGet(wvf,'angleperpixel',unit);
@@ -285,6 +289,7 @@ switch parm
         middleRow = wvfGet(wvf,'middle row');
         nPixels = wvfGet(wvf,'npixels');
         val = anglePerPix*((1:nPixels)-middleRow);
+        
     case {'middlerow'}
         val = floor(wvfGet(wvf,'npixels')/2) + 1;
     case {'fieldsizemm','fieldsizespace','fieldsize'}
@@ -295,11 +300,13 @@ switch parm
         end
         
         % These pixel related measures used to be computed in wvfComputePSF
-        % and wvfComputePupilFunction.
+        % and wvfComputePupilFunction.  They were win wvfSet.  But now we
+        % just compute them on the fly, here. - BW
     case {'areapix'}
-        % Not sure about the physical significance of this
-        % If we know the area of each pixel, I suppose we can calculate the
-        % area covered by the pupil function.
+        % Not sure about the physical significance of this If we know the
+        % area of each pixel, we can use this to calculate the area covered
+        % by the pupil function. It is computed for the first time in
+        % wvfComputePupilFunction as numel(pupilfunc))
         if isempty(varargin)
             nWave = wvfGet(wvf,'n wave');
             val = zeros(nWave,1);
@@ -311,9 +318,10 @@ switch parm
         end
         
     case {'areapixapod'}
-        % Not sure about the physical significance of this
-        % Something like the area underneath the absolute value of the
-        % pupil function.
+        % Not sure about the physical significance of this Something like
+        % the area underneath the absolute value of the pupil function It
+        % is a vector the same length as wavelength. It is computed for the
+        % first time in wvfComputePupilFunction sum(sum(abs(pupilfunc)))
         if isempty(varargin)
             nWave = wvfGet(wvf,'n wave');
             val = zeros(nWave,1);

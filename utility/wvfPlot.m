@@ -8,9 +8,9 @@ function [uData, pData] = wvfPlot(wvfP,pType,varargin)
 %
 % Plot types:
 %  Mesh (default)
-%   2d psf angle -  wvfPlot(wvfP,'2d psf angle','deg',waveIdx);
+%   2d psf angle -   wvfPlot(wvfP,'2d psf angle',[unit], [waveIdx], [plotRangeArcMin]);
 %   2d psf angle normalized -
-%   2d psf space -
+%   2d psf space -   wvfPlot(wvfP,'2d psf space',[unit], [waveIdx], [plotRangeArcMin]);
 %   2d psf space normalized -
 %
 %  Line
@@ -19,8 +19,12 @@ function [uData, pData] = wvfPlot(wvfP,pType,varargin)
 %   1d psf space -
 %   1d psf space normalized -
 %
-%  Images
-%   image 2d psf
+%  PSF image
+%   image psf - wvfPlot(wvfP,'image psf space',[unit],[waveIdx], [plotRange]);
+%
+%  Pupil FUnctions
+%      wvfPlot(wvfP,'2d pupil amplitude space','mm',pRange)
+%
 %
 %   2d pupil amplitude space (KP 3/11/12, in progress)
 %   2d pupil phase space (MDL 3/18/12, in progress)

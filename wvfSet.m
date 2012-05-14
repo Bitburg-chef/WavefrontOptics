@@ -69,12 +69,18 @@ switch parm
         
         % Spectral matters
     case {'wave','wavelist','wavelength','wls'}
-        % Vector of wavelengths
-        % e.g., w = SToWls([400 5 61])
-        % or single wavelength
-        % e.g. w = SToWls([550 1 1]) or w = 550;
-        wls = SToWls(val);
-        wvf.wls = wls;
+        % Normally just a vector of wavelengths
+        % but allow SToWls case for DHB.
+        % wvfSet(wvfP,'wave',400:10:700)  OR
+        % wvfSet(wvfP,'wave',[400 10 31])
+        if size(val,2) == 3 || length(val) == 1
+            % SToWls case
+            wls = SToWls(val);
+            wvf.wls = wls;
+        else
+            % Just a vector case
+            wvf.wls = val(:);
+        end
     case {'infocuswavelength','nominalfocuswl'}
         % In focus wavelength nm.  Single value.
         wvf.nominalFocusWl = val;
@@ -173,7 +179,7 @@ switch parm
         % The structure of sce is defined in sceCreate
         wvf.sceParams = val;
         
-        % Derived parameters
+        % PSF parameters
     case 'psf'
         % wvfSet(wvf,'psf',psf) - psf is a cell array of point spreads, one
         % for each wavelength
@@ -208,22 +214,24 @@ switch parm
             end
         end
         
-        % These pixel related measures computed in wvfComputePupilFunction
-        % and stored in wvComputePSF.  Not sure what they are and whether
-        % they need to be here.  Perhaps we could move them from that
-        % function into here?  They probably should never be set, but they
-        % should always be a get based on pupilfunc.
-        % BW, May 2012.
-    case {'areapix'}
-        % This is a vector the same length as wavelength
-        % Don't know what this is. It is computed for the first time in
-        % wvfComputePupilFunction as numel(pupilfunc))
-        wvf.areapix = val;
-    case {'areapixapod'}
-        % Don't know what this represents. It is a vector the same length
-        % as wavelength. It is computed for the first time in
-        % wvfComputePupilFunction sum(sum(abs(pupilfunc)))
-        wvf.areapixapod = val;
+%         % These pixel related measures computed in wvfComputePupilFunction
+%         % and stored in wvComputePSF.  Not sure what they are and whether
+%         % they need to be here.  Perhaps we could move them from that
+%         % function into here?  They probably should never be set, but they
+%         % should always be a get based on pupilfunc.
+%         % BW, May 2012.
+%     case {'areapix'}
+%         % Not sure about the physical significance of this If we know the
+%         % area of each pixel, we can use this to calculate the area covered
+%         % by the pupil function. It is computed for the first time in
+%         % wvfComputePupilFunction as numel(pupilfunc))
+%         wvf.areapix = val;
+%     case {'areapixapod'}
+%         % Not sure about the physical significance of this Something like
+%         % the area underneath the absolute value of the pupil function It
+%         % is a vector the same length as wavelength. It is computed for the
+%         % first time in wvfComputePupilFunction sum(sum(abs(pupilfunc)))
+%         wvf.areapixapod = val;
     otherwise
         error('Unknown parameter %s\n',parm);
 end
