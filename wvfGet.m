@@ -11,10 +11,8 @@ function val = wvfGet(wvf,parm,varargin)
 %  unit specifies the spatial scale of the returned value:  'm', 'cm', 'mm',
 %  'um', 'nm'.  Default is always meters ('m').  (REALLY?  NOT YET).
 %
-% Examples:
+%Parameter list
 %
-%
-%Parameters
 % General
 %     'name' - Name of this wavefront parameter structure
 %     'type' - Always 'wvf'
@@ -23,6 +21,7 @@ function val = wvfGet(wvf,parm,varargin)
 %     'wavelength' - wavelength samples
 %     'nwave' - Number of wavelength samples
 %     'infocus wavelength'
+%      'weightspectrum'
 %
 % Pupil parameters
 %     'calculated pupil'
@@ -46,13 +45,35 @@ function val = wvfGet(wvf,parm,varargin)
 %
 % Pointspread function
 %     'psf'
+%     'diffractionpsf'
 %     'psf centered'
 %     '1d psf'
+%     'spatialsupport'
+%     'middle row'
+%
+%     'samples angle'
+%     'arcminperpix'
+%     'angleperpixel'
 %     'strehl'
 %
-% History:
-%   4/29/12  dhb  Allow wls as a synonym for wavelength, because that was
-%                 my first guess given the name of the field.
+%     'areapixapod' - In need of repair to speed up strehl
+%     'areapix' - In need of repair to speed up strehl
+%
+% Examples:
+% * Compute diffraction limited psf
+%   wvfP = wvfCreate; 
+%   wvfP = wvfComputePSF(wvfP); 
+%   vcNewGraphWin; wvfPlot(wvfP,'image psf','um',1,20)
+%   psf = wvfGet(wvfP,'diffraction psf',1); vcNewGraphWin; mesh(psf)
+%
+% * Strehl is ratio of diffraction and current
+%   wvfP = wvfComputePSF(wvfP); wvfGet(wvfP,'strehl',1)
+%
+% * Blur and recompute.  4th coefficient is defocus
+%   z = wvfGet(wvfP,'zcoeffs');z(4) = 0.3; wvfP = wvfSet(wvfP,'zcoeffs',z); 
+%   wvfP = wvfComputePSF(wvfP); wvfGet(wvfP,'strehl',1)
+%
+% See also: wvfComputePupilFunction, wvfLoadHuman
 %
 % (c) Wavefront Toolbox Team 2011, 2012
 
@@ -218,9 +239,22 @@ switch parm
         else
             idx = varargin{1}; nWave = wvfGet(wvf,'nwave');
             if idx > nWave, error('idx (%d) > nWave',idx,nWave);
-            else val = wvf.psf{idx};
+            else
+                if checkfields(wvf,'psf'), val = wvf.psf{idx};
+                else disp('No psf.  Use wvfComputePSF');
+                end
             end
         end
+    case 'diffractionpsf'
+        % wvfGet(wvf,'diffraction psf',waveIdx);
+        % diffraction limited psf at wave(waveIdx)
+        %
+        waveIdx = varargin{1}; wave = wvfGet(wvf,'wave'); 
+        wvf = wvfSet(wvf,'wave',wave(waveIdx));
+        zcoeffs = zeros(65,1); zcoeffs(1) = 1;
+        wvf = wvfSet(wvf,'zcoeffs',zcoeffs); 
+        wvf = wvfComputePSF(wvf);
+        val = wvfGet(wvf,'psf',1);
     case 'psfcentered'
         % Centered so that peak is at middle position in coordinate grid
         val = psfCenter(wvfGet(wvf,'psf'));
@@ -245,9 +279,12 @@ switch parm
         % wavelength index.
         waveIdx = varargin{1};
         psf = wvfGet(wvf,'psf',waveIdx);
-        areaPixapod = wvfGet(wvf,'area pixapod',waveIdx);
-        val = max(psf(:))/areaPixapod^2;
-        % Old calculation was done in the compute pupil function routine.
+        dpsf = wvfGet(wvf,'diffraction psf',waveIdx);
+        val = max(psf(:))/max(dpsf(:));
+        
+        %         areaPixapod = wvfGet(wvf,'area pixapod',waveIdx);
+        %         val = max(psf(:))/areaPixapod^2;
+        %         % Old calculation was done in the compute pupil function routine.
         % Now, we do it on the fly in here, for a wavelength
         % strehl(wl) = max(max(psf{wl}))./(areapixapod(wl)^2);
         
@@ -409,7 +446,7 @@ switch parm
     case {'samplesspace','supportspace','spatialsupport'}
         % wvfGet(wvf,'samples space','um')
         % Spatial support in samples, centered on 0
-        % Unit and wavelength should be specified
+        % Unit and wavelength must be specified
         %    
         unit = varargin{1}; waveIdx = varargin{2};
         % Get the samples in degrees
