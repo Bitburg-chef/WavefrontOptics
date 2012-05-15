@@ -73,12 +73,11 @@ switch parm
         % but allow SToWls case for DHB.
         % wvfSet(wvfP,'wave',400:10:700)  OR
         % wvfSet(wvfP,'wave',[400 10 31])
-        if size(val,2) == 3 || length(val) == 1
-            % SToWls case
+        if size(val,2) == 3 && size(val,1) == 1 % SToWls case
+            % Row vector with 3 entries.
             wls = SToWls(val);
             wvf.wls = wls;
-        else
-            % Just a vector case
+        else  % A column vector case
             wvf.wls = val(:);
         end
     case {'infocuswavelength','nominalfocuswl'}
@@ -145,8 +144,9 @@ switch parm
         
         % Focus parameters
     case {'zcoef','zcoeffs'}
-        % Zernicke coefficients.
-        wvf.zcoeffs = val;
+        % Zernicke coefficients.  This should be 65 terms, and we
+        % over-write the number that are in val.
+        wvf.zcoeffs(1:length(val)) = val;
     case 'defocusdiopters'
         % Does not look like defocus is ever stored in diopters in other
         % functions. Only for user to set defocus diopters as an

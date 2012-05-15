@@ -38,7 +38,7 @@ wvfParams = wvfComputePSF(wvfParams);
 % vcNewGraphWin;
 % wvfPlot(wvfParams,'2dpsf space','mm',maxMM);
 
-[~,p] = wvfPlot(wvfParams,'1d psf angle','min',waveIdx,maxMIN);
+[f,p] = wvfPlot(wvfParams,'1d psf angle','min',waveIdx,maxMIN);
 set(p,'color','b')
 hold on
 

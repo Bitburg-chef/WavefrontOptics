@@ -45,7 +45,7 @@ wvfParams = wvfComputePSF(wvfP);
 f = vcNewGraphWin([],'tall');
 for ii=1:nWave
     subplot(nWave,1,ii)
-    [~,p] = wvfPlot(wvfParams,'1d psf space','um',ii,maxUM);
+    [f,p] = wvfPlot(wvfParams,'1d psf space','um',ii,maxUM);
     title(sprintf('wave %d',wave(ii)));
 end
 
