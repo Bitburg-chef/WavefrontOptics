@@ -1,7 +1,7 @@
-function wvfP = wvfComputePSF2(wvfP)
+function wvfP = wvfComputePSF(wvfP)
 % Compute the monochromatic psf over the calculated pupil 
 %
-%    wvfP = wvfComputePSF2(wvfP)
+%    wvfP = wvfComputePSF(wvfP)
 %
 % wvfP: A structure of wavefront parameters. See wvfCreate for the default
 %       fields
@@ -174,13 +174,14 @@ strehl  = zeros(nWave,1);
 sceFrac = zeros(nWave,1);
 
 % We will set tmpWvfParams to a single wavelength and loop.
+tmpWvfParams = wvfP;
 w = waitbar(0,'Pupil functions');
 for wl = 1:nWave
     
     waitbar(wl/nWave,w,sprintf('Pupil function %d',wave(wl)));
     
-    % Set up a tmp structure so we can loop on wavelength
-    tmpWvfParams = wvfSet(wvfP,'wave',wave(wl));
+    % Set up a tmp parameter structure so we can loop on wavelength
+    tmpWvfParams = wvfSet(tmpWvfParams,'wave',wave(wl));
     
     % Add in the appropriate LCA to the initial zernike defocus
    
@@ -192,21 +193,13 @@ for wl = 1:nWave
     % rather than the given nominal focus wavelength (nominalFocuswl) using 
     % wvfGetDefocusFromWavelengthDifference (which also adds in
     % contribution from "defocus diopter" value in wvfP)
-    dm = wvfGet(wvfP,'defocus microns',wl);
-    tmpWvfParams.zcoeffs(4) = doriginal + dm;
-    % wvfP.defocusMicrons(wl); 
+    tmpWvfParams.zcoeffs(4) = doriginal + wvfP.defocusMicrons(wl); 
     
     % Rescaling so that PSF pixel dimension is constant with wavelength.
     % OK, this needs a much better explanation and justification.  It
     % probably breaks some of the wavelength-dependent calculations - BW.   
     npixels = wvfGet(wvfP,'npixels');
     
-    % ***** START HERE ******
-    % I think the calculation should always be part of the get.  We
-    % shouldn't have to adjust it on the fly like this.
-    % So, 
-    %    wvfGet(wvfP,'field sample size mm',waveIdx)
-    % should return what is below.  Then the next line would be irrelevant.
     newFieldSampleSize = wvfGet(wvfP,'field sample size mm')*wave(wl)/setScaleWl;
     tmpWvfParams       = wvfSet(tmpWvfParams,'fieldSampleSize',newFieldSampleSize);
     

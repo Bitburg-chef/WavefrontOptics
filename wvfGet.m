@@ -146,12 +146,9 @@ switch parm
         % The default is microns.
         % wvfGet(wvfP,'defocus distance','mm');
         val = wvfGetDefocusFromWavelengthDifference(wvf);
-        if isempty(varargin)
-            % Return is in microns by default
-            return
-        else
-            % There is a different unit.  So, convert to meters and then
-            % scale to microns. 
+        if ~isempty(varargin)
+            % There is a different unit.  So, convert microns to meters and
+            % then scale to new unit.
             val = (val/10^6)*ieUnitScaleFactor(varargin{1});
         end
         
@@ -195,11 +192,17 @@ switch parm
             end
         end
         
-    case 'scefrac'
+    case {'scefrac','scefraction','stilescrawfordeffectfraction'}
+        % wvfGet(wvf,'sce fraction',waveIdx)
+        % The variable sceFrac tells you how much light
+        % is lost if you correct for the SCE.
+        waveIdx = varargin{1};
+        val = wvfGet(wvf,'area pixapod',waveIdx) / wvfGet(wvf,'areapix',waveIdx);
+        
         % Note what this is or when it is calculated
-        if checkfields(wvf,'sceFrac'), val = wvf.sceFrac;
-        else warning('WVFGET:scefract','No sceFrac field');
-        end
+        %         if checkfields(wvf,'sceFrac'), val = wvf.sceFrac;
+        %         else warning('WVFGET:scefract','No sceFrac field');
+        %         end
         
         % Point and line spread data
     case 'psf'
@@ -232,13 +235,21 @@ switch parm
         psf = psfCenter(wvfGet(wvf,'psf',waveIdx));
         val = psf(whichRow,:);
     case 'strehl'
-        % Strehl ratio.  Not sure when it is calculated
-        % It seems to be wrong mostly.  We should fix it.
+        % wvfGet(wvf,'strehl',waveIdx);
+        % Strehl ratio.  
         % The strehl is the ratio of the peak of diff limited and the
-        % existing.
-        if isfield(wvf,'strehl'),  val = wvf.strehl;
-        else                       disp('No strehl parameter present');
-        end
+        % existing psf at that wavelength.
+        
+        % We could write this so that with no arguments we return all of
+        % the ratios across wavelengths.  For now, force a request for a
+        % wavelength index.
+        waveIdx = varargin{1};
+        psf = wvfGet(wvf,'psf',waveIdx);
+        areaPixapod = wvfGet(wvf,'area pixapod',waveIdx);
+        val = max(psf(:))/areaPixapod^2;
+        % Old calculation was done in the compute pupil function routine.
+        % Now, we do it on the fly in here, for a wavelength
+        % strehl(wl) = max(max(psf{wl}))./(areapixapod(wl)^2);
         
         % Spatial and angular support
     case {'fieldsizepixels','npixels'}
@@ -249,13 +260,37 @@ switch parm
         end
         
     case {'fieldsamplesize','fieldsamplesizemm'}
-        val = wvf.fieldSampleSizeMMperPixel;
+        % wvfGet('field sample size','mm',waveIdx)
+        %
+        % This quantity is scaled to make the field size the same,
+        % independent of wavelength. It is always normalized for the
+        % setScaleWl of 550nm.  This should be explained in terms of
+        % physics better.
+        % The value stored in field samplesizeMMperPixel is for 550nm, I
+        % guess. 
+        % OLD CODE:  val = wvf.fieldSampleSizeMMperPixel;
+        
+        % For now, force the long call.  Otherwise an error.
+        unit = varargin{1};  waveIdx = varargin{2};
+        setScaleWl = 550; wave = wvfGet(wvf,'wave');
+        %  if ~isempty(varargin), unit = varargin{1}; end
+        %  if length(varargin) > 1, waveIdx = varargin{2}; end
+        val = wvf.fieldSampleSizeMMperPixel*(wave(waveIdx)/setScaleWl);
+        
+        if ~isempty(unit)
+            % Convert from mm to meters and then scale to unit
+            val = (val/1000)*ieUnitScaleFactor(unit);
+        end
     case {'angleperpixel','angperpix'}
-        % wvfGet(wvf,'angle per pixel',unit)
+        % wvfGet(wvf,'angle per pixel',unit,waveIdx)
+        % Angle per pixel in various angle units
         %  unit = 'min', 'deg', or 'sec'
-        val = wvfGet(wvf,'arcminperpix');
-        if ~isempty(varargin)
-            unit = lower(varargin{1});
+        unit = varargin{1}; waveIdx = varargin{2};
+        % The angle units are always in minutes
+        val = wvfGet(wvf,'arcminperpix',waveIdx);
+
+        if ~isempty(unit)
+            unit = lower(unit);
             switch unit
                 case 'deg'
                     val = val/60;
@@ -269,22 +304,49 @@ switch parm
         end
         
     case 'arcminperpix'
+        % wvfGet(wvf,'arcmin per pix',waveIdx)
+        % I think the pixels here are in the pupil plane.
+        wave = wvfGet(wvf,'wave');
+        waveIdx = varargin{1};
+        thisWave = wave(waveIdx);   % Wavelength in nanometers
+        fieldMM = wvfGet(wvf,'field size','mm',waveIdx);
+        
+        % This could use a comment.  I tried at length below.
+        val = (180*60/3.1416)*thisWave*.001*.001/fieldMM;
+        
+        % It looks like this has three parts
+        %   (180/pi)*60   setScaleWl -> millimeters      1/fieldMM
+        %
+        % Here is my understanding
+        %   (180/pi) is 1 deg in radians, 60 gets us minutes in radians.
+        %   (deg/rad)*min/deg ->  min/rad
+        %
+        %   setScaleWl*10^-6 is nm * mm/nm = mm
+        %   (1/mm) is the total field of view
+        %
+        %   So we have min/rad units when we are done.  I guess if 1 minute is 1
+        %   pixel, then we have arc minutes per pixel.
+        %
+        % The original code below uses the setScaleWl.  We don't need this
+        % any more because the fieldMM return incorporates that value into
+        % fieldMM
+        %
+        % arcminperpix = (180*60/3.1416)*setScaleWl*.001*.001/wvfP.sizeOfFieldMM;
+
+        % Old CODE
         % Visual angle (arc minutes) per pixel.
-        if isempty(varargin),  wave = 550;
-        else                   wave = varargin{1};
-        end
-        fieldMM = wvfGet(wvf,'field size mm');
-        % Wavelength in nanometers
-        val = (180*60/3.1416)*wave*.001*.001/fieldMM;
+        %         if isempty(varargin),  wave = 550;
+        %         else                   wave = varargin{1};
+        %         end
     case {'samplesangle','samplesarcmin','supportarcmin'}
+        %    wvfGet(wvf,'samples angle','min',waveIdx)
+        %
         % Sample support in angle ('min' default), centered on 0
-        %    wvfGet(wvf,'samples angle','min')
         %  angle can also be 'deg' or 'sec'
         % This is apparently wavelength dependent.  We should use the same
         % method here as we use in wvfComputePSF.  
-        unit = 'min';
-        if ~isempty(varargin),unit = varargin{1}; end
-        anglePerPix = wvfGet(wvf,'angleperpixel',unit);
+        unit = varargin{1}; waveIdx = varargin{2};
+        anglePerPix = wvfGet(wvf,'angleperpixel',unit,waveIdx);
         
         middleRow = wvfGet(wvf,'middle row');
         nPixels = wvfGet(wvf,'npixels');
@@ -292,16 +354,21 @@ switch parm
         
     case {'middlerow'}
         val = floor(wvfGet(wvf,'npixels')/2) + 1;
-    case {'fieldsizemm','fieldsizespace','fieldsize'}
-        val = wvf.sizeOfFieldMM;
-        if ~isempty(varargin)
-            % Convert to meters and then scale
-            val = (val/1000)*ieUnitScaleFactor(varargin{1});
-        end
         
-        % These pixel related measures used to be computed in wvfComputePSF
-        % and wvfComputePupilFunction.  They were win wvfSet.  But now we
-        % just compute them on the fly, here. - BW
+        % Used to be assigned, but now computed.
+    case {'fieldsize','fieldsizemm','fieldsizespace'}
+        % wvfGet(wvf,'field size','mm',waveIdx)
+        % The field size in the pupil plane in mm
+        % The size of a pixel * the number of pixels is the field size.
+        % We used to store all three, but that could lead to inconsistency.
+        unit = varargin{1}; waveIdx = varargin{2};
+        npixels = wvfGet(wvf,'npixels');
+        val = wvfGet(wvf,'field sample size',unit,waveIdx)*npixels;
+        % OLD: val = wvf.sizeOfFieldMM;  % This parameter should go away.
+        
+        % The two measures below used to be computed and assigned in
+        % wvfComputePSF and wvfComputePupilFunction.  They were win wvfSet.
+        % But now we just compute them on the fly, here. - BW
     case {'areapix'}
         % Not sure about the physical significance of this If we know the
         % area of each pixel, we can use this to calculate the area covered
@@ -340,14 +407,13 @@ switch parm
         end
         val = wvfGet(wvf,'field size',unit)/wvfGet(wvf,'npixels');
     case {'samplesspace','supportspace','spatialsupport'}
+        % wvfGet(wvf,'samples space','um')
         % Spatial support in samples, centered on 0
-        % Unit can be specified
-        %    wvfGet(wvf,'samples space','um')
-        if isempty(varargin), unit = 'mm';
-        else unit = varargin{1};
-        end
+        % Unit and wavelength should be specified
+        %    
+        unit = varargin{1}; waveIdx = varargin{2};
         % Get the samples in degrees
-        val = wvfGet(wvf,'samples angle','deg');
+        val = wvfGet(wvf,'samples angle','deg',waveIdx);
         
         % Convert to meters and then to selected spatial scale
         val = val*(300*10^-6);  % Sample in meters assuming 300 um / deg

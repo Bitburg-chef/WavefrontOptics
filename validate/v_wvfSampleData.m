@@ -36,7 +36,8 @@ s_initISET
 waveIdx = 1;
 maxMIN = 6;
 
-%%
+%% Use Heidi Hofer's sample data here
+
 % Set values in millimeters
 wvfP = wvfCreate('measured pupil',6,'calculated pupil',3);
 
@@ -59,7 +60,7 @@ else        wvfP.sceParams = sceCreate(sceWavelength,'none');
 end
 
 %%
-f = vcNewGraphWin;
+vcNewGraphWin;
 for ii = 1:nSubjects
     fprintf('** Subject %d\n',ii)
     

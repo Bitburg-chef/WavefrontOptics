@@ -56,20 +56,12 @@ wvfP.sizeOfFieldMM = 16.212;        % Not sure which field
 wvfP.fieldSampleSizeMMperPixel = 16.212/201;
 
 % Wavelength samples - Default is 550, monochromatic
-S = [550 1 1]; 
-% S is a length 3 vector of the format: [start spacing Nsamples]
-% ex: S = [400 50 5]; 5 wavelength samples 400, 450, 500, 550, 600
-% wvfP = wvfCreate('wave',S); will have column of wavelength samples as
-%                             specified by S
-
-% Specifies the wavelength (or wavelength vector) over which the pupil 
-% function and PSF will be calculated. Needed in order to find axial 
-% aberration (LCA) caused by not necessarily using nominal focus wavelength.
-% Contributes additional defocus to zcoeffs(4)/"defocus" in wvfComputePSF
-wls = SToWls(S);
-wvfP.wls         = wls;             % Wavelength samples
+wvfP.wls         = 550;             % Wavelength samples
 
 % Something about the cones.  
+% S is a length 3 vector of the format: [start spacing Nsamples]
+% ex: S = [400 50 5]; 5 wavelength samples 400, 450, 500, 550, 600
+S = [550 1 1]; 
 T = load('T_cones_ss2');   % Probably in the PTB
 T_cones = SplineCmf(T.S_cones_ss2,T.T_cones_ss2,S);
 % vcNewGraphWin; plot(wave,T_cones'); xlabel('Wavelength (nm)');

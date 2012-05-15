@@ -49,20 +49,20 @@ waveIdx = 1;
 wvfParams = wvfComputePSF(wvfParams0);
 
 % Make a graph of the PSF within 1 mm of center
-vcNewGraphWin;
+vcNewGraphWin([],'upper left');
 wvfPlot(wvfParams,'2dpsf space','um',waveIdx,maxUM);
 
 % Make a graph of the PSF within 2 arc min
-vcNewGraphWin;
+vcNewGraphWin([],'upper left');
 wvfPlot(wvfParams,'2dpsf angle','min',waveIdx,maxMIN);
 
 %% Plot the middle row of the psf, scaled to peak of 1
-vcNewGraphWin;
+vcNewGraphWin([],'upper left');
 wvfPlot(wvfParams,'1d psf angle normalized','min',waveIdx,maxMIN);
 hold on
 
 % Used for plotting comparisons below
-arcminutes = wvfGet(wvfParams,'support arcmin');
+arcminutes = wvfGet(wvfParams,'support arcmin','min',waveIdx);
 index = find(abs(arcminutes) < 2);
 radians = (pi/180)*(arcminutes/60);
 
@@ -85,7 +85,7 @@ wvfParams1 = wvfSet(wvfParams1,'wave',newWave);
 wvfParams1 = wvfSet(wvfParams1,'in focus wavelength', newWave);
 wvfParams = wvfComputePSF(wvfParams1);
 
-vcNewGraphWin;
+vcNewGraphWin([],'upper left');
 wvfPlot(wvfParams,'1d psf angle normalized','min',waveIdx,maxMIN)
  
 hold on
@@ -101,7 +101,7 @@ wvfParams2 = wvfParams0;
 wvfParams2 = wvfSet(wvfParams2,'calculated pupil',pupilMM);
 wvfParams = wvfComputePSF(wvfParams2);
 
-vcNewGraphWin;
+vcNewGraphWin([],'upper left');
 wvfPlot(wvfParams,'1d psf angle normalized','min',waveIdx,maxMIN);
 hold on;
 

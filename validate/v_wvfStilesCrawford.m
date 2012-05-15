@@ -42,7 +42,7 @@ wvfParams = wvfComputePSF(wvfParams);
 set(p,'color','b')
 hold on
 
-strehl = wvfGet(wvfParams,'strehl');
+strehl = wvfGet(wvfParams,'strehl',waveIdx);
 title(sprintf('Strehl ratio:  %.1f',strehl));
 
 % Figure this out

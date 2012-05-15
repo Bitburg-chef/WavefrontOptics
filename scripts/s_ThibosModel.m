@@ -1,12 +1,17 @@
 %% Explore the Thibos data and model for human point spread functions
 %
-% ieMvnrnd call
-% Thibos data correlation matrix.
+% The Zernicke coefficients for the human eye at different pupil sizes have
+% been estimated and the data distributed by Thibos and the gang in
+% Indiana.  Brainard snagged them along with the Virtual Eyes demo stuff.
+% We re-wrote and integrated with the toolbox here.
 %
-% See the VirtualEyesDemo script therein.
+% This routine loads the data and plots them using our methods.
 %
+% See also:  VirtualEyesDemo script therein.
+%
+% Copyright Wavefront Toolbox Team, 2012
 
-%%
+%% Initialize
 s_initISET
 
 maxUM = 40;
@@ -20,15 +25,8 @@ maxUM = 40;
 % the variable sample_mean.
 
 pupilMM = 4.5;
-switch pupilMM
-    case 6.0
-        load('IASstats60','S','sample_mean');
-        
-    case 4.5
-        load('IASstats45','S','sample_mean');
-    otherwise
-        error('Unknown pupil size')
-end
+[sample_mean S] = vwfLoadHuman(pupilMM);
+
 
 %% Plot the means and covariance (not)
 
@@ -84,9 +82,10 @@ nWave= wvfGet(thisGuy,'nwave');
 %     vcNewGraphWin; 
 %     mesh(thisGuy.psf{ii}); title(sprintf('%d nm',wave(ii)));
 % end
-f = vcNewGraphWin([],'tall');
+vcNewGraphWin([],'tall');
 for ii=1:nWave
-    subplot(nWave,1,ii), wvfPlot(thisGuy,'image psf space','um',ii,maxUM);
+    subplot(nWave,1,ii)
+    wvfPlot(thisGuy,'image psf space','um',ii,maxUM);
     title(sprintf('%d nm',wave(ii)));
 end
 

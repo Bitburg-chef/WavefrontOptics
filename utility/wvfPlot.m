@@ -66,7 +66,7 @@ switch(pType)
             [unit, waveIdx, pRange] = wvfReadArg(varargin);
         end
         
-        samp = wvfGet(wvfP,'samples angle',unit);
+        samp = wvfGet(wvfP,'samples angle',unit,waveIdx);
         psf = wvfGet(wvfP,'psf',waveIdx);
         
         % Extract within the range
@@ -99,7 +99,7 @@ switch(pType)
             [unit, waveIdx, pRange] = wvfReadArg(varargin);
         end
         
-        samp = wvfGet(wvfP,'samples space',unit);
+        samp = wvfGet(wvfP,'samples space',unit,waveIdx);
         psf = wvfGet(wvfP,'psf',waveIdx);
         if ~isempty(strfind(pType,'normalized'))
             psf = psf/max(psf(:));
@@ -127,7 +127,7 @@ switch(pType)
             [unit, waveIdx, pRange] = wvfReadArg(varargin);
         end
         
-        samp = wvfGet(wvfP,'samples space',unit);
+        samp = wvfGet(wvfP,'samples space',unit,waveIdx);
         psf = wvfGet(wvfP,'psf',waveIdx);
         % If the string contains normalized
         if ~isempty(strfind(pType,'normalized'))
@@ -162,7 +162,7 @@ switch(pType)
         
         psfLine = wvfGet(wvfP,'1d psf',waveIdx);
         % psfLine = psfLine/max(psfLine(:));
-        samp = wvfGet(wvfP,'samples angle',unit);
+        samp = wvfGet(wvfP,'samples angle',unit,waveIdx);
         
         % Make a plot through of the returned PSF in the central region.
         index = find(abs(samp) < pRange);
@@ -192,7 +192,7 @@ switch(pType)
             psfLine = psfLine/max(psfLine(:));
         end
         
-        samp = wvfGet(wvfP,'spatial support',unit);
+        samp = wvfGet(wvfP,'spatial support',unit, waveIdx);
         
         % Make a plot through of the returned PSF in the central region.
         if ~isempty(pRange)

@@ -93,13 +93,10 @@ function [wvfP, phase, A] = wvfComputePupilFunction(wvfP, varargin)
 %
 % (c) Wavefront Toolbox Team 2011, 2012
 
-% Handle case where not all 65 coefficients are passed
-c = zeros(65,1);
-c(1:length(wvfGet(wvfP,'zcoeffs'))) = wvfGet(wvfP,'zcoeffs');
+%% Parameter checking
+if ieNotDefined('wvfP'), error('wvfP required'); end
 
-% Convert wavelengths in nanometers to wavelengths in microns
-% wlInUM = wvfP.wls/1000;
-% Sanity check
+% Check pupil size issue
 calcPupilSizeMM = wvfGet(wvfP,'calculated pupil','mm');
 measPupilSizeMM = wvfGet(wvfP,'measured pupil','mm');
 if (calcPupilSizeMM > measPupilSizeMM)
@@ -107,6 +104,15 @@ if (calcPupilSizeMM > measPupilSizeMM)
         calcPupilSizeMM, measPupilSizeMM);
 end
 
+% Handle case where not all 65 coefficients are passed
+c = zeros(65,1);
+c(1:length(wvfGet(wvfP,'zcoeffs'))) = wvfGet(wvfP,'zcoeffs');
+
+%% Calculate pupil function for each wavelength
+
+% Convert wavelengths in nanometers to wavelengths in microns
+% wlInUM = wvfP.wls/1000;
+% Sanity check
 waveUM = wvfGet(wvfP,'wave','um');
 waveNM = wvfGet(wvfP,'wave','nm');
 nWave = wvfGet(wvfP,'n wave');
@@ -122,7 +128,7 @@ for ii=1:nWave
     % set up pupil coordinates to compute A and phase
     % Create arrays that represent the length coordinates of the pupil
     nPixels = wvfGet(wvfP,'npixels');
-    fieldSizeMM = wvfGet(wvfP,'fieldsizemm');
+    fieldSizeMM = wvfGet(wvfP,'fieldsize','mm',ii);
     pupilPos = (0:(nPixels-1))*(fieldSizeMM/nPixels)-fieldSizeMM/2;
     [xpos ypos] = meshgrid(pupilPos);
     
