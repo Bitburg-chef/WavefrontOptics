@@ -1,27 +1,36 @@
-function [psf, wave, umPerSample, wvfP] = wvf2PSF(wvfP)
+function [siData, wvfP] = wvf2PSF(wvfP)
 % Convert a wvf structure to ISET shift-invariant PSF data
 %
-%    [psf, wave, umPerSample, wvfP] = wvf2PSF(wvfP)
+%    [siData, wvfP] = wvf2PSF(wvfP)
 %
 % For each wavelength in wvf, compute the PSF with proper units and
 % place it in an ISET shift-invariant PSF format that can be used for human
 % optics simulation.
 %
-% The wvfP is a standard wavefront optics toolbox structure.
+% The wvfP is the main wavefront optics toolbox structure.
 % The psf is computed at the wave values in the structure.  The updated
 % structure with the PSFs can be returned.
 %
 % The ISET data can be saved using ieSaveSIDataFile as in the example
 % below, which loads the standard human data for a particular pupil size.
+% Alternatively, the siData can be converted to an optics structure with
+% the function siSynthetic.
 %
 % Example:
 %    pupilMM = 3; zCoefs = wvfLoadHuman(pupilMM);
 %    wave = [450:100:650]';
 %    wvfP = wvfCreate('wave',wave,'zcoeffs',zCoefs,'name',sprintf('human-%d',pupilMM));
 %
-%    [psf, wave, umPerSample, wvfP] = wvf2PSF(wvfP);
+%    [d, wvfP] = wvf2PSF(wvfP);
 %    fName = sprintf('psfSI-%s',wvfGet(wvfP,'name'));
-%    ieSaveSIDataFile(psf,wave,umPerSample,fName);
+%    ieSaveSIDataFile(d.psf,d.wave,d.umPerSample,fName);
+%  
+%    oi = oiCreate('human'); 
+%    optics = siSynthetic('custom',oi,d);
+%    flength = 0.017;  % Human focal length is 17 mm
+%    optics = opticsSet(optics,'fnumber',flength/pupilMM);     
+%    optics = opticsSet(optics,'flength',flength);   
+%    oi = oiSet(oi,'optics',optics);
 %
 %    vcNewGraphWin([],'tall');
 %    subplot(2,1,1), wvfPlot(wvfP,'image psf','um',1,30);
@@ -39,9 +48,9 @@ wvfP = wvfComputePSF(wvfP);
 
 % Set up to interpolate the PSFs for ISET
 % number of pixels and spacing in microns between samples
-nPix = 256;                 % Number of pixels
-umPerSample = [0.25,0.25];  % In microns
-iSamp = (1:nPix)*umPerSample(1);
+nPix = 128;                 % Number of pixels
+umPerSamp = [0.25,0.25];    % In microns
+iSamp = (1:nPix)*umPerSamp(1);
 iSamp = iSamp - mean(iSamp);
 iSamp = iSamp(:);
 psf = zeros(nPix,nPix,nWave);
@@ -54,6 +63,9 @@ for ii=1:nWave,
     % wvfPlot(wvfP,'image psf space','um',ii,50)
 end     
 
+siData.psf = psf;
+siData.wave = wave;
+siData.umPerSamp = umPerSamp;
 
 end
 
