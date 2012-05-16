@@ -13,7 +13,6 @@
 
 %% Initialize
 s_initISET
-
 maxUM = 40;
 
 %%  Load the statistical wavefront properties for a 6.0mm pupil diameter
@@ -23,9 +22,8 @@ maxUM = 40;
 % coefficients.  The covariance is summarized in the variable S.  The mean
 % values across a large sample of eyes measured by Thibos and gang are in
 % the variable sample_mean.
-
 pupilMM = 4.5;
-[sample_mean S] = vwfLoadHuman(pupilMM);
+[sample_mean S] = wvfLoadHuman(pupilMM);
 
 
 %% Plot the means and covariance (not)

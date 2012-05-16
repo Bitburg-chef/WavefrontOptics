@@ -199,7 +199,7 @@ switch(pType)
         % need to change this, pupil function shouldn't be a mm related
         % plot...
         
-        samp      = wvfGet(wvfP,'samples space');
+        samp      = wvfGet(wvfP,'samples space','um',waveIdx);
         pupilfunc = wvfGet(wvfP,'pupil function',waveIdx);
         
         % Extract within the range
@@ -232,7 +232,7 @@ switch(pType)
             [unit, waveIdx, pRange] = wvfReadArg(varargin);
         end
         
-        samp = wvfGet(wvfP,'samples space');
+        samp = wvfGet(wvfP,'samples space','um',waveIdx);
         pupilfunc = wvfGet(wvfP,'pupil function',waveIdx);
         
         % Extract within the range

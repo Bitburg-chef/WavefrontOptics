@@ -1,6 +1,7 @@
 % s_wvfComputePSFTest
 %
-% SEE v_wvfDiffractionPSF - That replaces the first part.
+% OBSOLETE:  SEE v_wvf scripts
+%
 % We willl move the 2nd and 3rd part to validation scripts in the validate
 % directory, too.
 %
