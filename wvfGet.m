@@ -14,26 +14,26 @@ function val = wvfGet(wvf,parm,varargin)
 %Parameter list
 %
 % General
-%     'name' - Name of this wavefront parameter structure
+%     'name' - Name of this structure
 %     'type' - Always 'wvf'
 %
 % Spectral
-%     'wavelength' - wavelength samples
-%     'nwave' - Number of wavelength samples
+%     'wavelength' - wavelength samples     (wvfGet(wvfP,'wave',unit,idx))
+%     'nwave'      - number of wavelengths  (wvfGet(wvfP,'n wave'))
 %     'infocus wavelength'
-%      'weightspectrum'
+%     'weightspectrum'
 %
 % Pupil parameters
-%     'calculated pupil'
-%     'measured pupil'
-%     'field sample size mm'
+%     'calculated pupil'  - Pupil size for calculation (mm)
+%     'measured pupil'    - Pupil size when measured   (mm)
+%     'field sample size' - Aperture .... mm
 %     'field size pixels'
-%     'field size mm'
+%     'field size'        - Aperture size (mm)
 %
 % Focus parameters
-%     'zcoef'
+%     'zcoef'              - Zernicke polynomial coefficients (n=65)
 %     'defocusdiopters'
-%     'defocus distance' *microns
+%     'defocus distance'   -         *microns
 %     'weight spectrum'
 
 % Stiles Crawford Effect
@@ -44,9 +44,9 @@ function val = wvfGet(wvf,parm,varargin)
 %     'sce wavelengths'*
 %
 % Pointspread function
-%     'psf'
-%     'diffractionpsf'
-%     'psf centered'
+%     'psf'            - Point spread function
+%     'diffractionpsf' - Diffraction limited psf for these parameters
+%     'psf centered'   - 
 %     '1d psf'
 %     'spatialsupport'
 %     'middle row'
@@ -54,7 +54,7 @@ function val = wvfGet(wvf,parm,varargin)
 %     'samples angle'
 %     'arcminperpix'
 %     'angleperpixel'
-%     'strehl'
+%     'strehl'     - Ratio of peak of diffraction limited to actual
 %
 %     'areapixapod' - In need of repair to speed up strehl
 %     'areapix' - In need of repair to speed up strehl
@@ -92,8 +92,8 @@ switch parm
         
         % Spectral matters
     case {'wave','wavelength','wavelengths','wls'}
-        % wvfGet(wvf,'wave',unit)
-        % wvfGet(wvf,'wave','um')
+        % wvfGet(wvf,'wave',unit,idx)
+        % wvfGet(wvf,'wave','um',3)
         % May be a vector or single wavelength
         val = wvf.wls;
         
@@ -102,6 +102,8 @@ switch parm
             unit = varargin{1};
             val = val*(1e-9)*ieUnitScaleFactor(unit);
         end
+        % A selected wavelength
+        if length(varargin) > 1, val = val(varargin{2}); end
         
         % Wavelength related
     case 'weightspectrum'

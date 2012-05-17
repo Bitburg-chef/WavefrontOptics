@@ -6,8 +6,11 @@ function [uData, pData] = wvfPlot(wvfP,pType,varargin)
 % Plot types:
 %   2d psf angle - mesh
 %   2d psf space - mesh
+%   2d OTF       - mesh (e.g., linepairs/'um')
+%
 %   1d psf angle - graph (middle horizontal line)
 %   1d psf space - graph (middle horizontal line)
+%
 %   image psf    - image ('mm')
 %   image pupil amp    - image ('mm')
 %   image pupil phase  - image ('mm')
@@ -73,7 +76,6 @@ switch(pType)
     case {'2dpsfspace','2dpsfspacenormalized'}
         % wvfPlot(wvfP,'2d psf space',unit,waveIdx, plotRangeArcMin);
         %
-        %
         if ~isempty(varargin)
             [unit, waveIdx, pRange] = wvfReadArg(varargin);
         end
@@ -130,6 +132,46 @@ switch(pType)
         
         % Save the data
         uData.x = samp; uData.y = samp; uData.z = psf;
+        set(gcf,'userdata',uData);
+    
+    case {'2dotf','otf'}
+        % wvfPlot(wvfP,'2d otf',unit,waveIdx, plotRangeFreq);
+        % wvfPlot(wvfP,'2d otf','mm',2, []);
+        if ~isempty(varargin)
+            [unit, waveIdx, pRange] = wvfReadArg(varargin);
+        end
+        
+        % Get the data and if the string contains normalized ...
+        psf = wvfGet(wvfP,'psf',waveIdx);
+        if ~isempty(strfind(pType,'normalized'))
+            psf = psf/max(psf(:));
+        end
+        
+        % This stuff should move into wvfGet() - BW
+        % Maybe freq = wvfGet(wvfP,'samples frequency',unit,waveIdx);
+        samp = wvfGet(wvfP,'samples space',unit,waveIdx);
+        nSamp = length(samp);
+        dx = samp(2) - samp(1);
+        nyquistF = 1 / (2*dx);   % Line pairs (cycles) per unit space
+        freq = unitFrequencyList(nSamp)*nyquistF;
+
+        % Compute OTF
+        otf = fftshift(fft2(psf));
+        
+        % Restrict to parameter range
+        if ~isempty(pRange)
+            index = (abs(freq) < pRange);
+            freq = freq(index);
+            otf = otf(index,index);
+        end
+        
+        % Axes, labeling, store data
+        vcNewGraphWin; mesh(freq,freq,abs(otf))        
+        str = sprintf('Freq (lines/%s)',unit);
+        xlabel(str); ylabel(str);
+        wave = wvfGet(wvfP,'wave','nm',waveIdx); 
+        title(sprintf('OTF %.0f',wave));
+        uData.fx = freq; uData.fy = freq; uData.otf = abs(otf);
         set(gcf,'userdata',uData);
         
     case {'1dpsf','1dpsfangle','1dpsfanglenormalized'}
