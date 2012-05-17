@@ -50,8 +50,9 @@ function val = wvfGet(wvf,parm,varargin)
 %     '1d psf'
 %     'spatialsupport'
 %     'middle row'
-%
+%     'samples space'  - Includes key parameter umPerDeg, needs thought
 %     'samples angle'
+%
 %     'arcminperpix'
 %     'angleperpixel'
 %     'strehl'     - Ratio of peak of diffraction limited to actual
@@ -449,13 +450,16 @@ switch parm
         % wvfGet(wvf,'samples space','um')
         % Spatial support in samples, centered on 0
         % Unit and wavelength must be specified
-        %    
+        
+        % This parameter matters for the OTF and PSF quite a bit.
+        umPerDeg = (330*10^-6);
+        
         unit = varargin{1}; waveIdx = varargin{2};
         % Get the samples in degrees
         val = wvfGet(wvf,'samples angle','deg',waveIdx);
         
         % Convert to meters and then to selected spatial scale
-        val = val*(300*10^-6);  % Sample in meters assuming 300 um / deg
+        val = val*umPerDeg;  % Sample in meters assuming 300 um / deg
         val = val*ieUnitScaleFactor(unit);
 
         % Old code.  This used the distance in the pupil plane, which is
