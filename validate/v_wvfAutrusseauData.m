@@ -37,8 +37,6 @@ clear; close all;
 %% Or reinitialize ISET.  Different people do different things
 s_initISET
 
-
-
 %% Read in coefficients of Autrusseau standard observer and set up wvf
 
 % Load 'em up
@@ -58,16 +56,16 @@ wvfStandardObs = wvfSet(wvfStandardObs,'calculatedpupil',6);% What we calculate
 % value of much smaller than 20 minutes.  I am not sure why
 % it doesn't handle that gracefully.  Probably a failure on
 % my part to grok the ISET way (dhb).
-
 wvfStandardObs = wvfComputePSF(wvfStandardObs); 
 pupilfuncrangeMM = 6;
 psffuncmaxMin = 1/3;
+waveIdx = 1;
 
 vcNewGraphWin;
-wvfPlot(wvfStandardObs,'2d pupil phase space','mm',pupilfuncrangeMM);
+wvfPlot(wvfStandardObs,'2d pupil phase space','mm',waveIdx,pupilfuncrangeMM);
 
 vcNewGraphWin;
-wvfPlot(wvfStandardObs,'2d psf angle normalized','deg',psffuncmaxMin);
+wvfPlot(wvfStandardObs,'2d psf angle normalized','deg',waveIdx,psffuncmaxMin);
 
 %% Fails below here.  Let's get the multiple wavelength stuff working.
 
@@ -75,8 +73,8 @@ wvfPlot(wvfStandardObs,'2d psf angle normalized','deg',psffuncmaxMin);
 wls = (400:10:700)';
 wvfStandardObs = wvfSet(wvfStandardObs,'wavelength',wls);
 wvfStandardObs = wvfComputePSF(wvfStandardObs); 
-psfSamples = wvfGet(wvfP,'samples angle','deg');
-polyPsf = wvfGet(wvfP,'psf');
+psfSamples = wvfGet(wvfStandardObs,'samples angle','deg',waveIdx);
+polyPsf = wvfGet(wvfStandardObs,'psf');
 
 %% End
 
