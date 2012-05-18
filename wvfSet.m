@@ -17,7 +17,7 @@ function wvf = wvfSet(wvf,parm,val,varargin)
 % this routine.
 %
 % Examples:
-%   wvf = wvfSet(wvf,'measured pupil',3);   % Default is mm, I think
+%   wvf = wvfSet(wvf,'measured pupil',3);   % Default is mm
 %   wvf = wvfSet(wvf,'stiles crawford',sce);
 %   wvf = wvfSet(wvf,'psf',psf);
 %   wvf = wvfSet(wvf,'infocus wavelength',550);
@@ -25,7 +25,7 @@ function wvf = wvfSet(wvf,parm,val,varargin)
 % Parameters
 %  % General
 %     'name' - Name of this object
-%     'type' -
+%     'type' - Type of this object, should always be 'wvf'
 %
 %  % Spectral matters
 %     'wave'
@@ -44,15 +44,46 @@ function wvf = wvfSet(wvf,parm,val,varargin)
 %     'sceparams'
 %     'psf'
 %
+% Notes: 
+%   5/17/12  dhb  Why is setting pupilfunc and psf allowed?
+%                 This seems like it could produce all sorts of
+%                 inconsistencies.  For example, various things like
+%                 the strehl ratio should depend on psf, and it should
+%                 be consistent with the zcoefs and pf.
+%            dhb  When we pass fewer than 65 coefficients, should we zero
+%                 out the higher order ones, or leave them alone?  The
+%                 current code leaves them alone, which seems a little
+%                 dangerous.
+%            dhb  There are two underlying field sizes, one in the pupil
+%                 plane and one in the plane of the retina.  The pixel
+%                 dimensions are implicitly linked by the conversion between
+%                 pf and psf, and our conversion code uses the same number
+%                 of pixels in each representation.  One could get fancier
+%                 and explicitly specify the units of each representation,
+%                 and appropiately convert.  An important consideration is
+%                 for the dimensions to be chosen so that both pupile
+%                 function and psf are adequately sampled.
+%            dhb  I tend to agree with a comment below that defocus is
+%                 independently specified in too many places in the current
+%                 structure.  It's possible that only the zcoef for defocus
+%                 should ever change.  But before hacking it up we ought to
+%                 look through the various places and ways that focus is
+%                 varied and come up with a coherent first principles
+%                 design.
+%
 % History:
 %   4/29/12  dhb  Allow wls as a synonym for wavelength, because that was
 %                 my first guess given the name of the field.
+%   5/17/12  dhb  I agree with an earlier comment, no need to be able to set strehl.
+%                 This should be a computed quantity.  I commented it out
+%                 to see if anything breaks.
+%            dhb  Added some checks for error conditions, modified some
+%                 comments, added some notes to think about.
 %
 % (c) Wavefront Toolbox Team 2011, 2012
 
 % Programming Notes
 %   The Strehl ratio, http://en.wikipedia.org/wiki/Strehl_ratio
-%
 
 if ~exist('parm','var') || isempty(parm), error('Parameter must be defined.'); end
 if ~exist('val','var'), error('val must be defined.'); end
@@ -63,43 +94,62 @@ switch parm
     case 'name'
         % This specific object name
         wvf.name = val;
+        
     case 'type'
-        % Should always be wvf.
+        % Type should always be 'wvf'.
+        if (strcmp(val,'wvf'))
+            error('Can only set type of wvf structure to ''wvf''');
+        end
         wvf.type = val;
         
-        % Spectral matters
+    % Spectral matters
     case {'wave','wavelist','wavelength','wls'}
         % Normally just a vector of wavelengths
         % but allow SToWls case for DHB.
+        %
         % wvfSet(wvfP,'wave',400:10:700)  OR
         % wvfSet(wvfP,'wave',[400 10 31])
+        %
+        % Note that it isn't sufficient just to call SToWls
+        % (which will pass a vector of evenly spaced wls 
+        % through, because we might want to allow unevenly 
+        % spaced wls.)
         if size(val,2) == 3 && size(val,1) == 1 % SToWls case
             % Row vector with 3 entries.
             wls = SToWls(val);
-            wvf.wls = wls;
+            wvf.wls = MakeItWls(wls);
         else  % A column vector case
             wvf.wls = val(:);
-        end
+        end    
     case {'infocuswavelength','nominalfocuswl'}
         % In focus wavelength nm.  Single value.
         wvf.nominalFocusWl = val;
+    case 'weightspectrum'
+        % Used for calculating defocus to white light with many spectral
+        % terms.  
+        if (length(val) ~= length(wvf.wls))
+            error('Weighting spectrum dimension must match number of wavelengths');
+        end
+        wvf.weightingSpectrum = val;
         
-        % Pupil parameters
+    % Pupil parameters
     case {'calculatedpupil','calculatedpupildiameter'}
         % Pupil diameter in mm - must be smaller than measurements
+        if (val > wvf.measpupilMM)
+            error('Pupil diamter used for calculation must be smaller than that used for measurements'):
+        end
         wvf.calcpupilMM = val;
     case {'measuredpupil','measuredpupildiameter'}
-        % Largest measured pupil diameter in mm
+        % Pupil diameter in mm over for which wavefront expansion is valid
         wvf.measpupilMM = val;
     case {'pupilfunction','pupilfunc'}
         % wvfSet(wvf,'pupil function',pf) - pf is a cell array of pupil
         % functions, one for each wavelength
         %
-        % pupil function is a point spread function matrix for the
-        % wave(idx). wvfSet(wvf,'pupil function',pf,[idx])
+        % wvfSet(wvf,'pupil function',pf,[idx]) - pf pupil is for
+        % wave(idx). 
         %
         % Convert between pupil function and psf using wvfComputePSF.
-
         if isempty(varargin)  % Cell array of pupilfuncs
             % This is a cell array of pupil functions if there are multiple
             % wavelengths, or just a matrix
@@ -124,38 +174,41 @@ switch parm
             else            wvf.pupilfunc{idx} = val;
             end
         end
-        
+    
+    % Spatial parameters
     case {'fieldsamplesize','fieldsamplesizemmperpixel'}
-        % pixel size of sample pupil field, used to calculate number of
+        % Pixel size of sample pupil field, used to calculate number of
         % pixels of computed field
         wvf.fieldSampleSizeMMperPixel = val;
-        % need to make sure field size is integer multiple of sample size
+        
+        % Need to make sure field size is integer multiple of sample size
         % (so that there are an integer number of pixels)
         nPixels = ceil(wvf.sizeOfFieldMM/val);
         wvf.sizeOfFieldMM = val*nPixels;
     case 'fieldsizemm'
-        % total size of computed field in pupil plane, used to calculate
+        % Total size of computed field in pupil plane, used to calculate
         % number of pixels of computed field
         wvf.sizeOfFieldMM = val;
-        % need to make sure field size is integer multiple of sample size
+        
+        % Need to make sure field size is integer multiple of sample size
         % (so that there are an integer number of pixels)
         nPixels = ceil(val/wvf.fieldSampleSizeMMperPixel);
         wvf.fieldSampleSizeMMperPixel = val/nPixels;
         
-        % Focus parameters
+    % Focus parameters
     case {'zcoef','zcoeffs'}
         % Zernicke coefficients.  This should be 65 terms, and we
-        % over-write the number that are in val.
+        % over-write the current field with the number that are in val,
+        % leaving any higher order ones alone.
+        if (length(val) > 65)
+            error('We do not handle more than 65 coefficients');
+        end
         wvf.zcoeffs(1:length(val)) = val;
     case 'defocusdiopters'
         % Does not look like defocus is ever stored in diopters in other
         % functions. Only for user to set defocus diopters as an
         % alternative to using 4th term of zernike coeffs.
-        wvf.defocusDiopters = val;           % Defocus
-    case 'strehl'
-        % Not sure why this is set.  It is derived
-        wvf.strehl = val;
-        
+        wvf.defocusDiopters = val;           % Defocus         
     case 'defocusmicrons'
         % Hmmm.  Someone decided to have two ways of specifying defocus.
         % This is unfortunate.  Anyway, we are supposed to be able to set
@@ -169,17 +222,13 @@ switch parm
         % pupil function calculations) to zcoeff(4)/defocus if present.
         % KP 3/12/12
         wvf.defocusMicrons = val;
-    case 'weightspectrum'
-        % Used for calculating defocus to white light with many spectral
-        % terms.
-        wvf.weightingSpectrum = val;         % Defocus
         
-        % Special cases
+    % Special cases
     case {'sceparams','stilescrawford'}
         % The structure of sce is defined in sceCreate
         wvf.sceParams = val;
         
-        % PSF parameters
+    % PSF parameters
     case 'psf'
         % wvfSet(wvf,'psf',psf) - psf is a cell array of point spreads, one
         % for each wavelength
@@ -213,6 +262,10 @@ switch parm
             else            wvf.psf{idx} = val;
             end
         end
+ 
+%        % Not sure why this is set.  It is derived
+%     case 'strehl'
+%        %   wvf.strehl = val;
         
 %         % These pixel related measures computed in wvfComputePupilFunction
 %         % and stored in wvComputePSF.  Not sure what they are and whether
