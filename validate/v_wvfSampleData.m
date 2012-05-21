@@ -60,7 +60,6 @@ else        wvfP.sceParams = sceCreate(sceWavelength,'none');
 end
 
 %%
-vcNewGraphWin;
 for ii = 1:nSubjects
     fprintf('** Subject %d\n',ii)
     
@@ -68,6 +67,7 @@ for ii = 1:nSubjects
     wvfP = wvfSet(wvfP,'zcoeffs',zeros(61,1));
     wvfP = wvfComputePSF(wvfP);
     % Diffraction limited
+    vcNewGraphWin;
     udataD = wvfPlot(wvfP,'1d psf angle','min',waveIdx,maxMIN);
     hold on;
     
@@ -75,6 +75,7 @@ for ii = 1:nSubjects
     wvfP = wvfSet(wvfP,'zcoeffs',theZernikeCoeffs(:,ii));
     wvfP = wvfComputePSF(wvfP);
     
+    vcNewGraphWin;
     [udataS, pData] = wvfPlot(wvfP,'1d psf angle','min',waveIdx,maxMIN);
     set(pData,'color','b');
     hold on;
@@ -82,66 +83,10 @@ for ii = 1:nSubjects
     strehlDirect = max(udataS.y(:))/max(udataD.y(:));
     fprintf('Strehl ratio with no defocus:  %.3f\n',strehlDirect);
     
+    vcNewGraphWin;
+    wvfPlot(wvfP,'2d psf space','um',waveIdx,20);
     
 end
 
 %% End
 
-
-% Optimize strehl by varying defocus
-%     bestStrehl = 0;
-%     defocusDiopters = -2:0.25:2;
-%     thisStrehl = zeros(1,length(defocusDiopters));
-%     for jj = 1:length(defocusDiopters)
-%         %         wvfParams3 = wvfP;
-%         %         wvfParams3.zcoeffs = theZernikeCoeffs(:,ii);
-%         wvfParams = wvfSet(wvfParams,'defocus diopters',defocusDiopters(jj));
-%         wvfParams = wvfComputePSF(wvfParams);
-%         thisStrehl(jj) = wvfGet(wvfParams,'strehl');
-%         if thisStrehl(jj) == max(thisStrehl)
-%             wvfParamsBest = wvfParams;
-%         end
-%     end
-
-% Show the best optical correction (defocus) for this pointspread
-%     vcNewGraphWin; plot(defocusDiopters,thisStrehl,'-o');
-%     title('Defocus effect on peak of the PSF');
-
-% Best defocus
-%     figure(f); subplot(nRows,nCols,ii)
-%     wvfPlot(wvfParamsBest,'2d psf angle','min',maxMIN);
-%
-% A little slow, probably interesting.  Deal with this later.
-% Perhaps put it in a separate script.
-% - BW
-% Optimize using function.  This optimizes mass within criterion
-% radius, not strehl, and uses parameter search not the
-% exhaustive search just above.  One could re-write the above
-% look to optimize the same thing as the search program, but
-%     % right now life just seems too short.
-%     wvfParams4 = wvfP;
-%     wvfParams4.zcoeffs = theZernikeCoeffs(:,ii);
-%     wvfParams4.criterionFraction = 0.9;
-%     wvfParams4.optimizeWl = wvfParams4.wls(1);
-%     wvfParams4 = wvfComputeOptimizedPSF(wvfParams4);
-%     thePSF4 = psfCenter(wvfParams4.psf);
-%     onedPSF4 = thePSF4(whichRow,:);
-%     plot(arcminutes(index),onedPSF4(index),'k:','LineWidth',1);
-%
-%     xlabel('Arc Minutes');
-%     ylabel('PSF');
-%     title(sprintf('Subject %d, strehl %0.2f (no defocus), %0.2f (defocus of %0.2f/%0.2f D)',ii,wvfParams2.strehl,bestStrehl,bestDefocusDiopters,wvfParams4.defocusDiopters));
-%     drawnow;
-%
-%     if (DOSCE)
-%         fprintf('Subject %i, with SCE correction\n',ii);
-%     else
-%         fprintf('Subject %i, no SCE correction\n',ii);
-%     end
-%     fprintf('\tNo defocus: direct strehl %0.3f, returned, %0.3f\n',strehlDirect2,wvfParams2.strehl);
-%     fprintf('\tWith defocus: direct strehl %0.3f, returned, %0.3f\n',strehlDirect3,bestStrehl);
-%
-%     % Store results so we can play with them later.
-%     wvfParamsArray1(ii) = wvfParams1;
-%     wvfParamsArray2(ii) = wvfParams2;
-%     wvfParamsArray3(ii) = wvfParams3;
