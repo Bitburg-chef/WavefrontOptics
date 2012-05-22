@@ -77,6 +77,9 @@ function val = wvfGet(wvf,parm,varargin)
 % See also: wvfComputePupilFunction, wvfLoadHuman
 %
 % (c) Wavefront Toolbox Team 2011, 2012
+%
+% History
+%   5/22/12 dhb      Improve comment about how arcminperpix is obtained.
 
 if ~exist('parm','var') || isempty(parm), error('Parameter must be defined.'); end
 
@@ -349,35 +352,50 @@ switch parm
         wave = wvfGet(wvf,'wave');
         waveIdx = varargin{1};
         thisWave = wave(waveIdx);   % Wavelength in nanometers
-        fieldMM = wvfGet(wvf,'field size','mm',waveIdx);
+        pupilPlaneFieldMM = wvfGet(wvf,'field size','mm',waveIdx);
         
-        % This could use a comment.  I tried at length below.
-        val = (180*60/3.1416)*thisWave*.001*.001/fieldMM;
+        % When we convert between the pupil function and the PSF,
+        % we use the fft.  Thus the size of the image in pixels 
+        % is the same for the sampled pupil function and the sampled
+        % psf.
+        %
+        % The number of arc minutes per pixel in the sampled PSF is
+        % related to the number of mm per pixel for hte pupil function,
+        % with the relation depending on the wavelength.  The fundamental
+        % formula in the pupil plane is that the pixel sampling interval
+        % in cycles/radian is:
+        %
+        %   pupilPlaneCyclesRadianPerPix = pupilPlaneField/[lambda*npixels]
+        %
+        % where npixels is the number of linear pixels and lambda is the
+        % wavelength. This formula may be found as Eq 10 of Ravikumar et al.
+        % (2008), "Calculation of retinal image quality for polychromatic light,"
+        % JOSA A, 25, 2395-2407, at least if we think their quantity d is the
+        % size of the pupil plane field being sampled.
+        %
+        % If we now remember how units convert when we do the fft, we obtain
+        % that the number of radians in the PSF image is the inverse of the
+        % sampling interval:
+        %
+        %   radiansInPsfImage = [lambda*npixels]/pupilPlaneField
+        %
+        % which then gives us the number of radiansPerPixel in the
+        % PSF image as
+        %
+        %   radiansPerPixel = lambda/pupilPlaneField
+        % 
+        % The formula below implements this, with a conversion
+        % from radians to minutes with factor (180*60/3.1416)
+        % and converts wavelength to mm from nm with factor (.001*.001)
+        %
+        % DHB, 5/22/12, based on earler comments that were here.  Someone
+        % else might take a look at the paper referenced above and the logic
+        % of this comment and check that it all seems right.  Did I think
+        % through the fft unit conversion correctly?  And, there must be
+        % a more fundamental reference than the paper above, and for which
+        % one wouldn't have to guess quite as much about what is meant.
+        val = (180*60/3.1416)*thisWave*(.001*.001)/pupilPlaneFieldMM;
         
-        % It looks like this has three parts
-        %   (180/pi)*60   setScaleWl -> millimeters      1/fieldMM
-        %
-        % Here is my understanding
-        %   (180/pi) is 1 deg in radians, 60 gets us minutes in radians.
-        %   (deg/rad)*min/deg ->  min/rad
-        %
-        %   setScaleWl*10^-6 is nm * mm/nm = mm
-        %   (1/mm) is the total field of view
-        %
-        %   So we have min/rad units when we are done.  I guess if 1 minute is 1
-        %   pixel, then we have arc minutes per pixel.
-        %
-        % The original code below uses the setScaleWl.  We don't need this
-        % any more because the fieldMM return incorporates that value into
-        % fieldMM
-        %
-        % arcminperpix = (180*60/3.1416)*setScaleWl*.001*.001/wvfP.sizeOfFieldMM;
-
-        % Old CODE
-        % Visual angle (arc minutes) per pixel.
-        %         if isempty(varargin),  wave = 550;
-        %         else                   wave = varargin{1};
-        %         end
     case {'samplesangle','samplesarcmin','supportarcmin'}
         %    wvfGet(wvf,'samples angle','min',waveIdx)
         %
@@ -395,7 +413,7 @@ switch parm
     case {'middlerow'}
         val = floor(wvfGet(wvf,'npixels')/2) + 1;
         
-        % Used to be assigned, but now computed.
+    % Used to be assigned, but now computed.
     case {'fieldsize','fieldsizemm','fieldsizespace'}
         % wvfGet(wvf,'field size','mm',waveIdx)
         % The field size in the pupil plane in mm

@@ -135,27 +135,6 @@ doriginal = wvfGet(wvfP,'zcoeffs',4);
 %   this, but I ended up having a hard time finding a way to do this that
 %   worked right all the time (the psfs weren't aligned all the time, I
 %   guess I was having rounding issues or something).
-
-% Moved this into wvfGet()
-% setScaleWl = 550;   % Nanometers
-
-% It looks like this has three parts
-%   (180/pi)*60   setScaleWl -> millimeters      1/fieldMM
-%
-% Here is my understanding
-%   (180/pi) is 1 deg in radians, 60 gets us minutes in radians.
-%   (deg/rad)*min/deg ->  min/rad
-%
-%   setScaleWl*10^-6 is nm * mm/nm = mm
-%   (1/mm) is the total field of view
-%
-%   So we have min/rad units when we are done.  I guess if 1 minute is 1
-%   pixel, then we have arc minutes per pixel.
-%
-% This is probably close, but not quite right.  Maybe we can fix this
-% comment.
-% arcminperpix = (180*60/3.1416)*setScaleWl*.001*.001/wvfP.sizeOfFieldMM; 
-
 wave    = wvfGet(wvfP,'wave');
 nWave   = wvfGet(wvfP,'nwave');
 % nPixels = wvfGet(wvfP,'npixels');
