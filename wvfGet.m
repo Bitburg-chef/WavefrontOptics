@@ -87,14 +87,21 @@ if ~exist('parm','var') || isempty(parm), error('Parameter must be defined.'); e
 val = [];
 
 parm = ieParamFormat(parm);
-
 switch parm
     case 'name'
         val = wvf.name;
     case 'type'
         val = wvf.type;
-        
-        % Spectral matters
+    
+    % Zernike coefficients
+    case {'zcoeffs','zcoeff','zcoef'}
+        % wvfGet(wvf,'zcoef',list)
+        % wvfGet(wvf,'zcoef',4)
+        if isempty(varargin),   val = wvf.zcoeffs;
+        else                    val = wvf.zcoeffs(varargin{1});
+        end
+     
+    % Wavelengths to compute on
     case {'wave','wavelength','wavelengths','wls'}
         % wvfGet(wvf,'wave',unit,idx)
         % wvfGet(wvf,'wave','um',3)
@@ -106,7 +113,8 @@ switch parm
             unit = varargin{1};
             val = val*(1e-9)*ieUnitScaleFactor(unit);
         end
-        % A selected wavelength
+        
+        % Select wavelength if indices were passed
         if length(varargin) > 1, val = val(varargin{2}); end
         
         % Wavelength related
@@ -140,13 +148,7 @@ switch parm
             val = (val*1e-3)*ieUnitScaleFactor(varargin{1});
         end
         
-        % Focus parameters
-    case {'zcoeffs','zcoeff','zcoef'}
-        % wvfGet(wvf,'zcoef',list)
-        % wvfGet(wvf,'zcoef',4)
-        if isempty(varargin),   val = wvf.zcoeffs;
-        else                    val = wvf.zcoeffs(varargin{1});
-        end
+   
     case {'pupilfunction','pupilfunc','pupfun'}
         % wvfGet(wvf,'pupilfunc',idx)  (idx <= nWave)
         %
