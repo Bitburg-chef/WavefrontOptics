@@ -1,4 +1,4 @@
-function val = wvfGet(wvf,parm,varargin)
+function  val = wvfGet(wvf,parm,varargin)
 %Get wavefront structure parameters and derived properties
 %
 %     val = wvfGet(wvf,parm,varargin)
