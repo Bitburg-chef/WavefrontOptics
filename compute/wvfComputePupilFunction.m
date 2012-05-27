@@ -88,7 +88,7 @@ function [wvfP, phase, A] = wvfComputePupilFunction(wvfP, varargin)
 % Code provided by Heidi Hofer.
 %
 % 8/20/11 dhb      Rename function and pull out of supplied routine.
-% Reformat comments. 
+%                  Reformat comments. 
 % 9/5/11  dhb      Rewrite for wvfP struct i/o.  Rename.
 %
 % (c) Wavefront Toolbox Team 2011, 2012
