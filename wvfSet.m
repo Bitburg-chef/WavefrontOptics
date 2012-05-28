@@ -22,7 +22,6 @@ function wvf = wvfSet(wvf,parm,val,varargin)
 %   wvf = wvfSet(wvf,'measured pupil',3);   % Default is mm
 %   wvf = wvfSet(wvf,'stiles crawford',sce);
 %   wvf = wvfSet(wvf,'psf',psf);
-%   wvf = wvfSet(wvf,'infocus wavelength',550);
 %
 % Parameters:
 %
@@ -42,9 +41,11 @@ function wvf = wvfSet(wvf,parm,val,varargin)
 %    'spatial samples' - Number of spatial samples (pixel) for pupil function and psf
 %    'ref pupil plane size' - Size of sampled pupil plane at measurement wavelength (mm)
 %    'ref pupil plane sample interval' - Pixel sampling interval in pupil
-%    'ref psf arcmin per pixel' - Sampling interval for psf at measurment wavelength (arcminute/pixel)
+%    'ref psf arcmin per sample' - Sampling interval for psf at measurment wavelength (arcminute/pixel)
 %
-%     'wave'
+%  Spectral
+%     'calc wavelengths' - Wavelengths to compute on (nm)
+%
 %     'infocuswavelength'
 %
 %  % Pupil parameters
@@ -108,7 +109,6 @@ if ~exist('val','var'), error('val must be defined'); end
 parm = ieParamFormat(parm);
 
 %% Initialize flags
-SPATIALSAMPLES_STALE = false;
 PUPILFUNCTION_STALE = false;
 PSF_STALE = false;
 DIDASET = false;
@@ -123,7 +123,7 @@ switch parm
         
     case 'type'
         % Type should always be 'wvf'
-        if (strcmp(val,'wvf'))
+        if (~strcmp(val,'wvf'))
             error('Can only set type of wvf structure to ''wvf''');
         end
         wvf.type = val;
@@ -217,7 +217,7 @@ end
 % Because the sampling in the pupil and psf domains is yoked, its important
 % to choose values that do not produce discretization artifacts in either
 % domain.  We don't have an automated way to do this, but the default
-% numbers here were chosen by experience (well, really by Heidi Hofer's 
+% numbers here were chosen by experience (well, really by Heidi Hofer's
 % experience) to work well.  Be attentive to this aspect if you decide
 % you want to change them by very much.
 %
@@ -231,8 +231,9 @@ switch parm
     case {'sampleintervaldomain'}
         % Determine what's held constant with calculated wavelength.
         % Choices are 'psf' and 'pupil'
-        wvf.constantSampleIntervalDomain = 'val';
-
+        wvf.constantSampleIntervalDomain = val;
+        DIDASET = true;
+        
     case {'spatialsamples', 'npixels', 'fieldsizepixels'}
         % Number of pixels that both pupil and psf planes are discretized
         % with.
@@ -260,10 +261,10 @@ switch parm
         PUPILFUNCTION_STALE = true;
         DIDASET = true;
         
-    case {'refpsfarcminperpixel'}
+    case {'refpsfarcminpersample', 'refpsfarcminperpixel'}
         % Arc minutes per pixel of the sampled psf at the measurement
         % wavelength.
-        %       
+        %
         % When we convert between the pupil function and the PSF,
         % we use the fft.  Thus the size of the image in pixels
         % is the same for the sampled pupil function and the sampled
@@ -307,13 +308,14 @@ switch parm
         radiansPerPixel = val/(180*60/3.1416);
         wvf.refSizeOfFieldMM = wvfGet('measured wl','mm')/radiansPerPixel;
         PUPILFUNCTION_STALE = true;
-        DIDASET = true;        
+        DIDASET = true;
 end
-        
-        % Spectral matters
-    case {'wave','wavelist','wavelength','wls'}
-        % Normally just a vector of wavelengths
-        % but allow SToWls case for DHB.
+
+% Spectral
+switch parm
+    case {'calcwavelengths','wavelengths','wavelength','wls','wave'}
+        % Normally just a vector of wavelengths in nm
+        % but allow SToWls case for PTB users.
         %
         % wvfSet(wvfP,'wave',400:10:700)  OR
         % wvfSet(wvfP,'wave',[400 10 31])
@@ -329,9 +331,12 @@ end
         else  % A column vector case
             wvf.wls = val(:);
         end
-    case {'infocuswavelength','nominalfocuswl'}
-        % In focus wavelength nm.  Single value.
-        wvf.nominalFocusWl = val;
+        PUPILFUNCTION_STALE = true;
+        DIDASET = true;
+        
+    %case {'infocuswavelength','nominalfocuswl'}
+    %    % In focus wavelength nm.  Single value.
+    %    wvf.nominalFocusWl = val;
     case 'weightspectrum'
         % Used for calculating defocus to white light with many spectral
         % terms.
@@ -339,7 +344,8 @@ end
             error('Weighting spectrum dimension must match number of wavelengths');
         end
         wvf.weightingSpectrum = val;
-        
+        DIDASET = true;
+
         % Pupil parameters
     case {'calculatedpupil','calculatedpupildiameter'}
         % Pupil diameter in mm - must be smaller than measurements
@@ -347,9 +353,8 @@ end
             error('Pupil diamter used for calculation must be smaller than that used for measurements');
         end
         wvf.calcpupilMM = val;
-    case {'measuredpupil','measuredpupildiameter'}
-        % Pupil diameter in mm over for which wavefront expansion is valid
-        wvf.measpupilMM = val;
+        DIDASET = true;
+
     case {'pupilfunction','pupilfunc'}
         % wvfSet(wvf,'pupil function',pf) - pf is a cell array of pupil
         % functions, one for each wavelength
@@ -382,13 +387,15 @@ end
             else            wvf.pupilfunc{idx} = val;
             end
         end
-        
-        
+        DIDASET = true;
+              
     case 'defocusdiopters'
         % Does not look like defocus is ever stored in diopters in other
         % functions. Only for user to set defocus diopters as an
         % alternative to using 4th term of zernike coeffs.
         wvf.defocusDiopters = val;           % Defocus
+        DIDASET = true;
+
     case 'defocusmicrons'
         % Hmmm.  Someone decided to have two ways of specifying defocus.
         % This is unfortunate.  Anyway, we are supposed to be able to set
@@ -402,11 +409,13 @@ end
         % pupil function calculations) to zcoeff(4)/defocus if present.
         % KP 3/12/12
         wvf.defocusMicrons = val;
+        DIDASET = true;
         
         % Special cases
     case {'sceparams','stilescrawford'}
         % The structure of sce is defined in sceCreate
         wvf.sceParams = val;
+        DIDASET = true;
         
         % PSF parameters
     case 'psf'
@@ -442,7 +451,8 @@ end
             else            wvf.psf{idx} = val;
             end
         end
-        
+        DIDASET = true;
+       
         %        % Not sure why this is set.  It is derived
         %     case 'strehl'
         %        %   wvf.strehl = val;
@@ -475,27 +485,12 @@ switch (parm)
         end
 end
 
-%% Deal with staleness
-if (SPATIALSAMPLES_STALE)
-     % Need to make sure field size is integer multiple of sample size
-        % (so that there are an integer number of pixels)
-        nPixels = ceil(wvf.sizeOfFieldMM/val);
-        wvf.sizeOfFieldMM = val*nPixels;
-        
-                
-        % Need to make sure field size is integer multiple of sample size
-        % (so that there are an integer number of pixels)
-        nPixels = ceil(val/wvf.fieldSampleSizeMMperPixel);
-        wvf.fieldSampleSizeMMperPixel = val/nPixels;
-    PUPILFUNCTION_STALE = true;
-end
-
 if (PUPILFUNCTION_STALE)
-
+    
 end
 
 if (PSF_STALE)
-
+    
 end
 
 return

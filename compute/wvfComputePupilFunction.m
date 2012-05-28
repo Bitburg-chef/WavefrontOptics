@@ -127,8 +127,8 @@ for ii=1:nWave
     
     % set up pupil coordinates to compute A and phase
     % Create arrays that represent the length coordinates of the pupil
-    nPixels = wvfGet(wvfP,'npixels');
-    fieldSizeMM = wvfGet(wvfP,'fieldsize','mm',ii);
+    nPixels = wvfGet(wvfP,'spatial samples');
+    fieldSizeMM = wvfGet(wvfP,'pupil plane size','mm',ii);
     pupilPos = (0:(nPixels-1))*(fieldSizeMM/nPixels)-fieldSizeMM/2;
     [xpos ypos] = meshgrid(pupilPos);
     
