@@ -1,7 +1,7 @@
 function wvfP = wvfCreate(varargin)
-% Create the wavefront parameters structure
+% wvfP = wvfCreate(varargin)
 %
-%    wvfP = wvfCreate(varargin)
+% Create the wavefront parameters structure
 %
 % varargin:  Structured as param, val pairs
 %   
@@ -16,72 +16,14 @@ function wvfP = wvfCreate(varargin)
 wvfP.name = 'default';
 wvfP.type = 'wvf';
 
-%% Zernike Coefficients
-%
-% These specify the measured (or assumed) wavefront aberrations
-% in terms of a Zernike polynomial expansion.  Exanding these
-% gives us the wavefront abberations in microns over the
-% measured pupil.
-%
-% The coefficients represent measurements that were made (or
-% assumed to be made) at a particular optical axis, state of
-% accommodation of the observer, wavelength, and over a
-% particular pupil size diameter.  We specify all of this
-% size information along with the coefficients, even though
-% we don't know quite how to use all of it at present.
-%
-% Zernike coeffs 0,1,2 (piston, verticle tilt, horizontal tilt) are
-% typically 0 since they are either constant (piston) or only change the 
-% point spread location, not quality, as measured in wavefront aberrations.
-% 65 coefficients represent the "j" single-index scheme of OSA standards
-% for 10 orders of terms (each order has order+1 number of terms).
-% 10 orders, including 0th order, should result in 66 total terms, but 0th
-% order term, coeff(0)/piston, is neglected, resulting in 65 terms.
-% Thus, sample data typically starts with coeff(3), which is +/-45 degree
-% astigmatism.
+%% Zernike coefficients and related
 wvfP.zcoeffs = zeros(65,1);      % Zernike coefficients
 wvfP.measpupilMM = 8;            % Pupil diameter for measurements (mm)
 wvfP.measWlNM = 550;             % Measurement wavelength (nm)
 wvfP.measOpticalAxisDeg = 0;     % Measurement optical axis, degrees eccentric from fovea.
 wvfP.measObserverAcommodationDiopters = 0; % Observer accommodation, in diopters relative to relaxed state of eye;
 
-%% Fundamental sampling parameters
-%
-% In the end, we calculate using discretized sampling.  Because
-% the pupil function and the psf are related by a fourier transform,
-% it is natural to use the same number of spatial samples for both
-% the pupil function and the corresponding psf.   The parameters
-% here specify the sampling.
-%
-% Note that this may be done independently
-% of the wavefront measurements, because the spatial scale of those
-% is defined by pupil size over which the Zernike coefficients define
-% the wavefront aberrations.
-%
-% There are a number of parameters that are yoked together here, because
-% the sampling intervals in the pupil and psf domains are yoked, and because the
-% overall size of the sampled quantities is determined from the sampling
-% intervals and the number of pixels.
-%
-% As a general matter, it will drive us nuts to have the number of pixels varying with
-% anything, because then we can't sum over wavelength easily.  So
-% we set the number of number of pixels and size of the sampling in the
-% pupil plane at the measurement wavelength, and then compute/set
-% everything else as needed.
-%
-% Because the sampling in the pupil and psf domains is yoked, its important
-% to choose values that do not produce discretization artifacts in either
-% domain.  We don't have an automated way to do this, but the default
-% numbers here were chosen by experience (well, really by Heidi Hofer's 
-% experience) to work well.  Be attentive to this aspect if you decide
-% you want to change them by very much.
-%
-% The other thing that is tricky is that the relation between the sampling
-% in the pupil and psf domains varies with wavelength. So, you can't
-% easily have the sample interval stay constant over wavelength in both
-% the pupil and psf domains.  You have to choose one or the other.
-% We will typically force equal sampling in the psf domain, but we allow
-% specification of which.
+%% Spatial sampling parameters
 wvfP.constantSampleIntervalDomain = 'psf';  % Options are {'psf','pupil'}
 wvfP.nSpatialSamples = 201;                 % Number of linear spatial samples
 wvfP.pupilPlaneReferenceSizeMM = 16.212;    % Size of sampled pupil plane, referred to measurement wavelength
