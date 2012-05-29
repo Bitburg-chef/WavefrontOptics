@@ -1,5 +1,5 @@
-function lcaDiopters = wvfGetLCAFromWavelengthDifference(wl1NM,wl2NM)
-% lcaDiopters = wvfGetLCAFromWavelengthDifference(wl1NM,wl2NM)
+function lcaDiopters = wvfLCAFromWavelengthDifference(wl1NM,wl2NM)
+% lcaDiopters = wvfLCAFromWavelengthDifference(wl1NM,wl2NM)
 %
 % Longitudinal chromatic aberration (LCA), expressed in diopters, between
 % two wavelengths.
@@ -23,10 +23,5 @@ function lcaDiopters = wvfGetLCAFromWavelengthDifference(wl1NM,wl2NM)
 
 wave = wvfGet(wvfP,'wave'); 
 diopters = zeros (size(wave));
-
-% What is the reference for the value of this constant?  
-wl1NM = wvfGet(wvfP,'infocuswave');
-constant = 1.8859 - (0.63346/(0.001*wl1NM-0.2141));
-lcaDiopters = 1.8859 - constant - (0.63346/(0.001*wl2NM-0.2141));  
 
 return
