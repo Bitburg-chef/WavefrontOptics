@@ -23,6 +23,11 @@ function wvf = wvfSet(wvf,parm,val,varargin)
 %   wvf = wvfSet(wvf,'stiles crawford',sce);
 %   wvf = wvfSet(wvf,'psf',psf);
 %
+%  A '*' indicates that the syntax wvfGet(wvf,param,unit) can be used, where
+%  unit specifies the spatial scale of the returned value:
+%    length: 'm', 'cm', 'mm','um', 'nm'.
+%    angle: 'deg', 'min', 'sec'
+%
 % Parameters:
 %
 %  Bookkeeping
@@ -31,26 +36,28 @@ function wvf = wvfSet(wvf,parm,val,varargin)
 %
 %  Zernike coefficients and related
 %   'zcoeffs' - Zernike coefficients
-%   'measured pupil' - Pupil size for wavefront aberration meaurements (mm)
+%   'measured pupil size' - Pupil size for wavefront aberration meaurements (mm)
 %   'measured wl' - Wavefront aberration measurement wavelength (nm)
 %   'measured optical axis' - Measured optical axis (deg)
 %   'measured observer accommodation' - Observer accommodation at aberration measurement time (diopters)
 %
 %  Spatial sampling parameters
-%    'sample interval domain' - Which domain has sampling interval held constant with wavelength ('psf', 'pupil')
+%    'sample interval domain' - Which domain has sample interval held constant with wavelength ('psf', 'pupil')
 %    'spatial samples' - Number of spatial samples (pixel) for pupil function and psf
 %    'ref pupil plane size' - Size of sampled pupil plane at measurement wavelength (mm)
-%    'ref pupil plane sample interval' - Pixel sampling interval in pupil
+%    'ref pupil plane sample interval' - Pixel sample interval in pupil plane at measurement wavelength (mm)
 %    'ref psf arcmin per sample' - Sampling interval for psf at measurment wavelength (arcminute/pixel)
 %
 %  Spectral
 %     'calc wavelengths' - Wavelengths to compute on (nm)
 %
-%     'infocuswavelength'
 %
-%  % Pupil parameters
-%     'calculatedpupil'
-
+%     'nwave'      - number of wavelengths  (wvfGet(wvfP,'n wave'))
+%     'infocus wavelength'
+%     'weightspectrum'
+%
+% Pupil parameters
+%     'calc pupil size'  - Pupil size for calculation (mm)
 %
 %  % Focus parameters
 %     'defocusdiopters'
@@ -165,7 +172,7 @@ switch parm
         PUPILFUNCTION_STALE = true;
         DIDASET = true;
         
-    case {'measuredpupil', 'measuredpupilmm', 'measuredpupildiameter'}
+    case {'measuredpupilsize', 'measuredpupil', 'measuredpupilmm', 'measuredpupildiameter'}
         % Pupil diameter in mm over for which wavefront expansion is valid
         wvf.measpupilMM = val;
         PUPILFUNCTION_STALE = true;

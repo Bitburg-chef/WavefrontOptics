@@ -5,7 +5,7 @@ function [wvfP, phase, A] = wvfComputePupilFunction(wvfP, varargin)
 %
 % The pupil function is a complex number that represents the amplitude and
 % phase of the wavefront across the pupil.  The returned pupil function at
-% a specific wavelength (in microns) is
+% a specific wavelength is
 %
 %    pupilF = A exp(-1i 2 pi (phase/wavelength));
 %
@@ -19,105 +19,51 @@ function [wvfP, phase, A] = wvfComputePupilFunction(wvfP, varargin)
 % the OSA standard. Includes SCE (Stiles-Crawford Effect) if specified.
 % The SCE is modeled as an apodization filter (a spatially-varying amplitude
 % attenuation) to the pupil function. In this case, it is a decaying exponential.
-% (MDL)
-%
-% Required input fields for wvfP struct
-%   zcoeffs -           Zernike coefficients. Expects 65 coefficients numbered with the osa j index.
-%                       These are up to the 10th order.  Coefficients zcoeffs(1) and zcoeffs(2) are tip and
-%                       tilt, and are not entered into the calculations (i.e. treated as zero ). zcoeffs(3)
-%                       through zcoeffs(5) are astigmatism and defocus.  You can pass fewer than the full 65
-%                       coefficients, in which case the trailing coefficients are set to zero.
-%
-%   measpupilMM -       Size of pupil characterized by the coefficients, in
-%     MM. This is how large the physical pupil is and determines the
-%     normalized scaling of rho and the Zernike polynomals.
-%
-%   caclpupilMM -       Size over which returned pupil function is
-%     calculated, in MM. Must be smaller than measpupilMM. The pupil function
-%     is set to zero outside this radius.
-%
-%   wls -               Wavelength to compute for, in NM.  Can only pass one wavelenth, despite plural in the name.
-%                       This is because wvfComputePupilFunction(tmpwvfParams) is passed a temporary wvf by wvfComputePSF
-%                       which only has 1 wavelength. wvfComputePSF handles the loop through the vector of wls
-%                       that the original wvfP contains.
-%
-%   fieldSampleSizeMMperPixel - Size in mm of each pixel of the pupil
-%                       function.
-%
-%   sizeOfFieldMM -     Size of square image over which the pupil function is computed in MM.
-%                       Setting this larger than the calculated pupil size prevents undersampling
-%                       of the PSF that will ultimately be computed from the pupil function.
-%                       MDL: I guess this is here so that there is some
-%                       zero-padding of the calculated pupil function. This
-%                       allows the calculated PSF (Fouier transform of the
-%                       pupil) to be sampled at a higher spatial
-%                       resolution.
-%
-% Optional input fields for wvfP struct
-%   sceParams -         Parameter structure for Stiles-Crawford correction.  If missing or set to empty,
-%                       no correction and is set to empty on return.  See sceGetParamsParams.
-%
-% Output fields set in wvfP struct
-%   pupilfunc -     Calcuated pupil function
-%
-% PROGRAMMING NOTE:  The notion of pixel isn't so good.  We need to replace
-% it with a measure that has a clear physical description throughout.  If
-% it is always sample, then the sample must have a spatial size in um or
-% mm. The good news is I think this is the last item that doesn't have an
-% easily identified physical unit.
-%
-% 3/16/12 MDL has changed the sizeOfFieldPixels to
-% fieldSampleSizeMMPerPixel as the complement to sizeOfFieldMM. This should
-% reinforce the notion of a physical unit behind the code, where the size
-% of the field can be specified in MM, as well as a sampling rate of
-% MM/pixel. The code then computes the pixel value from that.
-%
-% All aberrations other than defocus (including astigmatism) are assumed to
-% be constant with wavelength, as variation with wavelength in other
-% aberrations is known to be small.
 %
 % Transverse chromatic aberration (TCA), which is a wavelength dependent tip
 % or tilt, has also not been included.
 %
-% Dividing the psf computed from the returned pupil function by areapix
-% (or areapixapod) squared effects a normalization so that the peak is
-% the strehl ratio.
+% See also: wvfCreate, wvfGet, wfvSet, wvfComputePSF
 %
-% See also: wvfComputePSF, sceGetParamsParams.
-%
-% Code provided by Heidi Hofer.
+% Original code provided by Heidi Hofer.
 %
 % 8/20/11 dhb      Rename function and pull out of supplied routine.
 %                  Reformat comments. 
 % 9/5/11  dhb      Rewrite for wvfP struct i/o.  Rename.
+% 5/29/12 dhb      Removed comments about old inputs, since this now gets
+%                  its data via wvfGet and stores it via wvfSet.
 %
 % (c) Wavefront Toolbox Team 2011, 2012
 
 %% Parameter checking
 if ieNotDefined('wvfP'), error('wvfP required'); end
 
-% Check pupil size issue
-calcPupilSizeMM = wvfGet(wvfP,'calculated pupil','mm');
-measPupilSizeMM = wvfGet(wvfP,'measured pupil','mm');
+% Make sure calculation pupil size is less than or equal measured size
+calcPupilSizeMM = wvfGet(wvfP,'calc pupil size','mm');
+measPupilSizeMM = wvfGet(wvfP,'measured pupil size','mm');
 if (calcPupilSizeMM > measPupilSizeMM)
     error('Calculation pupil (%.2f mm) must not exceed measurement pupil (%.2f mm).', ...
         calcPupilSizeMM, measPupilSizeMM);
 end
 
-% Handle case where not all 65 coefficients are passed
+%% Handle case where not all 65 coefficients are available.
+% As ugly as it is, hard coding 65 here is probably OK, because
+% the actual Zernike expansion below is handled in 65 explicit 
+% steps and isn't going to change easily.
 c = zeros(65,1);
 c(1:length(wvfGet(wvfP,'zcoeffs'))) = wvfGet(wvfP,'zcoeffs');
 
-%% Calculate pupil function for each wavelength
+%% Convert wavelengths in nanometers to wavelengths in microns
+waveUM = wvfGet(wvfP,'calc wavelengths','um');
+waveNM = wvfGet(wvfP,'calc wavelengths','nm');
+nWavelengths = wvfGet(wvfP,'number calc wavelengths');
 
-% Convert wavelengths in nanometers to wavelengths in microns
-% wlInUM = wvfP.wls/1000;
-% Sanity check
-waveUM = wvfGet(wvfP,'wave','um');
-waveNM = wvfGet(wvfP,'wave','nm');
-nWave = wvfGet(wvfP,'n wave');
-
-for ii=1:nWave
+%% Compute the pupil function
+%
+% This needs to be done separate at each wavelength because
+% the size in the pupil plane that we sample can be wavelength
+% dependent.
+for ii=1:nWavelengths
     thisWave = waveNM(ii);
     
     % Set SCE correction params, if desired
@@ -125,20 +71,21 @@ for ii=1:nWave
     yo  = wvfGet(wvfP,'scey0');
     rho = wvfGet(wvfP,'sce rho');
     
-    % set up pupil coordinates to compute A and phase
-    % Create arrays that represent the length coordinates of the pupil
+    % Set up pupil coordinates
     nPixels = wvfGet(wvfP,'spatial samples');
-    fieldSizeMM = wvfGet(wvfP,'pupil plane size','mm',ii);
-    pupilPos = (0:(nPixels-1))*(fieldSizeMM/nPixels)-fieldSizeMM/2;
+    pupilPlaneSizeMM = wvfGet(wvfP,'pupil plane size','mm',ii);
+    pupilPos = (0:(nPixels-1))*(pupilPlaneSizeMM/nPixels)-pupilPlaneSizeMM/2;
     [xpos ypos] = meshgrid(pupilPos);
     
     % Set up the amplitude of the pupil function.
-    % This appears to depend entirely on the SCE correction
-    if all(rho) == 0, A=ones(nPixels);
+    % This appears to depend entirely on the SCE correction.  For
+    % x,y positions within the pupil, rho is used to set the pupil
+    % function amplitude.
+    if all(rho) == 0, A = ones(nPixels,nPixels);
     else
         % Get the wavelength-specific value of rho for the Stiles-Crawford
         % effect.
-        rho      = wvfGet(wvfP,'sce rho',thisWave);
+        rho = wvfGet(wvfP,'sce rho',thisWave);
         
         % For the x,y positions within the pupil, the value of rho is used to
         % set the amplitude.  I guess this is where the SCE stuff matters.  We
@@ -147,24 +94,20 @@ for ii=1:nWave
         % 3/9/2012, MDL: Removed nested for loop for calculating the
         % SCE. Note previous code had x as rows of matrix, y as columns of
         % matrix. This has been corrected so that x is columns, y is rows.
-        A=10.^(-rho*((xpos-xo).^2+(ypos-yo).^2));
+        A = 10.^(-rho*((xpos-xo).^2+(ypos-yo).^2));
     end
     
-    % 3/9/2012, MDL: Removed nested for loop for calculating the
-    % phase. Note previous code had x as rows of matrix, y as columns of
-    % matrix. This has been corrected so that x is columns, y is rows.
-    % Also renamed "angle" to "theta" since angle is a built-in MATLAB function.
-    % Also redefined angle in terms of natural polar coordinates instead of
-    % prevous definition:
-    %        if (xpos==0 && ypos>0),     angle = 3.1416/2;
-    %        elseif(xpos==0 && ypos<0),  angle = -3.1416/2;
-    %        elseif(xpos==0 && ypos==0), angle = 0;
-    %        elseif(xpos>0),             angle = atan(ypos/xpos);
-    %        else                        angle= 3.1416 + atan(ypos/xpos);
-    %        end
+    % The Zernike polynomials are defined over the unit disk.  At
+    % measurement time, the pupil was mapped onto the unit disk, so we
+    % do the same normalization here to obtain the expansion over the disk.
+    %
+    % And by convention expanding gives us the wavefront aberrations in
+    % microns.
+    %
+    % Note that piston, tilt, and tip do not appear in the expansion below.
     norm_radius = (sqrt(xpos.^2+ypos.^2))/(measPupilSizeMM/2);
     theta = atan2(ypos,xpos);
-    phase = 0 + ...
+    wavefrontAberrationsUM = 0 + ...
         c(5) .* sqrt(6).*norm_radius.^2 .* cos(2 .* theta) + ...
         c(3) .* sqrt(6).*norm_radius.^2 .* sin(2 .* theta) + ...
         c(4) .* sqrt(3).*(2 .* norm_radius.^2 - 1) + ...
@@ -230,9 +173,9 @@ for ii=1:nWave
         c(60) .*sqrt(11).* (252 .* norm_radius.^10 - 630 .* norm_radius.^8 + 560 .* norm_radius.^6 - 210 .* norm_radius.^4 + 30 .* norm_radius.^2 - 1);
     
     % Here is the pupil function
-    pupilfunc = A.*exp(-1i * 2 * pi * phase/waveUM(ii));
+    pupilfunc = A.*exp(-1i * 2 * pi * wavefrontAberrationsUM/waveUM(ii));
     
-    % Set values outside the radius to to 0
+    % Set values outside the pupil we're calculating for to 0
     pupilfunc(norm_radius > calcPupilSizeMM/measPupilSizeMM)=0;
     
     % Attach the function the the proper wavelength slot

@@ -14,6 +14,8 @@ function val = wvfGet(wvf,parm,varargin)
 %    length: 'm', 'cm', 'mm','um', 'nm'.
 %    angle: 'deg', 'min', 'sec'
 %
+%  A leading '+ indicates that this is a get only parameter and may not be set. 
+%
 % Parameters:
 %
 %  Bookkeeping
@@ -22,7 +24,7 @@ function val = wvfGet(wvf,parm,varargin)
 %
 %  Zernike coefficients and related
 %   'zcoeffs' - Zernike coefficients
-%   'measured pupil' - Pupil size for wavefront aberration meaurements (mm,*)
+%   'measured pupil size' - Pupil size for wavefront aberration meaurements (mm,*)
 %   'measured wl' - Wavefront aberration measurement wavelength (nm,*)
 %   'measured optical axis' - Measured optical axis (deg)
 %   'measured observer accommodation' - Observer accommodation at aberration measurement time (diopters)
@@ -33,21 +35,20 @@ function val = wvfGet(wvf,parm,varargin)
 %    'ref pupil plane size' - Size of sampled pupil plane at measurement wavelength (mm,*)
 %    'ref pupil plane sample interval' - Pixel sample interval in pupil plane at measurement wavelength (mm,*)
 %    'ref psf arcmin per sample' - Sampling interval for psf at measurment wavelength (arcminute/pixel)
-%    'pupil plane size' - Size of sampled pupil plane at any calculated wavelength(s) (mm)
-%    'psf arcmin per sample' - Sampling interval for psf at any calculated wavelength(s) (min/pixel)
-%    'psf angle per sample' - Sampling interval for psf at any calculated wavelength(s) (min,*/pixel)
-%    'psf angular samples' - One-d slice of sampled angles for psf, centered on 0, for a single wavelength (min,*)
+%  + 'pupil plane size' - Size of sampled pupil plane at any calculated wavelength(s) (mm)
+%  + 'psf arcmin per sample' - Sampling interval for psf at any calculated wavelength(s) (min/pixel)
+%  + 'psf angle per sample' - Sampling interval for psf at any calculated wavelength(s) (min,*/pixel)
+%  + 'psf angular samples' - One-d slice of sampled angles for psf, centered on 0, for a single wavelength (min,*)
 %
 %  Spectral
-%     'calc wavelengths' - Wavelengths to compute on (nm,*)
+%     'calc wavelengths' - Wavelengths to calculate over (nm,*)
+%  +  'number calc wavelengths' - Number of wavelengths to calculate over
 %
-%
-%     'nwave'      - number of wavelengths  (wvfGet(wvfP,'n wave'))
 %     'infocus wavelength'
 %     'weightspectrum'
 %
 % Pupil parameters
-%     'calculated pupil'  - Pupil size for calculation (mm)
+%     'calc pupil size'  - Pupil size for calculation (mm,*)
 %
 % Focus parameters
 %     'defocusdiopters'
@@ -125,7 +126,7 @@ switch parm
         end
         DIDAGET = true;
         
-    case {'measuredpupil', 'measuredpupilmm', 'measuredpupildiameter'}
+    case {'measuredpupilsize', 'measuredpupil', 'measuredpupilmm', 'measuredpupildiameter'}
         % Pupil diameter in mm over for which wavefront expansion is valid
         % wvfGet(wvf,'measured pupil','mm')
         % wvfGet(wvf,'measured pupil')
@@ -279,7 +280,7 @@ switch (parm)
         DIDAGET = true;
 end
 
-% Wavelength related
+%% Wavelength related
 switch parm
     case {'calcwavelengths','wavelengths','wavelength','wls','wave'}
         % Wavelengths to compute on
@@ -297,6 +298,11 @@ switch parm
         % Select wavelength if indices were passed
         if length(varargin) > 1, val = val(varargin{2}); end
         DIDAGET = true;
+          
+    case {'numbercalcwavelengths','nwavelengths','nwave'}
+        % Number of wavelengths to calculate at
+        val = length(wvf.wls);
+        DIDAGET = true;
         
     case {'infocuswavelength','infocuswave','nominalfocuswl'}
         % This should go away soon
@@ -306,21 +312,20 @@ switch parm
     case 'weightspectrum'
         val = wvf.weightingSpectrum;         
         DIDAGET = true;
+
+end
         
-    case 'nwave'
-        val = length(wvf.wls);
-         DIDAGET = true;
-   
-        
-        % Pupil parameters
-    case 'calculatedpupil'
-        % Measured describes original data.  Calculated describes what we
-        % are using in the simulation.  Default in mm.
+%% Pupil parameters
+switch parm
+    case {'calcpupilsize', 'calculatedpupil'}
+        % Pupil size to assume when computing pupil function and psf.  Must
+        % be less than or equal to measured pupil size.
         %  wvfGet(wvf,'calculated pupil','mm')
         %  wvfGet(wvf,'calculated pupil','um')
-        val = wvf.calcpupilMM;               % Default pupil? diameter?
+        val = wvf.calcpupilMM;
+        
+        % Adjust units
         if ~isempty(varargin)
-            % Convert to meters and then scale
             val = (val*1e-3)*ieUnitScaleFactor(varargin{1});
         end
         DIDAGET = true;
