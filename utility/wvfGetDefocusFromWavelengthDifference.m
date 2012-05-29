@@ -9,8 +9,8 @@ function defocusMicrons = wvfGetDefocusFromWavelengthDifference(wvfP)
 % accomplish the same thing with either variable.  But, sometimes it is
 % more convenient to think in one way, and sometimes in the other.
 %
-% The conversion to microns is because these are the units we assume that
-% the pupil function is measured in.
+% The conversion to microns is because these are the units we use for
+% the wavefront aberrations.
 %
 % Required input fiels for wvfP struct - see comment in wvfComputePupilFunction for more details.
 %   wls -               Column vector of wavelengths (in nm) to compute

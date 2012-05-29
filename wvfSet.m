@@ -19,9 +19,8 @@ function wvf = wvfSet(wvf,parm,val,varargin)
 % this routine.
 %
 % Examples:
-%   wvf = wvfSet(wvf,'measured pupil',3);   % Default is mm
+%   wvf = wvfSet(wvf,'measured pupil',8);
 %   wvf = wvfSet(wvf,'stiles crawford',sce);
-%   wvf = wvfSet(wvf,'psf',psf);
 %
 %  A '*' indicates that the syntax wvfGet(wvf,param,unit) can be used, where
 %  unit specifies the spatial scale of the returned value:
