@@ -17,11 +17,13 @@ function lcaDiopters = wvfLCAFromWavelengthDifference(wl1NM,wl2NM)
 %
 % 8/21/11  dhb  Pulled out from code supplied by Heidi Hofer.
 % 9/5/11   dhb  Rename.  Rewrite for wvfPrams i/o.
-% 5/29/12  dhb  Pulled out just the bit that computes diopters from wavelengths.
+% 5/29/12  dhb  Pulled out just the bit tah
 %
 % (c) Wavefront Toolbox Team 2011
 
-wave = wvfGet(wvfP,'wave'); 
-diopters = zeros (size(wave));
+
+% Here's the magic
+constant = 1.8859 - (0.63346/(0.001*wl1NM-0.2141));
+lcaDiopters = 1.8859 - constant - (0.63346/(0.001*wl2NM-0.2141));  
 
 return
