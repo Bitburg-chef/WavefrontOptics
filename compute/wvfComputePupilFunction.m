@@ -179,8 +179,7 @@ for ii=1:nWavelengths
     pupilfunc(norm_radius > calcPupilSizeMM/measPupilSizeMM)=0;
     
     % Attach the function the the proper wavelength slot
-    wvfP = wvfSet(wvfP,'pupilfunc',pupilfunc,ii);
-    
+    wvfP = wvfSet(wvfP,'pupilfunc',pupilfunc,ii);   
 end
 
 end
