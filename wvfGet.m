@@ -14,7 +14,7 @@ function val = wvfGet(wvf,parm,varargin)
 %    length: 'm', 'cm', 'mm','um', 'nm'.
 %    angle: 'deg', 'min', 'sec'
 %
-%  A leading '+ indicates that this is a get only parameter and may not be set. 
+%  A leading '+ indicates that this is a get only parameter and may not be set.
 %
 % Parameters:
 %
@@ -22,12 +22,13 @@ function val = wvfGet(wvf,parm,varargin)
 %   'name' - Name of this object
 %   'type' - Type of this object, should always be 'wvf'
 %
-%  Zernike coefficients and related
+%  Zernike coefficients and measurement related
 %   'zcoeffs' - Zernike coefficients
 %   'measured pupil size' - Pupil size for wavefront aberration meaurements (mm,*)
 %   'measured wl' - Wavefront aberration measurement wavelength (nm,*)
 %   'measured optical axis' - Measured optical axis (deg)
 %   'measured observer accommodation' - Observer accommodation at aberration measurement time (diopters)
+%   'measured observer focus correction' - Focus correction added optically for observer at measurement time (diopters)
 %
 %  Spatial sampling parameters
 %    'sample interval domain' - Which domain has sample interval held constant with wavelength ('psf', 'pupil')
@@ -44,17 +45,13 @@ function val = wvfGet(wvf,parm,varargin)
 %     'calc wavelengths' - Wavelengths to calculate over (nm,*)
 %  +  'number calc wavelengths' - Number of wavelengths to calculate over
 %
-%     'infocus wavelength'
 %     'weightspectrum'
 %
 % Pupil parameters
 %     'calc pupil size'  - Pupil size for calculation (mm,*)
+%     'calc observer accommodation' - Observer accommodation at calculation time (diopters)
+%     'calc observer focus correction' - Focus correction added optically for observer at calculation time (diopters)
 %
-% Focus parameters
-%     'defocusdiopters'
-%     'defocus distance'   -         *microns
-%     'weight spectrum'
-
 % Stiles Crawford Effect
 %     'sce params' - The whole structure
 %     'sce x0'
@@ -155,11 +152,16 @@ switch parm
         % Observer accommodation, in diopters relative to relaxed state of eye
         val = wvf.measObserverAcommodationDiopters;
         DIDAGET = true;
+        
+    case {'measuredobserverfocuscorrection', 'measuredobserverfocuscorrectiondiopters'}
+        % Focus correction added optically for observer at measurement time (diopters)
+        val = wvf.measObserverAcommodationDiopters;
+        DIDAGET = true;
 end
 
 %% Spatial sampling parameters
 switch (parm)
-     case {'sampleintervaldomain'}
+    case {'sampleintervaldomain'}
         % What's held constant with calculated wavelength.
         % Choices are 'psf' and 'pupil'
         val = wvf.constantSampleIntervalDomain;
@@ -206,7 +208,7 @@ switch (parm)
         % Get wavelengths
         wavelengths = wvfGet(wvf,'calc wavelengths','nm');
         waveIdx = varargin{2};
-
+        
         % Figure out what's being held constant with wavelength and act
         % appropriately.
         whichDomain = wvfGet(wvf,'sample interval domain');
@@ -223,14 +225,14 @@ switch (parm)
             val = (val*1e-3)*ieUnitScaleFactor(varargin{1});
         end
         DIDAGET = true;
-                 
+        
     case {'psfarcminpersample', 'psfarcminperpixel', 'arcminperpix'}
         % Arc minutes per pixel in psf domain, for calculated wavelength(s).
         
         % Get wavelengths
         wavelengths = wvfGet(wvf,'calc wavelengths','mm');
         waveIdx = varargin{1};
-
+        
         % Figure out what's being held constant with wavelength and act
         % appropriately.
         whichDomain = wvfGet(wvf,'sample interval domain');
@@ -243,13 +245,13 @@ switch (parm)
             error('Unknown sample interval domain ''%s''',whichDomain);
         end
         DIDAGET = true;
-         
+        
     case {'psfanglepersample','angleperpixel','angperpix'}
         % Angular extent per pixel in the psf domain, for calculated wavelength(s).
         % wvfGet(wvf,'psf angle per sample',unit,waveIdx)
         %  unit = 'min' (default), 'deg', or 'sec'
         unit = varargin{1}; waveIdx = varargin{2};
-        val = wvfGet(wvf,'psf arcmin per sample',waveIdx); 
+        val = wvfGet(wvf,'psf arcmin per sample',waveIdx);
         if ~isempty(unit)
             unit = lower(unit);
             switch unit
@@ -298,7 +300,7 @@ switch parm
         % Select wavelength if indices were passed
         if length(varargin) > 1, val = val(varargin{2}); end
         DIDAGET = true;
-          
+        
     case {'numbercalcwavelengths','nwavelengths','nwave'}
         % Number of wavelengths to calculate at
         val = length(wvf.wls);
@@ -310,11 +312,11 @@ switch parm
         DIDAGET = true;
         
     case 'weightspectrum'
-        val = wvf.weightingSpectrum;         
+        val = wvf.weightingSpectrum;
         DIDAGET = true;
-
-end
         
+end
+
 %% Pupil parameters
 switch parm
     case {'calcpupilsize', 'calculatedpupil'}
@@ -329,7 +331,20 @@ switch parm
             val = (val*1e-3)*ieUnitScaleFactor(varargin{1});
         end
         DIDAGET = true;
-       
+        
+    case {'calcobserveraccommodation'}
+        % Specify observer accommodation at calculation time
+        val = wvf.calcObserverAccommodationDiopters;
+        if (val ~= wvfGet(wvf,'measuredobserveraccommodatoin'))
+            error('We do not currently know how to deal with values that differ from measurement time');
+        end
+        DIDAGET = true;
+        
+    case {'calcobserverfocuscorrection', 'defocusdiopters'}
+        % Specify optical correction added to observer focus at calculation time
+        val = wvf.calcObserverFocusCorrectionDiopters;
+        DIDAGET = true;
+        
     case {'pupilfunction','pupilfunc','pupfun'}
         % wvfGet(wvf,'pupilfunc',idx)  (idx <= nWave)
         %
@@ -351,42 +366,40 @@ switch parm
         end
         
         DIDAGET = true;
-
-                
-    case 'defocusdiopters'
-        val = wvf.defocusDiopters;           % Defocus
-        DIDAGET = true;
-
-    case {'defocusmicrons','defocusdistance'}
-        % The defocus in distance rather than diopters
-        % The default is microns.
-        % wvfGet(wvfP,'defocus distance','mm');
-        val = wvfGetDefocusFromWavelengthDifference(wvf);
-        if ~isempty(varargin)
-            % There is a different unit.  So, convert microns to meters and
-            % then scale to new unit.
-            val = (val/10^6)*ieUnitScaleFactor(varargin{1});
-        end
-        DIDAGET = true;
-
+        
+        
+        
+        
+        %     case {'defocusmicrons','defocusdistance'}
+        %         % The defocus in distance rather than diopters
+        %         % The default is microns.
+        %         % wvfGet(wvfP,'defocus distance','mm');
+        %         val = wvfGetDefocusFromWavelengthDifference(wvf);
+        %         if ~isempty(varargin)
+        %             % There is a different unit.  So, convert microns to meters and
+        %             % then scale to new unit.
+        %             val = (val/10^6)*ieUnitScaleFactor(varargin{1});
+        %         end
+        %         DIDAGET = true;
+        
         
         % Stiles Crawford Effect
     case 'sceparams'
         if isfield(wvf,'sceParams'), val = wvf.sceParams; end
         DIDAGET = true;
-
+        
     case 'scex0'
         if checkfields(wvf,'sceParams','xo'), val = wvf.sceParams.xo;
         else val = 0;
         end
         DIDAGET = true;
-
+        
     case 'scey0'
         if checkfields(wvf,'sceParams','yo'), val = wvf.sceParams.yo;
         else val = 0;
         end
         DIDAGET = true;
-
+        
     case {'scewavelength','scewavelengths','scewave'}
         % This returns the wvf wavelength list if there isn't a sceParams
         % structure.  Might be OK.
@@ -400,7 +413,7 @@ switch parm
             val = val*10e-9*ieUnitScaleFactor(unit);
         end
         DIDAGET = true;
-
+        
     case 'scerho'
         % Get rho value for a particular wavelength
         %  wvfGet(wvf,'rho',waveList)
@@ -418,7 +431,7 @@ switch parm
             end
         end
         DIDAGET = true;
-   
+        
     case {'scefrac','scefraction','stilescrawfordeffectfraction'}
         % wvfGet(wvf,'sce fraction',waveIdx)
         % The variable sceFrac tells you how much light
@@ -431,7 +444,7 @@ switch parm
         %         else warning('WVFGET:scefract','No sceFrac field');
         %         end
         DIDAGET = true;
-
+        
         
         % Point and line spread data
     case 'psf'
@@ -454,7 +467,7 @@ switch parm
             end
         end
         DIDAGET = true;
-
+        
     case 'diffractionpsf'
         % wvfGet(wvf,'diffraction psf',waveIdx);
         % diffraction limited psf at wave(waveIdx)
@@ -466,12 +479,12 @@ switch parm
         wvf = wvfComputePSF(wvf);
         val = wvfGet(wvf,'psf',1);
         DIDAGET = true;
-
+        
     case 'psfcentered'
         % Centered so that peak is at middle position in coordinate grid
         val = psfCenter(wvfGet(wvf,'psf'));
         DIDAGET = true;
-
+        
     case '1dpsf'
         % wvfGet(wvf,'1d psf',waveIdx,row)
         
@@ -483,7 +496,7 @@ switch parm
         psf = psfCenter(wvfGet(wvf,'psf',waveIdx));
         val = psf(whichRow,:);
         DIDAGET = true;
-
+        
     case 'strehl'
         % wvfGet(wvf,'strehl',waveIdx);
         % Strehl ratio.
@@ -503,7 +516,7 @@ switch parm
         %         % Old calculation was done in the compute pupil function routine.
         % Now, we do it on the fly in here, for a wavelength
         % strehl(wl) = max(max(psf{wl}))./(areapixapod(wl)^2);
-        DIDAGET = true;        
+        DIDAGET = true;
         
     case {'middlerow'}
         val = floor(wvfGet(wvf,'npixels')/2) + 1;
@@ -552,7 +565,7 @@ switch parm
         end
         val = wvfGet(wvf,'field size',unit)/wvfGet(wvf,'npixels');
         DIDAGET = true;
-   
+        
     case {'samplesspace','supportspace','spatialsupport'}
         % wvfGet(wvf,'samples space','um')
         % Spatial support in samples, centered on 0
@@ -579,7 +592,7 @@ switch parm
         %         nPixels    = wvfGet(wvf,'npixels');
         %         val = distPerPix*((1:nPixels)-middleRow);
         DIDAGET = true;
-
+        
 end
 
 %% Catch the case where we don't know about the requested parameter

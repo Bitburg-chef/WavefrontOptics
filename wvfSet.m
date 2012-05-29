@@ -33,12 +33,13 @@ function wvf = wvfSet(wvf,parm,val,varargin)
 %   'name' - Name of this object
 %   'type' - Type of this object, should always be 'wvf'
 %
-%  Zernike coefficients and related
+%  Zernike coefficients and measurement related
 %   'zcoeffs' - Zernike coefficients
 %   'measured pupil size' - Pupil size for wavefront aberration meaurements (mm)
 %   'measured wl' - Wavefront aberration measurement wavelength (nm)
 %   'measured optical axis' - Measured optical axis (deg)
 %   'measured observer accommodation' - Observer accommodation at aberration measurement time (diopters)
+%   'measured observer focus correction' - Focus correction added optically for observer at measurement time (diopters)
 %
 %  Spatial sampling parameters
 %    'sample interval domain' - Which domain has sample interval held constant with wavelength ('psf', 'pupil')
@@ -50,13 +51,12 @@ function wvf = wvfSet(wvf,parm,val,varargin)
 %  Spectral
 %     'calc wavelengths' - Wavelengths to compute on (nm)
 %
-%
-%     'nwave'      - number of wavelengths  (wvfGet(wvfP,'n wave'))
-%     'infocus wavelength'
 %     'weightspectrum'
 %
 % Pupil parameters
-%     'calc pupil size'  - Pupil size for calculation (mm)
+%     'calc pupil size' - Pupil size for calculation (mm)
+%     'calc observer accommodation' - Observer accommodation at calculation time (diopters)
+%     'calc observer focus correction' - Focus correction added optically for observer at calculation time (diopters)
 %
 %  % Focus parameters
 %     'defocusdiopters'
@@ -191,6 +191,12 @@ switch parm
         
     case {'measuredobserveraccommodation', 'measuredobserveraccommodationdiopters'}
         % Observer accommodation, in diopters relative to relaxed state of eye
+        wvf.measObserverAcommodationDiopters = val;
+        PUPILFUNCTION_STALE = true;
+        DIDASET = true;
+        
+    case {'measuredobserverfocuscorrection', 'measuredobserverfocuscorrectiondiopters'}
+        % Focus correction added optically for observer at measurement time (diopters)
         wvf.measObserverAcommodationDiopters = val;
         PUPILFUNCTION_STALE = true;
         DIDASET = true;
@@ -351,14 +357,30 @@ switch parm
         end
         wvf.weightingSpectrum = val;
         DIDASET = true;
+end
 
-        % Pupil parameters
+%% Pupil parameters
+switch parm
+
     case {'calculatedpupil','calculatedpupildiameter'}
         % Pupil diameter in mm - must be smaller than measurements
         if (val > wvf.measpupilMM)
             error('Pupil diamter used for calculation must be smaller than that used for measurements');
         end
         wvf.calcpupilMM = val;
+        DIDASET = true;
+    
+    case {'calcobserveraccommodation'}
+        % Specify observer accommodation at calculation time
+        if (val ~= wvfGet(wvf,'measuredobserveraccommodatoin'))
+            error('We do not currently know how to deal with values that differ from measurement time');
+        end
+        wvf.calcObserverAccommodationDiopters = val; 
+        DIDASET = true;
+        
+    case {'calcobserverfocuscorrection', 'defocusdiopters'}
+        % Specify optical correction added to observer focus at calculation time
+        wvf.calcObserverFocusCorrectionDiopters = val; 
         DIDASET = true;
 
     case {'pupilfunction','pupilfunc'}
@@ -394,29 +416,23 @@ switch parm
             end
         end
         DIDASET = true;
-              
-    case 'defocusdiopters'
-        % Does not look like defocus is ever stored in diopters in other
-        % functions. Only for user to set defocus diopters as an
-        % alternative to using 4th term of zernike coeffs.
-        wvf.defocusDiopters = val;           % Defocus
-        DIDASET = true;
 
-    case 'defocusmicrons'
-        % Hmmm.  Someone decided to have two ways of specifying defocus.
-        % This is unfortunate.  Anyway, we are supposed to be able to set
-        % the defocus in microns as well as in diopters.  This happens in
-        % wvfComputePSF.
-        % defocusMicrons is set by wvfGetDefocusFromWavelengthDifference.
-        % It calculates additional longitudinal chromatic aberration (LCA)
-        % from using non-nominal focus wavelengths and adds it to
-        % user-specified defocus diopters, then converts it all to um.
-        % wvfComputePSF adds in this defocus microns (same units as rest of
-        % pupil function calculations) to zcoeff(4)/defocus if present.
-        % KP 3/12/12
-        wvf.defocusMicrons = val;
-        DIDASET = true;
-        
+
+%     case 'defocusmicrons'
+%         % Hmmm.  Someone decided to have two ways of specifying defocus.
+%         % This is unfortunate.  Anyway, we are supposed to be able to set
+%         % the defocus in microns as well as in diopters.  This happens in
+%         % wvfComputePSF.
+%         % defocusMicrons is set by wvfGetDefocusFromWavelengthDifference.
+%         % It calculates additional longitudinal chromatic aberration (LCA)
+%         % from using non-nominal focus wavelengths and adds it to
+%         % user-specified defocus diopters, then converts it all to um.
+%         % wvfComputePSF adds in this defocus microns (same units as rest of
+%         % pupil function calculations) to zcoeff(4)/defocus if present.
+%         % KP 3/12/12
+%         wvf.defocusMicrons = val;
+%         DIDASET = true;
+%         
         % Special cases
     case {'sceparams','stilescrawford'}
         % The structure of sce is defined in sceCreate
