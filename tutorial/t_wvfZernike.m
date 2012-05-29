@@ -234,7 +234,7 @@ end
 % wavelength for which the PSF is calculated to 550 nm (this is also the
 % default.  
 wvf0 = wvfCreate;
-wvf0 = wvfSet(wvf0,'nominalfocuswl',550); 
+wvf0 = wvfSet(wvf0,'measured wl',550); 
 wvf0 = wvfSet(wvf0,'wavelength',550); 
 
 % It turns out that all aberrations other than "Defocus" are known
@@ -261,7 +261,8 @@ hold on;
 % that the wavelength of nominal focus is as specified.  Since the two differ
 % here, we see the effect of LCA.
 wvf1 = wvfCreate;
-wvf1 = wvfSet(wvf1,'nominalfocuswl',600); %sets nominal wavelength to 600nm
+lcaDiopters = wvfLCAFromWavelengthDifference(wvfGet(wvf1,'measured wl'),600);
+wvf1 = wvfSet(wvf1,'calc observer focus correction',-lcaDiopters);
 wvf1 = wvfComputePSF(wvf1);
 wvfPlot(wvf1,'1dpsfspacenormalized','mm',waveIdx,maxMM);
 

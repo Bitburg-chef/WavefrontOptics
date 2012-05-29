@@ -363,8 +363,7 @@ switch parm
             if idx > nWave, error('idx (%d) > nWave',idx,nWave);
             else val = wvf.pupilfunc{idx};
             end
-        end
-        
+        end  
         DIDAGET = true;
         
         

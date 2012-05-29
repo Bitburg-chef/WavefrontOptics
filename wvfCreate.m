@@ -23,6 +23,7 @@ wvf = wvfSet(wvf,'measured pupil',8);
 wvf = wvfSet(wvf,'measured wl',550);
 wvf = wvfSet(wvf,'measured optical axis',0);
 wvf = wvfSet(wvf,'measured observer accommodation',0);
+wvf = wvfSet(wvf,'measured observer focus correction',0);
 
 %% Spatial sampling parameters
 wvf = wvfSet(wvf,'sample interval domain','psf');
@@ -30,7 +31,9 @@ wvf = wvfSet(wvf,'spatial samples',201);
 wvf = wvfSet(wvf,'ref pupil plane size',16.212);
 
 %% Spectral
-wvf = wvfSet(wvf,'calc wavelengths',550)
+wvf = wvfSet(wvf,'calc wavelengths',550);
+wvf = wvfSet(wvf,'calc observer accommodation',0);
+wvf = wvfSet(wvf,'calc observer focus correction',0);
 
 %% What to calculate for
 
@@ -38,14 +41,7 @@ wvf = wvfSet(wvf,'calc wavelengths',550)
 % than the diameter over which the measurements extend.  This defines
 % the size to be used for the calculations represented by the wvf
 % object.
-wvf.calcpupilMM = 3;               % Used for this calculation
-    
-
-% These are used in order to adjust the defocus term of the Zernike coeffs
-% (zcoeffs(4)). Nominal Focus wavelength is compared to wavelength
-% specified in the PSF calculation to find additional defocus.
-% Used in wvfGetDefocusFromWavelengthDifference
-wvf.defocusDiopters = 0;           % Defocus
+wvf.calcpupilMM = 3;               % Used for this calculation   
 
 % Something about the cones.  
 % S is a length 3 vector of the format: [start spacing Nsamples]

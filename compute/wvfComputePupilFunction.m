@@ -53,6 +53,15 @@ end
 c = zeros(65,1);
 c(1:length(wvfGet(wvfP,'zcoeffs'))) = wvfGet(wvfP,'zcoeffs');
 
+%% Handle defocus relative to reference wavelength.
+%
+% The explicit defocus correction is expressed as the difference in diopters between
+% the defocus correction at measurement time and the defocus correction we're calculating for.
+% This models lenses external to the observer's eye, which affect focus but
+% not the accommodative state.
+defocusCorrectionDiopters = wvfGet(wvfP,'calc observer focus correction') - wvfGet(wvfP,'measured observer focus correction');
+defocusCorrectionMicrons = defocusCorrectionDiopters * (measPupilSizeMM )^2/(16*sqrt(3));
+
 %% Convert wavelengths in nanometers to wavelengths in microns
 waveUM = wvfGet(wvfP,'calc wavelengths','um');
 waveNM = wvfGet(wvfP,'calc wavelengths','nm');
@@ -97,6 +106,10 @@ for ii=1:nWavelengths
         A = 10.^(-rho*((xpos-xo).^2+(ypos-yo).^2));
     end
     
+    % Compute LCA relative to measurement wavelength
+    lcaDiopters = wvfLCAFromWavelengthDifference(wvfGet(wvfP,'measured wavelength','nm'),thisWave);
+    lcaMicrons = lcaDiopters*(measPupilSizeMM )^2/(16*sqrt(3));
+    
     % The Zernike polynomials are defined over the unit disk.  At
     % measurement time, the pupil was mapped onto the unit disk, so we
     % do the same normalization here to obtain the expansion over the disk.
@@ -110,7 +123,7 @@ for ii=1:nWavelengths
     wavefrontAberrationsUM = 0 + ...
         c(5) .* sqrt(6).*norm_radius.^2 .* cos(2 .* theta) + ...
         c(3) .* sqrt(6).*norm_radius.^2 .* sin(2 .* theta) + ...
-        c(4) .* sqrt(3).*(2 .* norm_radius.^2 - 1) + ...
+        (c(4)+lcaMicrons+defocusCorrectionMicrons) .* sqrt(3).*(2 .* norm_radius.^2 - 1) + ...
         c(9) .*sqrt(8).* norm_radius.^3 .* cos(3 .* theta) + ...
         c(6) .*sqrt(8).* norm_radius.^3 .* sin(3 .* theta) + ...
         c(8) .*sqrt(8).* (3 .* norm_radius.^3 - 2 .* norm_radius) .* cos(theta) + ...

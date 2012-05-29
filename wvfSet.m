@@ -372,7 +372,7 @@ switch parm
     
     case {'calcobserveraccommodation'}
         % Specify observer accommodation at calculation time
-        if (val ~= wvfGet(wvf,'measuredobserveraccommodatoin'))
+        if (val ~= wvfGet(wvf,'measuredobserveraccommodation'))
             error('We do not currently know how to deal with values that differ from measurement time');
         end
         wvf.calcObserverAccommodationDiopters = val; 
