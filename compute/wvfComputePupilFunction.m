@@ -1,7 +1,9 @@
-function [wvfP, phase, A] = wvfComputePupilFunction(wvfP, varargin)
-% Compute the monochromatic pupil fuction
+function [pupilfunc] = wvfComputePupilFunction(wvfP)
+% [pupilfunc] = wvfComputePupilFunction(wvfP)
 %
-%    [wvfP,phase,amplitude] = wvfComputePupilFunction(wvfP, [idxWave=1])
+% Compute the pupil fuction given the wvfP object.
+%
+% This is normally called by wvfGet.
 %
 % The pupil function is a complex number that represents the amplitude and
 % phase of the wavefront across the pupil.  The returned pupil function at
@@ -31,7 +33,7 @@ function [wvfP, phase, A] = wvfComputePupilFunction(wvfP, varargin)
 %                  Reformat comments. 
 % 9/5/11  dhb      Rewrite for wvfP struct i/o.  Rename.
 % 5/29/12 dhb      Removed comments about old inputs, since this now gets
-%                  its data via wvfGet and stores it via wvfSet.
+%                  its data via wvfGet.
 %
 % (c) Wavefront Toolbox Team 2011, 2012
 
@@ -186,13 +188,13 @@ for ii=1:nWavelengths
         c(60) .*sqrt(11).* (252 .* norm_radius.^10 - 630 .* norm_radius.^8 + 560 .* norm_radius.^6 - 210 .* norm_radius.^4 + 30 .* norm_radius.^2 - 1);
     
     % Here is the pupil function
-    pupilfunc = A.*exp(-1i * 2 * pi * wavefrontAberrationsUM/waveUM(ii));
+    pupilfunc{ii} = A.*exp(-1i * 2 * pi * wavefrontAberrationsUM/waveUM(ii));
     
     % Set values outside the pupil we're calculating for to 0
-    pupilfunc(norm_radius > calcPupilSizeMM/measPupilSizeMM)=0;
+    pupilfunc{ii}(norm_radius > calcPupilSizeMM/measPupilSizeMM)=0;
     
     % Attach the function the the proper wavelength slot
-    wvfP = wvfSet(wvfP,'pupilfunc',pupilfunc,ii);   
+    %wvfP = wvfSet(wvfP,'pupilfunc',pupilfunc,ii);   
 end
 
 end

@@ -115,8 +115,8 @@ if ~exist('val','var'), error('val must be defined'); end
 parm = ieParamFormat(parm);
 
 %% Initialize flags
-PUPILFUNCTION_STALE = false;
-PSF_STALE = false;
+wvf.PUPILFUNCTION_STALE = false;
+wvf.PSF_STALE = false;
 DIDASET = false;
 
 %% Bookkeeping
@@ -168,37 +168,37 @@ switch parm
             error('We do not handle more than 65 coefficients');
         end
         wvf.zcoeffs(1:length(val)) = val;
-        PUPILFUNCTION_STALE = true;
+        wvf.PUPILFUNCTION_STALE = true;
         DIDASET = true;
         
     case {'measuredpupilsize', 'measuredpupil', 'measuredpupilmm', 'measuredpupildiameter'}
         % Pupil diameter in mm over for which wavefront expansion is valid
         wvf.measpupilMM = val;
-        PUPILFUNCTION_STALE = true;
+        wvf.PUPILFUNCTION_STALE = true;
         DIDASET = true;
         
     case {'measuredwl', 'measuredwavelength'}
         % Measurement wavelength (nm)
         wvf.measWlNM = val;
-        PUPILFUNCTION_STALE = true;
+        wvf.PUPILFUNCTION_STALE = true;
         DIDASET = true;
         
     case {'measuredopticalaxis', 'measuredopticalaxisdeg'}
         % Measurement optical axis, degrees eccentric from fovea
         wvf.measOpticalAxisDeg = val;
-        PUPILFUNCTION_STALE = true;
+        wvf.PUPILFUNCTION_STALE = true;
         DIDASET = true;
         
     case {'measuredobserveraccommodation', 'measuredobserveraccommodationdiopters'}
         % Observer accommodation, in diopters relative to relaxed state of eye
         wvf.measObserverAcommodationDiopters = val;
-        PUPILFUNCTION_STALE = true;
+        wvf.PUPILFUNCTION_STALE = true;
         DIDASET = true;
         
     case {'measuredobserverfocuscorrection', 'measuredobserverfocuscorrectiondiopters'}
         % Focus correction added optically for observer at measurement time (diopters)
         wvf.measObserverAcommodationDiopters = val;
-        PUPILFUNCTION_STALE = true;
+        wvf.PUPILFUNCTION_STALE = true;
         DIDASET = true;
 end
 
@@ -252,7 +252,7 @@ switch parm
         %
         % This is a stored value.
         wvf.nSpatialSamples = val;
-        PUPILFUNCTION_STALE = true;
+        wvf.PUPILFUNCTION_STALE = true;
         DIDASET = true;
         
     case {'refpupilplanesize', 'refpupilplanesizemm', 'fieldsizemm'}
@@ -262,7 +262,7 @@ switch parm
         %
         % This is a stored value.
         wvf.refSizeOfFieldMM = val;
-        PUPILFUNCTION_STALE = true;
+        wvf.PUPILFUNCTION_STALE = true;
         DIDASET = true;
         
     case {'refpupilplanesampleinterval', 'refpupilplanesampleintervalmm', 'fieldsamplesize','fieldsamplesizemmperpixel'}
@@ -270,7 +270,7 @@ switch parm
         % wavelength.  The value can vary with wavelength, but this one
         % sets the scale for all the other wavelengths.
         wvf.refSizeOfFieldMM = val*wvf.nSpatialSamples;
-        PUPILFUNCTION_STALE = true;
+        wvf.PUPILFUNCTION_STALE = true;
         DIDASET = true;
         
     case {'refpsfarcminpersample', 'refpsfarcminperpixel'}
@@ -319,7 +319,7 @@ switch parm
         % one wouldn't have to guess quite as much about what is meant.
         radiansPerPixel = val/(180*60/3.1416);
         wvf.refSizeOfFieldMM = wvfGet('measured wl','mm')/radiansPerPixel;
-        PUPILFUNCTION_STALE = true;
+        wvf.PUPILFUNCTION_STALE = true;
         DIDASET = true;
 end
 
@@ -343,7 +343,7 @@ switch parm
         else  % A column vector case
             wvf.wls = val(:);
         end
-        PUPILFUNCTION_STALE = true;
+        wvf.PUPILFUNCTION_STALE = true;
         DIDASET = true;
         
     %case {'infocuswavelength','nominalfocuswl'}
@@ -368,6 +368,7 @@ switch parm
             error('Pupil diamter used for calculation must be smaller than that used for measurements');
         end
         wvf.calcpupilMM = val;
+        wvf.PUPILFUNCTION_STALE = true;
         DIDASET = true;
     
     case {'calcobserveraccommodation'}
@@ -375,47 +376,52 @@ switch parm
         if (val ~= wvfGet(wvf,'measuredobserveraccommodation'))
             error('We do not currently know how to deal with values that differ from measurement time');
         end
-        wvf.calcObserverAccommodationDiopters = val; 
+        wvf.calcObserverAccommodationDiopters = val;
+        wvf.PUPILFUNCTION_STALE = true;
         DIDASET = true;
         
     case {'calcobserverfocuscorrection', 'defocusdiopters'}
         % Specify optical correction added to observer focus at calculation time
-        wvf.calcObserverFocusCorrectionDiopters = val; 
+        wvf.calcObserverFocusCorrectionDiopters = val;
+        wvf.PUPILFUNCTION_STALE = true;
         DIDASET = true;
 
-    case {'pupilfunction','pupilfunc'}
-        % wvfSet(wvf,'pupil function',pf) - pf is a cell array of pupil
-        % functions, one for each wavelength
-        %
-        % wvfSet(wvf,'pupil function',pf,[idx]) - pf pupil is for
-        % wave(idx).
-        %
-        % Convert between pupil function and psf using wvfComputePSF.
-        if isempty(varargin)  % Cell array of pupilfuncs
-            % This is a cell array of pupil functions if there are multiple
-            % wavelengths, or just a matrix
-            if iscell(val)
-                % Check cell array dimension
-                n = length(val); nWave = wvfGet(wvf,'nWave');
-                if n ~= nWave
-                    error('pupilfunc dim (%d) ~= nWave (%d)', n, nWave);
-                end
-                wvf.pupilfunc = val;
-            else  % Just a matrix, not a cell array.
-                % No idx specified, so we put it in the first cell.
-                warning('WVFSET:pupilfuncset','Assigning pupil function to first cell array dim');
-                wvf.pupilfunc{1} = val;
-            end
-        else  % The wavelength index was sent in
-            % wvfSet(wvf,'pupilfunc',val,idx)
-            % This is the pupilfunc for wave(idx)
-            idx = varargin{1};
-            nWave = wvfGet(wvf,'n wave');
-            if idx > nWave, error('idx (%d) > nWave (%d)',idx,nWave);
-            else            wvf.pupilfunc{idx} = val;
-            end
-        end
-        DIDASET = true;
+% I don't think the user should be allowed to set the pupil funtion.  It
+% should always be computed.  wvfGet can cache it.
+%
+%     case {'pupilfunction','pupilfunc'}
+%         % wvfSet(wvf,'pupil function',pf) - pf is a cell array of pupil
+%         % functions, one for each wavelength
+%         %
+%         % wvfSet(wvf,'pupil function',pf,[idx]) - pf pupil is for
+%         % wave(idx).
+%         %
+%         % Convert between pupil function and psf using wvfComputePSF.
+%         if isempty(varargin)  % Cell array of pupilfuncs
+%             % This is a cell array of pupil functions if there are multiple
+%             % wavelengths, or just a matrix
+%             if iscell(val)
+%                 % Check cell array dimension
+%                 n = length(val); nWave = wvfGet(wvf,'nWave');
+%                 if n ~= nWave
+%                     error('pupilfunc dim (%d) ~= nWave (%d)', n, nWave);
+%                 end
+%                 wvf.pupilfunc = val;
+%             else  % Just a matrix, not a cell array.
+%                 % No idx specified, so we put it in the first cell.
+%                 warning('WVFSET:pupilfuncset','Assigning pupil function to first cell array dim');
+%                 wvf.pupilfunc{1} = val;
+%             end
+%         else  % The wavelength index was sent in
+%             % wvfSet(wvf,'pupilfunc',val,idx)
+%             % This is the pupilfunc for wave(idx)
+%             idx = varargin{1};
+%             nWave = wvfGet(wvf,'n wave');
+%             if idx > nWave, error('idx (%d) > nWave (%d)',idx,nWave);
+%             else            wvf.pupilfunc{idx} = val;
+%             end
+%         end
+%         DIDASET = true;
 
 
 %     case 'defocusmicrons'
@@ -437,43 +443,47 @@ switch parm
     case {'sceparams','stilescrawford'}
         % The structure of sce is defined in sceCreate
         wvf.sceParams = val;
+        wvf.PUPILFUNCTION_STALE = true;
         DIDASET = true;
-        
-        % PSF parameters
-    case 'psf'
-        % wvfSet(wvf,'psf',psf) - psf is a cell array of point spreads, one
-        % for each wavelength
-        %
-        % psf is a point spread function matrix for the wave(idx).
-        % wvfSet(wvf,'psf',psf,[idx])
-        %
-        % Point spread function.  Handled as cell array because of
-        % potential differences in dimension due to wavelength.  See
-        % pupilfunc.
-        if isempty(varargin)  % Cell array of pupilfuncs
-            % This is a cell array of pupil functions if there are multiple
-            % wavelengths, or just a matrix
-            if iscell(val)
-                % Check cell array dimension
-                n = length(val); nWave = wvfGet(wvf,'nWave');
-                if n ~= nWave, error('psf dim (%d) ~= nWave (%d)', n, nWave);
-                else           wvf.psf = val;
-                end
-            else  % Just a matrix, not a cell array.
-                % No idx specified, so we put it in the first cell.
-                warning('WVFSET:pupilfuncset','Assigning pupil function to first cell array dim');
-                wvf.psf{1} = val;
-            end
-        else  % The wavelength index was sent in
-            % wvfSet(wvf,'pupilfunc',val,idx)
-            % This is the pupilfunc for wave(idx)
-            idx = varargin{1};
-            nWave = wvfGet(wvf,'n wave');
-            if idx > nWave, error('idx (%d) > nWave (%d)',idx,nWave);
-            else            wvf.psf{idx} = val;
-            end
-        end
-        DIDASET = true;
+
+% I don't think the user should be allowed to set the pupil funtion.  It
+% should always be computed.  wvfGet can cache it.
+%
+%         % PSF parameters
+%     case 'psf'
+%         % wvfSet(wvf,'psf',psf) - psf is a cell array of point spreads, one
+%         % for each wavelength
+%         %
+%         % psf is a point spread function matrix for the wave(idx).
+%         % wvfSet(wvf,'psf',psf,[idx])
+%         %
+%         % Point spread function.  Handled as cell array because of
+%         % potential differences in dimension due to wavelength.  See
+%         % pupilfunc.
+%         if isempty(varargin)  % Cell array of pupilfuncs
+%             % This is a cell array of pupil functions if there are multiple
+%             % wavelengths, or just a matrix
+%             if iscell(val)
+%                 % Check cell array dimension
+%                 n = length(val); nWave = wvfGet(wvf,'nWave');
+%                 if n ~= nWave, error('psf dim (%d) ~= nWave (%d)', n, nWave);
+%                 else           wvf.psf = val;
+%                 end
+%             else  % Just a matrix, not a cell array.
+%                 % No idx specified, so we put it in the first cell.
+%                 warning('WVFSET:pupilfuncset','Assigning pupil function to first cell array dim');
+%                 wvf.psf{1} = val;
+%             end
+%         else  % The wavelength index was sent in
+%             % wvfSet(wvf,'pupilfunc',val,idx)
+%             % This is the pupilfunc for wave(idx)
+%             idx = varargin{1};
+%             nWave = wvfGet(wvf,'n wave');
+%             if idx > nWave, error('idx (%d) > nWave (%d)',idx,nWave);
+%             else            wvf.psf{idx} = val;
+%             end
+%         end
+%         DIDASET = true;
        
         %        % Not sure why this is set.  It is derived
         %     case 'strehl'
@@ -505,14 +515,6 @@ switch (parm)
         if (~DIDASET)
             error('Unknown parameter %s\n',parm);
         end
-end
-
-if (PUPILFUNCTION_STALE)
-    
-end
-
-if (PSF_STALE)
-    
 end
 
 return

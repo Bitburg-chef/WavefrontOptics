@@ -127,15 +127,16 @@ pupilfuncrangeMM = 5;
 % computing an Airy disk and shows that they match.
 wvf0 = wvfCreate                    
 
-% Compute the PSF for this wavefront and store it in the structure.
-wvf0 = wvfComputePSF(wvf0);
-
 % Look at the plot of the normalized PSF within 1 mm of the center.
-% Variable maxMM is used to specify size of plot from center of the PSF.
+% Variable maxUM is used to specify size of plot from center of the PSF.
 %
 % The plot shows an airy disk computed from the Zernike polynomials; that
 % is representing the diffraction-limited PSF obtained when the Zernike
 % coefficients are all zero.
+%
+% You might wonder, where does the psf get computed.  The answer is that
+% wvfPlot calls wvfGet, which computes what it needs to get desired
+% quantities, as necessary.
 vcNewGraphWin;
 wvfPlot(wvf0,'2dpsf space normalized','um',waveIdx,maxUM);
 
@@ -154,7 +155,7 @@ wvf3 = wvfSet(wvf0,'zcoeffs',zcoeffs);
 %
 % We have used wvfComputePupilFunction separately here, but it is actually also
 % contained within wvfComputePSF, which we will use from now on.
-wvf3 = wvfComputePupilFunction(wvf3);
+wvf3 = wvfGet(wvf3,'pupil function');
 
 % Now we plot the pupil function, which captures phase information about
 % the wavefront aberrations.

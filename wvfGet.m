@@ -313,8 +313,7 @@ switch parm
         
     case 'weightspectrum'
         val = wvf.weightingSpectrum;
-        DIDAGET = true;
-        
+        DIDAGET = true;    
 end
 
 %% Pupil parameters
@@ -354,10 +353,26 @@ switch parm
         % be a little different across wavelengths (see wvfComputePSF for
         % the relevant code). It has to do with scaling the pixel size to
         % be wavelength independent.  More explanation needed.
+        
+        % If pupil function is already stored and not stale, we only need
+        % to return it.  If it isn't there, or is stale, we need to compute it
+        % first.
+        if (~isfield(wvf,'pupilfunc') || ~isfield(wvf,PUPILFUNCTION_STALE) || wvf.PUPILFUNCTION_STALE)
+            wvf.pupilfunc = wvfComputePupilFunction(wvf);
+            wvf.PUPILFUNCTION_STALE = 0;
+            wvf.PSF_STALE = 1;
+        end
+        
+        % Return whole cell array of pupil functions over wavelength if
+        % no argument passed.  If there is just one wavelength, we 
+        % return the pupil function as a matrix, rather than as a cell
+        % array with one entry.
         if isempty(varargin)
-            % This is the whole cell array (if there are multiple) or just
-            % the single matrix if there is only one wavelength.
-            if isfield(wvf,'pupilfunc'), val = wvf.pupilfunc; end
+            if (length(wvf.pupilfunc) == 1)
+                val = wvf.pupilfunc{1}; 
+            else
+                val = wvf.pupilfunc;
+            end
         else
             idx = varargin{1}; nWave = wvfGet(wvf,'nwave');
             if idx > nWave, error('idx (%d) > nWave',idx,nWave);
@@ -365,9 +380,6 @@ switch parm
             end
         end  
         DIDAGET = true;
-        
-        
-        
         
         %     case {'defocusmicrons','defocusdistance'}
         %         % The defocus in distance rather than diopters
@@ -380,9 +392,10 @@ switch parm
         %             val = (val/10^6)*ieUnitScaleFactor(varargin{1});
         %         end
         %         DIDAGET = true;
-        
-        
-        % Stiles Crawford Effect
+end
+
+% Stiles Crawford Effect
+switch parm
     case 'sceparams'
         if isfield(wvf,'sceParams'), val = wvf.sceParams; end
         DIDAGET = true;
@@ -443,42 +456,79 @@ switch parm
         %         else warning('WVFGET:scefract','No sceFrac field');
         %         end
         DIDAGET = true;
+end
         
         
-        % Point and line spread data
+% Point and line spread data
+switch parm
     case 'psf'
         % wvfGet(wvf,'psf',idx)  (idx <= nWave)
-        % The point spread function is calculated from the pupilfunction. I
-        % almost think we should not store it, but always calculate it.
-        % Computers are fast enough to deal with the fft, and the whole
-        % computation is just a few lines long.
+        
+        % Figure whether we need to compute or whether we've already done that
+         if (~isfield(wvf,'psf') || ~isfield(wvf,PSF_STALE) || wvf.PSF_STALE)
+            wvf.psf = wvfComputePSF(wvf);
+            wvf.PSF_STALE = 0;
+        end 
+         
+        % Return whole cell array of pupil functions over wavelength if
+        % no argument passed.  If there is just one wavelength, we 
+        % return the pupil function as a matrix, rather than as a cell
+        % array with one entry.
         if isempty(varargin)
-            % This is the whole cell array (if there are multiple) or just
-            % the single matrix if there is only one wavelength.
-            if isfield(wvf,'psf'), val = wvf.psf; end
+            if (length(wvf.psf) == 1)
+                val = wvf.psf{1}; 
+            else
+                val = wvf.psf;
+            end
         else
             idx = varargin{1}; nWave = wvfGet(wvf,'nwave');
             if idx > nWave, error('idx (%d) > nWave',idx,nWave);
-            else
-                if checkfields(wvf,'psf'), val = wvf.psf{idx};
-                else disp('No psf.  Use wvfComputePSF');
-                end
+            else val = wvf.psf{idx};
             end
-        end
+        end  
         DIDAGET = true;
-        
-    case 'diffractionpsf'
-        % wvfGet(wvf,'diffraction psf',waveIdx);
-        % diffraction limited psf at wave(waveIdx)
-        %
-        waveIdx = varargin{1}; wave = wvfGet(wvf,'wave');
-        wvf = wvfSet(wvf,'wave',wave(waveIdx));
-        zcoeffs = zeros(65,1); zcoeffs(1) = 1;
-        wvf = wvfSet(wvf,'zcoeffs',zcoeffs);
-        wvf = wvfComputePSF(wvf);
-        val = wvfGet(wvf,'psf',1);
-        DIDAGET = true;
-        
+
+% 'diffractionpsf' is broken right now, because of the way I redid the logic
+% of the get on the psf.  Do we need it?  I think better to have
+% a program that wants the diffraction limited PSF to build a
+% a wfv object with zeros as the coefficients and simply operate
+% on that.
+%
+% Breaking 'diffractionpsf' also breaks 'strehl'.  Hmmm.
+%
+%     case 'diffractionpsf'
+%         % wvfGet(wvf,'diffraction psf',waveIdx);
+%         % diffraction limited psf at wave(waveIdx)
+%         %
+%         waveIdx = varargin{1}; wave = wvfGet(wvf,'wave');
+%         wvf = wvfSet(wvf,'wave',wave(waveIdx));
+%         zcoeffs = zeros(65,1); zcoeffs(1) = 1;
+%         wvf = wvfSet(wvf,'zcoeffs',zcoeffs);
+%         wvf = wvfComputePSF(wvf);
+%         val = wvfGet(wvf,'psf',1);
+%         DIDAGET = true;
+%
+%     case 'strehl'
+%         % wvfGet(wvf,'strehl',waveIdx);
+%         % Strehl ratio.
+%         % The strehl is the ratio of the peak of diff limited and the
+%         % existing psf at that wavelength.
+%         
+%         % We could write this so that with no arguments we return all of
+%         % the ratios across wavelengths.  For now, force a request for a
+%         % wavelength index.
+%         waveIdx = varargin{1};
+%         psf = wvfGet(wvf,'psf',waveIdx);
+%         dpsf = wvfGet(wvf,'diffraction psf',waveIdx);
+%         val = max(psf(:))/max(dpsf(:));
+%         
+%         %         areaPixapod = wvfGet(wvf,'area pixapod',waveIdx);
+%         %         val = max(psf(:))/areaPixapod^2;
+%         %         % Old calculation was done in the compute pupil function routine.
+%         % Now, we do it on the fly in here, for a wavelength
+%         % strehl(wl) = max(max(psf{wl}))./(areapixapod(wl)^2);
+%         DIDAGET = true;
+
     case 'psfcentered'
         % Centered so that peak is at middle position in coordinate grid
         val = psfCenter(wvfGet(wvf,'psf'));
@@ -488,7 +538,7 @@ switch parm
         % wvfGet(wvf,'1d psf',waveIdx,row)
         
         waveIdx = 1;
-        whichRow = floor(wvfGet(wvf,'npixels')/2) + 1;
+        whichRow = wvfGet(wvf,'middle row');
         if length(varargin) > 1, whichRow = varargin{2}; end
         if ~isempty(varargin),   waveIdx = varargin{1}; end
         
@@ -496,26 +546,6 @@ switch parm
         val = psf(whichRow,:);
         DIDAGET = true;
         
-    case 'strehl'
-        % wvfGet(wvf,'strehl',waveIdx);
-        % Strehl ratio.
-        % The strehl is the ratio of the peak of diff limited and the
-        % existing psf at that wavelength.
-        
-        % We could write this so that with no arguments we return all of
-        % the ratios across wavelengths.  For now, force a request for a
-        % wavelength index.
-        waveIdx = varargin{1};
-        psf = wvfGet(wvf,'psf',waveIdx);
-        dpsf = wvfGet(wvf,'diffraction psf',waveIdx);
-        val = max(psf(:))/max(dpsf(:));
-        
-        %         areaPixapod = wvfGet(wvf,'area pixapod',waveIdx);
-        %         val = max(psf(:))/areaPixapod^2;
-        %         % Old calculation was done in the compute pupil function routine.
-        % Now, we do it on the fly in here, for a wavelength
-        % strehl(wl) = max(max(psf{wl}))./(areapixapod(wl)^2);
-        DIDAGET = true;
         
     case {'middlerow'}
         val = floor(wvfGet(wvf,'npixels')/2) + 1;
