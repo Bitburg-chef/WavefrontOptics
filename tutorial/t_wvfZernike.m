@@ -133,10 +133,7 @@ wvf0 = wvfCreate
 % The plot shows an airy disk computed from the Zernike polynomials; that
 % is representing the diffraction-limited PSF obtained when the Zernike
 % coefficients are all zero.
-%
-% You might wonder, where does the psf get computed.  The answer is that
-% wvfPlot calls wvfGet, which computes what it needs to get desired
-% quantities, as necessary.
+wvf0 = wvfComputePSF(wvf0);
 vcNewGraphWin;
 wvfPlot(wvf0,'2dpsf space normalized','um',waveIdx,maxUM);
 
@@ -155,7 +152,7 @@ wvf3 = wvfSet(wvf0,'zcoeffs',zcoeffs);
 %
 % We have used wvfComputePupilFunction separately here, but it is actually also
 % contained within wvfComputePSF, which we will use from now on.
-wvf3 = wvfGet(wvf3,'pupil function');
+wvf3 = wvfComputePupilFunction(wvf3);
 
 % Now we plot the pupil function, which captures phase information about
 % the wavefront aberrations.

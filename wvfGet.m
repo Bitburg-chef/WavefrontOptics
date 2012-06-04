@@ -354,13 +354,9 @@ switch parm
         % the relevant code). It has to do with scaling the pixel size to
         % be wavelength independent.  More explanation needed.
         
-        % If pupil function is already stored and not stale, we only need
-        % to return it.  If it isn't there, or is stale, we need to compute it
-        % first.
-        if (~isfield(wvf,'pupilfunc') || ~isfield(wvf,PUPILFUNCTION_STALE) || wvf.PUPILFUNCTION_STALE)
-            wvf.pupilfunc = wvfComputePupilFunction(wvf);
-            wvf.PUPILFUNCTION_STALE = 0;
-            wvf.PSF_STALE = 1;
+        % Can't do the get unless it has already been computed and is not stale.
+        if (~isfield(wvf,'pupilfunc') || ~isfield(wvf,'PUPILFUNCTION_STALE') || wvf.PUPILFUNCTION_STALE)
+            error('Must explicitly compute pupil function on wvf structure before getting it.  Use wvfComputePupilFunction or wvfComputePSF.');
         end
         
         % Return whole cell array of pupil functions over wavelength if
@@ -464,10 +460,10 @@ switch parm
     case 'psf'
         % wvfGet(wvf,'psf',idx)  (idx <= nWave)
         
-        % Figure whether we need to compute or whether we've already done that
-         if (~isfield(wvf,'psf') || ~isfield(wvf,PSF_STALE) || wvf.PSF_STALE)
-            wvf.psf = wvfComputePSF(wvf);
-            wvf.PSF_STALE = 0;
+        % Force user to code to explicitly compute the psf if it isn't done.  Not ideal
+        % but should be OK.
+         if (~isfield(wvf,'psf') || ~isfield(wvf,'PSF_STALE') || wvf.PSF_STALE)
+            error('Must explicitly compute psf on wvf structure before getting it.  Use wvfComputePSF');
         end 
          
         % Return whole cell array of pupil functions over wavelength if
