@@ -35,7 +35,7 @@ function val = wvfGet(wvf,parm,varargin)
 %    'spatial samples' - Number of spatial samples (pixel) for pupil function and psf
 %    'ref pupil plane size' - Size of sampled pupil plane at measurement wavelength (mm,*)
 %    'ref pupil plane sample interval' - Pixel sample interval in pupil plane at measurement wavelength (mm,*)
-%    'ref psf arcmin per sample' - Sampling interval for psf at measurment wavelength (arcminute/pixel)
+%    'ref psf sample interval' - Sampling interval for psf at measurment wavelength (arcminute/pixel)
 %  + 'pupil plane size' - Size of sampled pupil plane at any calculated wavelength(s) (mm)
 %  + 'psf arcmin per sample' - Sampling interval for psf at any calculated wavelength(s) (min/pixel)
 %  + 'psf angle per sample' - Sampling interval for psf at any calculated wavelength(s) (min,*/pixel)
@@ -49,6 +49,7 @@ function val = wvfGet(wvf,parm,varargin)
 %
 % Pupil parameters
 %     'calc pupil size'  - Pupil size for calculation (mm,*)
+%     'calc optical axis' - Optical axis to compute for (deg)
 %     'calc observer accommodation' - Observer accommodation at calculation time (diopters)
 %     'calc observer focus correction' - Focus correction added optically for observer at calculation time (diopters)
 %
@@ -109,8 +110,10 @@ DIDAGET = false;
 switch parm
     case 'name'
         val = wvf.name;
+        DIDAGET = true;
     case 'type'
         val = wvf.type;
+        DIDAGET = true;
 end
 
 %% Zernike coefficients and related
@@ -187,13 +190,13 @@ switch (parm)
         % Pixel sample interval of sample pupil field. This is for the measurement
         % wavelength and sets the scale for calculations at other
         % wavelengths.
-        val = wvf.sizeOfFieldMM/wvf.nSpatialSamples;
+        val = wvf.refSizeOfFieldMM/wvf.nSpatialSamples;
         if ~isempty(varargin)
             val = (val*1e-3)*ieUnitScaleFactor(varargin{1});
         end
         DIDAGET = true;
         
-    case {'refpsfarcminpersample', 'refpsfarcminperpixel'}
+    case {'refpsfsampleinterval' 'refpsfarcminpersample', 'refpsfarcminperpixel'}
         % Arc minutes per pixel of the sampled psf at the measurement
         % wavelength.  This is for the measurement
         % wavelength and sets the scale for calculations at other
@@ -306,10 +309,10 @@ switch parm
         val = length(wvf.wls);
         DIDAGET = true;
         
-    case {'infocuswavelength','infocuswave','nominalfocuswl'}
-        % This should go away soon
-        val = wvfGet(wvf,'measured wl');
-        DIDAGET = true;
+%     case {'infocuswavelength','infocuswave','nominalfocuswl'}
+%         % This should go away soon
+%         val = wvfGet(wvf,'measured wl');
+%         DIDAGET = true;
         
     case 'weightspectrum'
         val = wvf.weightingSpectrum;
@@ -330,11 +333,19 @@ switch parm
             val = (val*1e-3)*ieUnitScaleFactor(varargin{1});
         end
         DIDAGET = true;
+    
+      case {'calcopticalaxis'}
+        % Specify optical axis at calculation time
+        val = wvf.calcOpticalAxisDegrees;
+        if (val ~= wvfGet(wvf,'measuredobserveraccommodation'))
+            error('We do not currently know how to deal with values that differ from measurement time');
+        end
+        DIDAGET = true;
         
     case {'calcobserveraccommodation'}
         % Specify observer accommodation at calculation time
         val = wvf.calcObserverAccommodationDiopters;
-        if (val ~= wvfGet(wvf,'measuredobserveraccommodatoin'))
+        if (val ~= wvfGet(wvf,'measuredobserveraccommodation'))
             error('We do not currently know how to deal with values that differ from measurement time');
         end
         DIDAGET = true;

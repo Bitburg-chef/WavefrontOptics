@@ -11,12 +11,12 @@
 %   wvf/wvfComputePupilFunction -             Compute the pupil function for current structure values.
 %   wvf/wvfComputePSF -                       Compute the psf for current structure values.
 %   wvf/wvfGet    -                           Get value from wvf structure
+%   wvf/wvfPrint    -                         Print values in wvf structure
 %   wvf/wvfSet    -                           Set value in wvf structure
 %
 % (c) Wavefront Toolbox Team 2011, 2012
 %
 % ****
-%
 % Needs updating below here.
 %
 % Programs (demonstrate use)

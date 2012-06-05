@@ -46,7 +46,7 @@ function wvf = wvfSet(wvf,parm,val,varargin)
 %    'spatial samples' - Number of spatial samples (pixel) for pupil function and psf
 %    'ref pupil plane size' - Size of sampled pupil plane at measurement wavelength (mm)
 %    'ref pupil plane sample interval' - Pixel sample interval in pupil plane at measurement wavelength (mm)
-%    'ref psf arcmin per sample' - Sampling interval for psf at measurment wavelength (arcminute/pixel)
+%    'ref psf sample interval' - Sampling interval for psf at measurment wavelength (arcminute/pixel)
 %
 %  Spectral
 %     'calc wavelengths' - Wavelengths to compute on (nm)
@@ -55,6 +55,7 @@ function wvf = wvfSet(wvf,parm,val,varargin)
 %
 % Pupil parameters
 %     'calc pupil size' - Pupil size for calculation (mm)
+%     'calc optical axis' - Optical axis to compute for (deg)
 %     'calc observer accommodation' - Observer accommodation at calculation time (diopters)
 %     'calc observer focus correction' - Focus correction added optically for observer at calculation time (diopters)
 %
@@ -273,7 +274,7 @@ switch parm
         wvf.PUPILFUNCTION_STALE = true;
         DIDASET = true;
         
-    case {'refpsfarcminpersample', 'refpsfarcminperpixel'}
+    case {'refpsfsampleinterval' 'refpsfarcminpersample', 'refpsfarcminperpixel'}
         % Arc minutes per pixel of the sampled psf at the measurement
         % wavelength.
         %
@@ -362,7 +363,7 @@ end
 %% Pupil parameters
 switch parm
 
-    case {'calculatedpupil','calculatedpupildiameter'}
+    case {'calcpupilsize' 'calculatedpupil','calculatedpupildiameter'}
         % Pupil diameter in mm - must be smaller than measurements
         if (val > wvf.measpupilMM)
             error('Pupil diamter used for calculation must be smaller than that used for measurements');
@@ -371,6 +372,15 @@ switch parm
         wvf.PUPILFUNCTION_STALE = true;
         DIDASET = true;
     
+    case {'calcopticalaxis'}
+        % Specify observer accommodation at calculation time
+        if (val ~= wvfGet(wvf,'measuredopticalaxis'))
+            error('We do not currently know how to deal with values that differ from measurement time');
+        end
+        wvf.calcOpticalAxisDegrees = val;
+        wvf.PUPILFUNCTION_STALE = true;
+        DIDASET = true;
+        
     case {'calcobserveraccommodation'}
         % Specify observer accommodation at calculation time
         if (val ~= wvfGet(wvf,'measuredobserveraccommodation'))

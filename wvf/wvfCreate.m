@@ -30,18 +30,12 @@ wvf = wvfSet(wvf,'sample interval domain','psf');
 wvf = wvfSet(wvf,'spatial samples',201);
 wvf = wvfSet(wvf,'ref pupil plane size',16.212);
 
-%% Spectral
+%% Calculation
+wvf = wvfSet(wvf,'calc pupil size',3);
 wvf = wvfSet(wvf,'calc wavelengths',550);
+wvf = wvfSet(wvf,'calc optical axis',0);
 wvf = wvfSet(wvf,'calc observer accommodation',0);
 wvf = wvfSet(wvf,'calc observer focus correction',0);
-
-%% What to calculate for
-
-% We can calculate the pupil function for any pupil diameter smaller
-% than the diameter over which the measurements extend.  This defines
-% the size to be used for the calculations represented by the wvf
-% object.
-wvf.calcpupilMM = 3;               % Used for this calculation   
 
 % Something about the cones.  
 % S is a length 3 vector of the format: [start spacing Nsamples]

@@ -125,7 +125,8 @@ pupilfuncrangeMM = 5;
 % The validation script v_wvfDiffractionPSF compares the diffraction
 % limited PSFs obtained in this manner with those obtained by
 % computing an Airy disk and shows that they match.
-wvf0 = wvfCreate                    
+wvf0 = wvfCreate;
+wvfPrint(wvf0);
 
 % Look at the plot of the normalized PSF within 1 mm of the center.
 % Variable maxUM is used to specify size of plot from center of the PSF.
