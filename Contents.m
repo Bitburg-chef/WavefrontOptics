@@ -10,9 +10,15 @@
 %   wvf/wvfCreate -                           Create wavefront optics (wvf) structure
 %   wvf/wvfComputePupilFunction -             Compute the pupil function for current structure values.
 %   wvf/wvfComputePSF -                       Compute the psf for current structure values.
-%   wvf/wvfGet    -                           Get value from wvf structure
-%   wvf/wvfPrint    -                         Print values in wvf structure
-%   wvf/wvfSet    -                           Set value in wvf structure
+%   wvf/wvfGet -                              Get value from wvf structure
+%   wvf/wvfPlot -                             Various useful plots of stuff in the wvf structure.
+%   wvf/wvfPrint -                            Print values in wvf structure
+%   wvf/wvfSet -                              Set value in wvf structure
+%
+% UTILITY ROUTINES (subdir utility).  These perform various little useful computations, and are not
+% tied directly to the wvf structure.
+%   utility/wvfDefocusDioptersToMicrons -     Convert diopters to microns for addition into j=4 Zernike coefficient.
+%   utility/wvfLCAFromWavelengthDifference -  Compute longitudinal chromatic aberration (LCA) in diopters, from wavelength difference.
 %
 % TUTORIAL SCRIPTS (subdir tutorial).  These help you learn about the code and the
 % ideas behind it.
@@ -36,9 +42,6 @@
 %   wvfComputeConePSF -                       Compute cone psfs given Zernike coeffs, pupil, accom wl, and weighting spectrum
 %   wvfComputeOptimizedConePSF -              Compute focus optimized cone psfs given Zernike coeffs, pupil, accom wl, and weighting spectrum
 %   wvfComputeOptimizedPSF -                  Compute focus optimized (at a specified wl) monochromatic PSFs, ginve Zernike coeffs, etc.
-%   wvfComputePSF -                           Compute monochomatic PSFs given Zernike coeffs, etc.
-%   wvfComputePupilFunction -                 Compute monochromatic pupil functions given Zernike coeffs, etc.
-%   wvfGetDefocusFromWavelengthDifference -   Just as the name suggests.
 %
 % Stiles-Crawford Effect (sce)
 %   sceGetParamsParams -                      Get the parameters required for incorporating Stiles-Crawford effect

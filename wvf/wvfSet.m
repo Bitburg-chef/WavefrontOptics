@@ -48,20 +48,16 @@ function wvf = wvfSet(wvf,parm,val,varargin)
 %    'ref pupil plane sample interval' - Pixel sample interval in pupil plane at measurement wavelength (mm)
 %    'ref psf sample interval' - Sampling interval for psf at measurment wavelength (arcminute/pixel)
 %
-%  Spectral
-%     'calc wavelengths' - Wavelengths to compute on (nm)
-%
-%     'weightspectrum'
-%
-% Pupil parameters
-%     'calc pupil size' - Pupil size for calculation (mm)
+%  Calculation parameters
+%     'calc pupil size'  - Pupil size for calculation (mm,*)
 %     'calc optical axis' - Optical axis to compute for (deg)
 %     'calc observer accommodation' - Observer accommodation at calculation time (diopters)
 %     'calc observer focus correction' - Focus correction added optically for observer at calculation time (diopters)
+%     'calc wavelengths' - Wavelengths to calculate over (nm,*)
+%     'calcweightspectrum' - Weighting spectrum to be used in calculation of polychromatic psf
 %
 %  % Focus parameters
 %     'defocusdiopters'
-%     'weightspectrum'
 %     'sceparams'
 %     'psf'
 %
@@ -324,45 +320,8 @@ switch parm
         DIDASET = true;
 end
 
-% Spectral
+% Calculation parameters
 switch parm
-    case {'calcwavelengths','wavelengths','wavelength','wls','wave'}
-        % Normally just a vector of wavelengths in nm
-        % but allow SToWls case for PTB users.
-        %
-        % wvfSet(wvfP,'wave',400:10:700)  OR
-        % wvfSet(wvfP,'wave',[400 10 31])
-        %
-        % Note that it isn't sufficient just to call SToWls
-        % (which will pass a vector of evenly spaced wls
-        % through, because we might want to allow unevenly
-        % spaced wls.)
-        if size(val,2) == 3 && size(val,1) == 1 % SToWls case
-            % Row vector with 3 entries.
-            wls = SToWls(val);
-            wvf.wls = MakeItWls(wls);
-        else  % A column vector case
-            wvf.wls = val(:);
-        end
-        wvf.PUPILFUNCTION_STALE = true;
-        DIDASET = true;
-        
-    %case {'infocuswavelength','nominalfocuswl'}
-    %    % In focus wavelength nm.  Single value.
-    %    wvf.nominalFocusWl = val;
-    case 'weightspectrum'
-        % Used for calculating defocus to white light with many spectral
-        % terms.
-        if (length(val) ~= length(wvf.wls))
-            error('Weighting spectrum dimension must match number of wavelengths');
-        end
-        wvf.weightingSpectrum = val;
-        DIDASET = true;
-end
-
-%% Pupil parameters
-switch parm
-
     case {'calcpupilsize' 'calculatedpupil','calculatedpupildiameter'}
         % Pupil diameter in mm - must be smaller than measurements
         if (val > wvf.measpupilMM)
@@ -395,61 +354,39 @@ switch parm
         wvf.calcObserverFocusCorrectionDiopters = val;
         wvf.PUPILFUNCTION_STALE = true;
         DIDASET = true;
+        
+    case {'calcwavelengths','wavelengths','wavelength','wls','wave'}
+        % Normally just a vector of wavelengths in nm
+        % but allow SToWls case for PTB users.
+        %
+        % wvfSet(wvfP,'wave',400:10:700)  OR
+        % wvfSet(wvfP,'wave',[400 10 31])
+        %
+        % Note that it isn't sufficient just to call SToWls
+        % (which will pass a vector of evenly spaced wls
+        % through, because we might want to allow unevenly
+        % spaced wls.)
+        if size(val,2) == 3 && size(val,1) == 1 % SToWls case
+            % Row vector with 3 entries.
+            wls = SToWls(val);
+            wvf.wls = MakeItWls(wls);
+        else  % A column vector case
+            wvf.wls = val(:);
+        end
+        wvf.PUPILFUNCTION_STALE = true;
+        DIDASET = true;
+       
+    case {'calcweightspectrum' 'weightspectrum'}
+        % Weighting spectrum used for computation of polychromatic psfs
+        if (length(val) ~= length(wvf.wls))
+            error('Weighting spectrum dimension must match number of wavelengths');
+        end
+        wvf.weightingSpectrum = val;
+        DIDASET = true;
+end
 
-% I don't think the user should be allowed to set the pupil funtion.  It
-% should always be computed.  wvfGet can cache it.
-%
-%     case {'pupilfunction','pupilfunc'}
-%         % wvfSet(wvf,'pupil function',pf) - pf is a cell array of pupil
-%         % functions, one for each wavelength
-%         %
-%         % wvfSet(wvf,'pupil function',pf,[idx]) - pf pupil is for
-%         % wave(idx).
-%         %
-%         % Convert between pupil function and psf using wvfComputePSF.
-%         if isempty(varargin)  % Cell array of pupilfuncs
-%             % This is a cell array of pupil functions if there are multiple
-%             % wavelengths, or just a matrix
-%             if iscell(val)
-%                 % Check cell array dimension
-%                 n = length(val); nWave = wvfGet(wvf,'nWave');
-%                 if n ~= nWave
-%                     error('pupilfunc dim (%d) ~= nWave (%d)', n, nWave);
-%                 end
-%                 wvf.pupilfunc = val;
-%             else  % Just a matrix, not a cell array.
-%                 % No idx specified, so we put it in the first cell.
-%                 warning('WVFSET:pupilfuncset','Assigning pupil function to first cell array dim');
-%                 wvf.pupilfunc{1} = val;
-%             end
-%         else  % The wavelength index was sent in
-%             % wvfSet(wvf,'pupilfunc',val,idx)
-%             % This is the pupilfunc for wave(idx)
-%             idx = varargin{1};
-%             nWave = wvfGet(wvf,'n wave');
-%             if idx > nWave, error('idx (%d) > nWave (%d)',idx,nWave);
-%             else            wvf.pupilfunc{idx} = val;
-%             end
-%         end
-%         DIDASET = true;
-
-
-%     case 'defocusmicrons'
-%         % Hmmm.  Someone decided to have two ways of specifying defocus.
-%         % This is unfortunate.  Anyway, we are supposed to be able to set
-%         % the defocus in microns as well as in diopters.  This happens in
-%         % wvfComputePSF.
-%         % defocusMicrons is set by wvfGetDefocusFromWavelengthDifference.
-%         % It calculates additional longitudinal chromatic aberration (LCA)
-%         % from using non-nominal focus wavelengths and adds it to
-%         % user-specified defocus diopters, then converts it all to um.
-%         % wvfComputePSF adds in this defocus microns (same units as rest of
-%         % pupil function calculations) to zcoeff(4)/defocus if present.
-%         % KP 3/12/12
-%         wvf.defocusMicrons = val;
-%         DIDASET = true;
-%         
-        % Special cases
+%% Stiles-Crawford Effect
+switch parm
     case {'sceparams','stilescrawford'}
         % The structure of sce is defined in sceCreate
         wvf.sceParams = val;
