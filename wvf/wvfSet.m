@@ -56,18 +56,16 @@ function wvf = wvfSet(wvf,parm,val,varargin)
 %     'calc wavelengths' - Wavelengths to calculate over (nm,*)
 %     'calcweightspectrum' - Weighting spectrum to be used in calculation of polychromatic psf
 %
-%  % Focus parameters
-%     'defocusdiopters'
-%     'sceparams'
-%     'psf'
+% Stiles Crawford Effect
+%     'sce params' - The whole structure
+%     'sce x0'
+%     'sce y0'
+%     'sce rho'
+%     'sce wavelengths'*
+
 %
 % Notes:
-%   5/17/12  dhb  Why is setting pupilfunc and psf allowed?
-%                 This seems like it could produce all sorts of
-%                 inconsistencies.  For example, various things like
-%                 the strehl ratio should depend on psf, and it should
-%                 be consistent with the zcoefs and pf.
-%            dhb  When we pass fewer than 65 coefficients, should we zero
+%   5/17/12  dhb  When we pass fewer than 65 coefficients, should we zero
 %                 out the higher order ones, or leave them alone?  The
 %                 current code leaves them alone, which seems a little
 %                 dangerous.
@@ -80,13 +78,6 @@ function wvf = wvfSet(wvf,parm,val,varargin)
 %                 and appropiately convert.  An important consideration is
 %                 for the dimensions to be chosen so that both pupile
 %                 function and psf are adequately sampled.
-%            dhb  I tend to agree with a comment below that defocus is
-%                 independently specified in too many places in the current
-%                 structure.  It's possible that only the zcoef for defocus
-%                 should ever change.  But before hacking it up we ought to
-%                 look through the various places and ways that focus is
-%                 varied and come up with a coherent first principles
-%                 design.
 %
 % History:
 %   4/29/12  dhb  Allow wls as a synonym for wavelength, because that was
