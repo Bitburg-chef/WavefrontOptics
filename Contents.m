@@ -15,6 +15,14 @@
 %   wvf/wvfPrint -                            Print values in wvf structure
 %   wvf/wvfSet -                              Set value in wvf structure
 %
+% PSF MANIPULATION AND ANALYSIS (subdir psf).  Perform operations on psfs.  Not directly tied
+% to the wvf structure.
+%   psf/psfAverageMultiple -                  Find the average of multiple psfs.
+%   psf/psfCenter -                           Put maximum of psf at matrix center.
+%   psf/psfCircularlyAverage -                Circularly average a psf.
+%   psf/psfFindCriterionRadius -              Find the radius of circularly symmetric psf that contains a specfied fraction of the psf max.
+%   psf/psfFindPeak -                         Find the location of the maximum of a psf.
+%
 % UTILITY ROUTINES (subdir utility).  These perform various little useful computations, and are not
 % tied directly to the wvf structure.
 %   utility/wvfDefocusDioptersToMicrons -     Convert diopters to microns for addition into j=4 Zernike coefficient.

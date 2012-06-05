@@ -1,7 +1,7 @@
 function [outPSF,peakRow,peakCol] = psfCenter(inPSF)
-% Put the maximum of a PSF at the center of the two D grid.
+% [outPSF,peakRow,peakCol] = psfCenter(inPSF)
 %
-%   outPSF = psfCenter(inPSF)
+% Put the maximum of a PSF at the center of the two D grid.
 %
 % There should be an inverse to this.  The extrapolated values are set to
 % 0. 
