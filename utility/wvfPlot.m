@@ -194,7 +194,7 @@ switch(pType)
         
         pData = plot(samp,psfLine,'r','LineWidth',4);
         str = sprintf('Angle (%s)',unit);
-        xlabel(str); ylabel('PSF slice')
+        xlabel(str); ylabel('PSF slice');
         
         % Store the data
         uData.x = samp; uData.y = psfLine;

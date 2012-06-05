@@ -22,11 +22,9 @@
 %
 % (c) Wavefront Toolbox Team, 2012
 
-%% Clear
-% clear; close all;
-
-%% Or
-s_initISET
+%% Initialize
+cd(fileparts(mfilename('fullpath')));
+s_initISET;
 
 %% Compare pointspread function in wvf with psf in Psych Toolbox
 
@@ -64,6 +62,16 @@ hold on
 
 % Used for plotting comparisons below
 arcminutes = wvfGet(wvfParams,'support arcmin','min',waveIdx);
+arcminpersample = wvfGet(wvfParams,'ref psf sample interval');
+arcminpersample1 = wvfGet(wvfParams,'psf arcmin per sample',1);
+arcminpersample2 = wvfGet(wvfParams,'psf angle per sample',[],1);
+if (arcminpersample1 ~= arcminpersample)
+    error('PSF sampling not constant across wavelengths');
+end
+if (arcminpersample2 ~= arcminpersample1)
+    error('Default units of get on ''psfanglepersample'' unexpectedly changed');
+end
+
 index = find(abs(arcminutes) < 2);
 radians = (pi/180)*(arcminutes/60);
 
@@ -86,7 +94,7 @@ wvfParams1 = wvfSet(wvfParams1,'calc observer focus correction',lcaDiopters);
 wvfParams = wvfComputePSF(wvfParams1);
 
 vcNewGraphWin([],'upper left');
-wvfPlot(wvfParams,'1d psf angle normalized','min',waveIdx,maxMIN)
+wvfPlot(wvfParams,'1d psf angle normalized','min',waveIdx,maxMIN);
  
 hold on
 onedPSF2 = AiryPattern(radians,wvfParams.calcpupilMM,wvfParams.wls(1));
@@ -94,6 +102,12 @@ plot(arcminutes(index),onedPSF2(index),'b','LineWidth',2);
 xlabel('Arc Minutes');
 ylabel('Normalize PSF');
 title(sprintf('Diffraction limited, %0.1f mm pupil, %0.f nm',wvfParams.calcpupilMM,wvfParams.wls(1)));
+
+% PSF angular sampling should be the same across wavelengths
+arcminpersample2 = wvfGet(wvfParams,'psf angle per sample',[],1);
+if (arcminpersample2 ~= arcminpersample)
+    error('PSF sampling not constant across wavelengths');
+end
 
 %% Repeat the calculation with a different pupil size at original wavelength
 pupilMM = 7; 
