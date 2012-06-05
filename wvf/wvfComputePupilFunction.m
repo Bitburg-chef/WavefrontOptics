@@ -111,9 +111,10 @@ if (~isfield(wvf,'pupilfunc') || ~isfield(wvf,'PUPILFUNCTION_STALE') || wvf.PUPI
             A = 10.^(-rho*((xpos-xo).^2+(ypos-yo).^2));
         end
         
-        % Compute LCA relative to measurement wavelength
+        % Compute LCA relative to measurement wavelength and then convert to microns so that
+        % we can add this in to the wavefront aberrations.
         lcaDiopters = wvfLCAFromWavelengthDifference(wvfGet(wvf,'measured wavelength','nm'),thisWave);
-        lcaMicrons = lcaDiopters*(measPupilSizeMM )^2/(16*sqrt(3));
+        lcaMicrons = wvfDefocusDioptersToMicrons(lcaDiopters,measPupilSizeMM);
         
         % The Zernike polynomials are defined over the unit disk.  At
         % measurement time, the pupil was mapped onto the unit disk, so we

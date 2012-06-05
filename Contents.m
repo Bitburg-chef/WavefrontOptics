@@ -14,14 +14,18 @@
 %   wvf/wvfPrint    -                         Print values in wvf structure
 %   wvf/wvfSet    -                           Set value in wvf structure
 %
+% TUTORIAL SCRIPTS (subdir tutorial).  These help you learn about the code and the
+% ideas behind it.
+%  tutorial/t_wvfZernike -                    Basic wavefront optics ideas including Zernike expansion to describe wavefront aberrations
+%
 % VALIDATION SCRIPTS (subdir validate).  These test that various pieces of the toolboxes
 % do the right thing.
-%   validate/v_wvfDiffractionPSF              Compare PSFs obtained with wavefront calcs to direct computation of diffraction limited PSFs
+%   validate/v_wvfDiffractionPSF -            Compare PSFs obtained with wavefront calcs to direct computation of diffraction limited PSFs
 %
 % (c) Wavefront Toolbox Team 2011, 2012
 %
 % ****
-% Needs updating below here.
+% STUFF BELOW HERE NEEDS UPDATING.
 %
 % Programs (demonstrate use)
 %   s_wvfComputeAverageObserverConePSF -      Compute optimized cone psf for an average observer. 

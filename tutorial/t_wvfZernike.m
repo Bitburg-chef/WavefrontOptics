@@ -103,8 +103,11 @@
 % unlike the j=0 term, which is removed from the index (which is also
 % convenient because Matlab indexes starting from 1!)
 
-%% Clear
-s_initISET
+%% Change to directory where this function lives and clear.  The
+% change forces the iset session file to end up the directory with
+% the tutorial
+cd(fileparts(mfilename('fullpath')));
+s_initISET;
 
 % The tutorial only uses 1 wavelength at a time. So, for plotting, we use
 % this index.
@@ -248,50 +251,42 @@ maxMM = 3;
 wvfPlot(wvf0,'1dpsfspacenormalized','mm',waveIdx,maxMM);
 hold on;
 
-% Keep the calculated wavelength at default 550 nm but change
-% the nominal in-focus wavelength, then add to the plot.
+% Keep the calculated wavelength at default 550 nm but add in defocus.
+% We calculate the defocus to be that which would bring 600 nm into
+% focus.  So basically, we're looking at the effect of LCA when the
+% light is at 550 nm, given nominal focus at 600 nm.
 %
-% The new psf is wider due to longitudinal chromatic aberration, even though
+% The new psf is wider due to the longitudinal chromatic aberration, even though
 % it's still just the diffraction-limited wavefront function (the Zernike
-% coefficients are still 0).%
-%
-% To put it another way, the code produces the
-% PSF at the specified wavelengths (set explicitly to just 550 above) given
-% that the wavelength of nominal focus is as specified.  Since the two differ
-% here, we see the effect of LCA.
+% coefficients are still 0).
 wvf1 = wvfCreate;
-lcaDiopters = wvfLCAFromWavelengthDifference(wvfGet(wvf1,'measured wl'),600);
-wvf1 = wvfSet(wvf1,'calc observer focus correction',-lcaDiopters);
+lcaDiopters = wvfLCAFromWavelengthDifference(600,wvfGet(wvf1,'measured wl'));
+wvf1 = wvfSet(wvf1,'calc observer focus correction',lcaDiopters);
 wvf1 = wvfComputePSF(wvf1);
 wvfPlot(wvf1,'1dpsfspacenormalized','mm',waveIdx,maxMM);
 
-%% Verify that The LCA effect is contained solely within the Defocus
-% coefficient.
+%% Verify that the LCA effect above is captured by only changing the defocus
+% coefficient of the Zernike expansion.
 %
-% First we explicitly computethe defocus implied by the wavelength difference above.
-% Function wvfGetDefocusFromWavelengthDifference takes in a wavefront which
-% contains information about the specified nominal wavelength and calculated
-% wavelength. It computes the defocus in diopters from using unmatched wavelengths, 
-% and returns the defocus converted into microns. This is important because Zernike
-% coefficients are assumed to be given in microns.
-defocusMicrons = wvfGetDefocusFromWavelengthDifference(wvf1);
-
 % Make a new wavefront which does not have the mismatched wavelengths.
 % Because these both default to 550 nm, they match here.
 wvf2 = wvfCreate;
-nominalWl = wvfGet(wvf2,'nominalfocuswl')
-calcWl = wvfGet(wvf2,'wavelength')
+measuredWl = wvfGet(wvf2,'measured wavelength');
+calcWl = wvfGet(wvf2,'calc wavelengths');
+if (measuredWl ~= calcWl || measuredWl ~= 550)
+    error('Defaults for wvfCreate were changed in a way that breaks this code');
+end
 
-% Make our adjustment purely to the j=4 Zernike
-% coefficient (you may remember from our earlier plotting that this term on
-% its own has a radially symmetric PSF which widens the diffraction limited
-% PSF). We'll plot this PSF with a thinner blue line and overlay it.
+% Make our adjustment purely to the j=4 Zernike coefficient in microns.
 %
-% % The two aberrated plots are identical. The defocus of a pupil can be
+% The two aberrated plots are identical. The defocus of a pupil can be
 % measured separately, whether using Zernike coeffs or in diopters, but any
-% chromatic aberration is added solely into this coefficient.
+% chromatic aberration ends up in the j=4 coefficient at the end of the day.
+% (If you look at wvfComputePupilFunction, you can see the point where the
+% defocus value in the wvf structure is converted to microns and added to the
+% j=4 coefficient.)
 zcoeffs = zeros(65,1);
-zcoeffs(4) = defocusMicrons;
+zcoeffs(4) = wvfDefocusDioptersToMicrons(lcaDiopters,wvfGet(wvf2,'measured pupil size'));
 wvf2 = wvfSet(wvf2,'zcoeffs',zcoeffs);
 wvf2 = wvfComputePSF(wvf2);
 [udataS, pData] = wvfPlot(wvf2,'1dpsfspacenormalized','mm',waveIdx,maxMM);
