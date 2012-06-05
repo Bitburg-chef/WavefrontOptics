@@ -3,12 +3,11 @@
 % Tests the monochromatic PSFs computed from Zernike coefficients. The
 % script compares the computations with those in PTB.
 %
-% See also: wvfComputePSF, wvfComputePupilFunction,
-%           sceCreate, wvfGetDefocusFromWavelengthDifference
+% See also: wvfCreate, wvfGet, wvfSet, wvfComputePSF, wvfComputePupilFunction,
+%   wvfLCAFromWavelengthDifference
 %
 % TODO
-%   a) Add wvfPlot to output normalized to 1 curve.
-%   b) Compare with ISET.  The implementation there uses spatial units, not
+%   a) Compare with ISET.  The implementation there uses spatial units, not
 %   angles, to specify the samples. Further, it uses f-number, not just
 %   pupil size.  So we need to build up ISET so that we can compute the psf
 %   in terms of visual angle using only a pupil diameter (e.g., 3mm)
@@ -18,6 +17,8 @@
 %     * the diffraction limited function for any f-number 
 %     * use the focal length to  convert the spatial samples to arcmin 
 %     * the result is the function for that aperture size
+%
+% 6/5/12  dhb  Got this to work with current code.
 %
 % (c) Wavefront Toolbox Team, 2012
 
@@ -73,16 +74,15 @@ xlabel('Arc Minutes');
 ylabel('Normalized PSF');
 title(sprintf('Diffraction limited, %0.1f mm pupil, %0.f nm',wvfParams.calcpupilMM,wvfParams.wls(1)));
 
-%% Repeat the calculation with a wavelength offset
-
-% OK, we seem to have a problem.  Probably because I didn't do the right
-% correction in wvfComputePupilFunction.  See the notes in there.  The
-% stuff only runs right at 550, not at other wavelengths.
-
+%% Repeat the calculation with a wavelength offset.  To keep
+% the new wavelength in focus in the calculations, we add an
+% explicit observer focus correction, with the amount computed
+% by wvfLCAFromWavelengthDifference relative to the measured wavelength
 newWave = 400;  
 wvfParams1 = wvfParams0;
 wvfParams1 = wvfSet(wvfParams1,'wave',newWave);
-wvfParams1 = wvfSet(wvfParams1,'in focus wavelength', newWave);
+lcaDiopters = wvfLCAFromWavelengthDifference(newWave,wvfGet(wvfParams1,'measured wl'));
+wvfParams1 = wvfSet(wvfParams1,'calc observer focus correction',lcaDiopters);
 wvfParams = wvfComputePSF(wvfParams1);
 
 vcNewGraphWin([],'upper left');
@@ -95,10 +95,10 @@ xlabel('Arc Minutes');
 ylabel('Normalize PSF');
 title(sprintf('Diffraction limited, %0.1f mm pupil, %0.f nm',wvfParams.calcpupilMM,wvfParams.wls(1)));
 
-%% Repeat the calculation with a different pupil size
-pupilMM = 7;   % In millimeters?
+%% Repeat the calculation with a different pupil size at original wavelength
+pupilMM = 7; 
 wvfParams2 = wvfParams0;
-wvfParams2 = wvfSet(wvfParams2,'calculated pupil',pupilMM);
+wvfParams2 = wvfSet(wvfParams2,'calc pupil size',pupilMM);
 wvfParams = wvfComputePSF(wvfParams2);
 
 vcNewGraphWin([],'upper left');
@@ -111,6 +111,5 @@ xlabel('Arc Minutes');
 ylabel('Normalized PSF');
 title(sprintf('Diffraction limited, %0.1f mm pupil, %0.f nm',wvfParams.calcpupilMM,wvfParams.wls(1)));
 
-%% Put ISET diffraction comparisons here or in the next script
 
 

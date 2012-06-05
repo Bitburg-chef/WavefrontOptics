@@ -1,6 +1,6 @@
 % WavefrontOpticsToolbox
 %
-% Basic operations (subdir wvf).  These are the core functions that know about the internals of the
+% BASIC OPERATIONS (subdir wvf).  These are the core functions that know about the internals of the
 % wvf structure.  User code should generally use these and not rely on the specific
 % fieds within the structure.
 %
@@ -13,6 +13,10 @@
 %   wvf/wvfGet    -                           Get value from wvf structure
 %   wvf/wvfPrint    -                         Print values in wvf structure
 %   wvf/wvfSet    -                           Set value in wvf structure
+%
+% VALIDATION SCRIPTS (subdir validate).  These test that various pieces of the toolboxes
+% do the right thing.
+%   validate/v_wvfDiffractionPSF              Compare PSFs obtained with wavefront calcs to direct computation of diffraction limited PSFs
 %
 % (c) Wavefront Toolbox Team 2011, 2012
 %
