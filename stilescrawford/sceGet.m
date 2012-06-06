@@ -1,11 +1,14 @@
 function val = sceGet(sceP,parm,varargin)
-% Get function for Stiles-Crawford effect parameters
+% val = sceGet(sceP,parm,varargin)
 %
+% Get function for Stiles-Crawford effect parameters
 %
 % Example:
 %   sceGet(sceP,'xo')
 %   sceGet(sceP,'wavelengths')
 %   sceGet(sceP,'rho',550)
+%
+% See also sceCreate
 %
 % (c) Wavefront Toolbox Team, 2012
 

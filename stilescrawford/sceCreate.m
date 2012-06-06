@@ -1,8 +1,8 @@
 function sceP = sceCreate(wave,source)
-% Return a structure with the Stiles-Crawford Effect parameters needed the
-% Zernike optics calculations. 
+% sceP = sceCreate(wave,source)
 %
-%   sceP = sceCreate(wave,source)
+% Return a structure with the Stiles-Crawford Effect parameters needed for the
+% Zernike optics calculations.   
 %
 % Input
 %   wls           -           Wavelengths (nm) over which to return rho
@@ -28,7 +28,7 @@ function sceP = sceCreate(wave,source)
 %
 % Code provided by Heidi Hofer.
 %
-% See also: Depends on Psychtoolbox splining routines.
+% See also: sceGet, also depends on Psychtoolbox splining routines.
 %
 % Examples:
 %    sceCreate
@@ -36,7 +36,7 @@ function sceP = sceCreate(wave,source)
 %
 % 8/21/11  dhb  Pulled into a separate routine.
 %
-% (c) WVF Toolbox Team 2011
+% (c) WVF Toolbox Team 2011-2012
 
 % TODO
 %   There should also be an sceSet/Get
@@ -69,7 +69,7 @@ end
 % Spline initial wavelength sampling to request in wls
 sceP.wavelengths = wave(:);
 
-% Interpolate the rho values, if there multiple wavelength samples.  This
+% Interpolate the rho values, if there are multiple wavelength samples.  This
 % hasn't been tested much.
 if length(rho0) > 1
     outWLS = MakeItS(wave);

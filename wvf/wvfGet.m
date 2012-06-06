@@ -3,7 +3,7 @@ function val = wvfGet(wvf,parm,varargin)
 %
 % Get wavefront structure parameters and derived properties
 %
-% See also: wvfSet, wvfCreate, sceCreate, sceGet
+% See also: wvfSet, wvfCreate, wvfComputePupilFunction, wvfComputePSF, sceCreate, sceGet
 %
 % Wavefront properties are either stored as parameters or computed from those
 % parameters. We generally store only unique values and  calculate all
@@ -265,7 +265,7 @@ switch (parm)
         end
         DIDAGET = true;
         
-    case {'psf angular samples','samplesangle','samplesarcmin','supportarcmin'}
+    case {'psfangularsamples','samplesangle','samplesarcmin','supportarcmin'}
         % Return one-d slice of sampled angles for psf, centered on 0, for a single wavelength
         % wvfGet(wvf,'psf angular samples',unit,waveIdx)
         %  unit = 'min' (default), 'deg', or 'sec'
@@ -285,7 +285,7 @@ switch (parm)
         if isempty(varargin), unit = 'mm';
         else unit = varargin{1};
         end
-        val = wvfGet(wvf,'field size',unit)/wvfGet(wvf,'npixels');
+        val = wvfGet(wvf,'field size',unit)/wvfGet(wvf,'spatial samples');
         DIDAGET = true;
         
     case {'samplesspace','supportspace','spatialsupport'}

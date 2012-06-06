@@ -3,7 +3,7 @@ function wvf = wvfSet(wvf,parm,val,varargin)
 %
 % Get wavefront structure parameters and derived properties
 %
-% See also: wvfGet, wvfCreate, sceCreate, sceGet
+% See also: wvfGet, wvfCreate, wvfComputePupilFunction, wvfComputePSF, sceCreate, sceGet
 %
 % Wavefront properties are either stored as parameters or computed from
 % those parameters. We generally store only unique values and  calculate
@@ -57,12 +57,7 @@ function wvf = wvfSet(wvf,parm,val,varargin)
 %     'calcweightspectrum' - Weighting spectrum to be used in calculation of polychromatic psf
 %
 % Stiles Crawford Effect
-%     'sce params' - The whole structure
-%     'sce x0'
-%     'sce y0'
-%     'sce rho'
-%     'sce wavelengths'*
-
+%     'sce params' - The whole sce parameter structure
 %
 % Notes:
 %   5/17/12  dhb  When we pass fewer than 65 coefficients, should we zero
@@ -383,46 +378,7 @@ switch parm
         wvf.sceParams = val;
         wvf.PUPILFUNCTION_STALE = true;
         DIDASET = true;
-
-% I don't think the user should be allowed to set the pupil funtion.  It
-% should always be computed.  wvfGet can cache it.
-%
-%         % PSF parameters
-%     case 'psf'
-%         % wvfSet(wvf,'psf',psf) - psf is a cell array of point spreads, one
-%         % for each wavelength
-%         %
-%         % psf is a point spread function matrix for the wave(idx).
-%         % wvfSet(wvf,'psf',psf,[idx])
-%         %
-%         % Point spread function.  Handled as cell array because of
-%         % potential differences in dimension due to wavelength.  See
-%         % pupilfunc.
-%         if isempty(varargin)  % Cell array of pupilfuncs
-%             % This is a cell array of pupil functions if there are multiple
-%             % wavelengths, or just a matrix
-%             if iscell(val)
-%                 % Check cell array dimension
-%                 n = length(val); nWave = wvfGet(wvf,'nWave');
-%                 if n ~= nWave, error('psf dim (%d) ~= nWave (%d)', n, nWave);
-%                 else           wvf.psf = val;
-%                 end
-%             else  % Just a matrix, not a cell array.
-%                 % No idx specified, so we put it in the first cell.
-%                 warning('WVFSET:pupilfuncset','Assigning pupil function to first cell array dim');
-%                 wvf.psf{1} = val;
-%             end
-%         else  % The wavelength index was sent in
-%             % wvfSet(wvf,'pupilfunc',val,idx)
-%             % This is the pupilfunc for wave(idx)
-%             idx = varargin{1};
-%             nWave = wvfGet(wvf,'n wave');
-%             if idx > nWave, error('idx (%d) > nWave (%d)',idx,nWave);
-%             else            wvf.psf{idx} = val;
-%             end
-%         end
-%         DIDASET = true;
-       
+        
         %        % Not sure why this is set.  It is derived
         %     case 'strehl'
         %        %   wvf.strehl = val;
