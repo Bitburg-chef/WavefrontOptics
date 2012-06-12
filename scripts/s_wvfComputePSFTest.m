@@ -31,7 +31,7 @@
 %
 
 %% Clear
-clear; close all;
+s_initISET
 
 %% Compare with diffraction in PTB
 

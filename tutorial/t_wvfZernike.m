@@ -103,10 +103,13 @@
 % unlike the j=0 term, which is removed from the index (which is also
 % convenient because Matlab indexes starting from 1!)
 
-%% Change to directory where this function lives and clear.  The
-% change forces the iset session file to end up the directory with
+%% Change to directory where this function lives and clear.  
+
+% The change forces the iset session file to end up in the directory with
 % the tutorial
 cd(fileparts(mfilename('fullpath')));
+
+%% Initialize
 s_initISET;
 
 % The tutorial only uses 1 wavelength at a time. So, for plotting, we use
@@ -117,7 +120,7 @@ maxUM = 20;
 pupilfuncrangeMM = 5;
 
 %% Use Zernike polynomials to specify a diffraction limited PSF.
-%
+
 % Use wvfCreate to create a wavefront variable to explore with.
 %
 % This wavefront by default has the 0's for all zernike coeffs

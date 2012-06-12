@@ -23,7 +23,7 @@
 % (c) Wavefront Toolbox Team, 2012
 
 %% Initialize
-cd(fileparts(mfilename('fullpath')));
+% cd(fileparts(mfilename('fullpath')));
 s_initISET;
 
 %% Compare pointspread function in wvf with psf in Psych Toolbox
