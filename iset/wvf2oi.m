@@ -7,8 +7,8 @@ function oi = wvf2oi(wvfP, oType)
 % shift-invariant ISET optics model attached to the optical image
 % structure.
 %
+% wvfP:   A wavefront parameters structure
 % oType:  The structure can be created for human or mouse optics.
-%
 %   Human: The optics is set up for the pupil size of the wvfP structure, assuming a
 %   17 mm focal length.
 %   Mouse: Not yet implemented.
@@ -19,6 +19,7 @@ function oi = wvf2oi(wvfP, oType)
 %  wvfP = wvfCreate('wave',wave,'zcoeffs',zCoefs,'name',sprintf('human-%d',pupilMM));
 %  oi = wvf2oi(wvfP,'human');
 %  fname = fullfile(isetRootPath,'data','optics','wvfHuman30.mat');
+%  oi = oiSet(oi,'name','Human 3mm wvf');
 %  vcExportObject(oi,fname);
 %
 % See also:
@@ -51,6 +52,6 @@ end
 optics = siSynthetic('custom',oi,siData);
 optics = opticsSet(optics,'fnumber',flength/pupil);
 optics = opticsSet(optics,'flength',flength);
-oi = oiSet(oi,'optics',optics);
+oi     = oiSet(oi,'optics',optics);
 
 return

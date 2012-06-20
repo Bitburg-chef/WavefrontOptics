@@ -3,18 +3,21 @@ function [siData, wvfP] = wvf2PSF(wvfP)
 %
 %    [siData, wvfP] = wvf2PSF(wvfP)
 %
+% For examples of how to convert to an optical iamge, which is perhaps more
+% practical, see wvf2oi.m 
+%
 % For each wavelength in wvf, compute the PSF with proper units and
 % place it in an ISET shift-invariant PSF format that can be used for human
 % optics simulation.
 %
-% The wvfP is the main wavefront optics toolbox structure.
-% The psf is computed at the wave values in the structure.  The updated
-% structure with the PSFs can be returned.
+% The wvfP is the main wavefront optics toolbox structure. The psf is
+% computed at the wave values in the structure.  The updated structure with
+% the PSFs can be returned.
 %
-% The ISET data can be saved using ieSaveSIDataFile as in the example
-% below, which loads the standard human data for a particular pupil size.
-% Alternatively, the siData can be converted to an optics structure with
-% the function siSynthetic.
+% The data can be saved in ISET format using ieSaveSIDataFile as in the
+% example below. which loads the standard human data for a particular pupil
+% size. Alternatively, the siData can be converted to an optics structure
+% with the function siSynthetic.  
 %
 % Example:
 %    pupilMM = 3; zCoefs = wvfLoadHuman(pupilMM);
@@ -35,6 +38,8 @@ function [siData, wvfP] = wvf2PSF(wvfP)
 %    vcNewGraphWin([],'tall');
 %    subplot(2,1,1), wvfPlot(wvfP,'image psf','um',1,30);
 %    subplot(2,1,2), wvfPlot(wvfP,'image psf','um',2,30);
+%
+% See also: wvf2oi
 %
 % Copyright Imageval 2012
 
