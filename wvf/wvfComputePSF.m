@@ -19,14 +19,20 @@ function wvf = wvfComputePSF(wvf)
 %
 % Copyright Wavefront Toolbox Team 2012
 
+
 % Only do this if we need to -- it might already be computed and stored
-if (~isfield(wvf,'psf') || ~isfield(wvf,'PSF_STALE') || wvf.PSF_STALE || ~isfield(wvf,'pupilfunc') || ~isfield(wvf,'PUPILFUNCTION_STALE') || wvf.PUPILFUNCTION_STALE) 
-   
+if (~isfield(wvf,'psf') || ~isfield(wvf,'PSF_STALE') || ...
+        wvf.PSF_STALE || ~isfield(wvf,'pupilfunc') || ...
+        ~isfield(wvf,'PUPILFUNCTION_STALE') || wvf.PUPILFUNCTION_STALE) 
+  
+    % Initialize parameters
+    nWave = wvfGet(wvf,'nwave');
+    pupilfunc = cell(nWave,1);
+
     % Make sure pupil function is computed.  
     wvf = wvfComputePupilFunction(wvf);
     
-    wave = wvfGet(wvf,'wave');
-    nWave = wvfGet(wvf,'nwave');
+    % wave = wvfGet(wvf,'wave');
     psf = cell(nWave,1);
     for wl = 1:nWave
         % Convert the pupil function to the PSF  Just this simple.

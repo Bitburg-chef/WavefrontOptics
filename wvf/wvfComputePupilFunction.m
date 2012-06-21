@@ -77,8 +77,11 @@ if (~isfield(wvf,'pupilfunc') || ~isfield(wvf,'PUPILFUNCTION_STALE') || wvf.PUPI
     % This needs to be done separate at each wavelength because
     % the size in the pupil plane that we sample can be wavelength
     % dependent.
+    wBar = waitbar(0,'Computing pupil functions');
+    pupilfunc = cell(nWavelengths,1);
     for ii=1:nWavelengths
         thisWave = waveNM(ii);
+        waitbar(ii/nWavelengths,wBar,sprintf('Pupil function for %.0f',thisWave));
         
         % Set SCE correction params, if desired
         xo  = wvfGet(wvf,'scex0');
@@ -200,6 +203,7 @@ if (~isfield(wvf,'pupilfunc') || ~isfield(wvf,'PUPILFUNCTION_STALE') || wvf.PUPI
         % Attach the function the the proper wavelength slot
         %wvf = wvfSet(wvf,'pupilfunc',pupilfunc,ii);
     end
+    close(wBar)
     
     wvf.pupilfunc = pupilfunc;
     wvf.PUPILFUNCTION_STALE = false;

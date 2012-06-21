@@ -60,13 +60,16 @@ iSamp = iSamp - mean(iSamp);
 iSamp = iSamp(:);
 psf = zeros(nPix,nPix,nWave);
 
+wBar = waitbar(0,'Creating PSF');
 for ii=1:nWave,
+    waitbar(ii/nWave,wBar)
     thisPSF = wvfGet(wvfP,'psf',ii);  % vcNewGraphWin; imagesc(thisPSF)
     samp = wvfGet(wvfP,'samples space','um',ii);
     samp = samp(:);
     psf(:,:,ii) = interp2(samp,samp',thisPSF,iSamp,iSamp');
     % wvfPlot(wvfP,'image psf space','um',ii,50)
 end     
+close(wBar)
 
 siData.psf = psf;
 siData.wave = wave;

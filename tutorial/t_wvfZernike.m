@@ -48,6 +48,9 @@
 % (c) Wavefront Toolbox Team 2011, 2012
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
+% GENERAL
+%   This should be separated in several shorter tutorials.
+%
 % NOTES
 %   a) Add and call a pathdef file which includes the wavefront toolbox?
 %   See function AiryPattern in PTB, or perhaps function airy that comes
@@ -107,7 +110,7 @@
 
 % The change forces the iset session file to end up in the directory with
 % the tutorial
-cd(fileparts(mfilename('fullpath')));
+cd(fileparts(which('t_wvfZernike')));
 
 %% Initialize
 s_initISET;
