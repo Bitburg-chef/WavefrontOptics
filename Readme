@@ -5,5 +5,4 @@
 % (c) Wavefront Optics Toolbox Team 2012
 %
 % 
-%
-%
+% This toolbox is written to help convert wavefront measurements (usually derived from adaptive optics) into point spread functions.  These can be analyzed within the toolbox, or they can be converted into a format used by ISET for additional analyses.
