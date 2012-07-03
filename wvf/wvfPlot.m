@@ -31,6 +31,8 @@ function [uData, pData] = wvfPlot(wvfP,pType,varargin)
 %
 % See also:  wvfComputePSF, wvfLoadHuman, vcNewGraphWin
 %
+% 7/1/12  bw       Adjusted for new wavelength convention
+%
 % (c) Wavefront Toolbox Team 2012
 
 if ieNotDefined('wvfP'), error('Wavefront structure required.'); end

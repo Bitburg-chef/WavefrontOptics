@@ -17,6 +17,7 @@ function wvf = wvfComputePSF(wvf)
 % 8/20/11 dhb      Rename function and pull out of supplied routine. Reformat comments.
 % 9/5/11  dhb      Rename.  Rewrite for wvf i/o.
 % 6/2/12  dhb      Simplify greatly given new get/set conventions.
+% 7/1/12  bw       Adjusted for new wavelength convention
 %
 % Copyright Wavefront Toolbox Team 2012
 
