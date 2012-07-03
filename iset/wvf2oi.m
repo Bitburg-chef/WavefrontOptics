@@ -8,10 +8,14 @@ function oi = wvf2oi(wvfP, oType)
 % structure.
 %
 % wvfP:   A wavefront parameters structure
-% oType:  The structure can be created for human or mouse optics.
-%   Human: The optics is set up for the pupil size of the wvfP structure, assuming a
-%   17 mm focal length.
-%   Mouse: Not yet implemented.
+% oType:  The oi structure can be created for several default types of
+% optics.
+%     Shift invariant:  Nothing special, default 'oi' and the wvfP data are
+%     placed in the shift-invariant slot.  The optics type is set to shift
+%     invariant
+%     Human:   The optics is set up for the pupil size of the wvfP structure,
+%     assuming a 17 mm focal length. 
+%     Mouse:   Not yet implemented.
 %
 % Examples
 %  pupilMM = 3; zCoefs = wvfLoadHuman(pupilMM);
@@ -39,17 +43,22 @@ switch oType
     case 'human'
         oi = oiCreate(oType);
         flength = 0.017;         % Human focal length is 17 mm
+    
+    case {'shiftinvariant','diffractionlimited'}
+        oi = oiCreate;
+        flength = 0.017;         % Human focal length is 17 mm
+
     case 'mouse'
-        
+        flength = .003;          % Mouse focal length is 3 mm??
         error('Mouse not yet implemented');
         %         oi = oiCreate(oType);
-        %         flength = 3;
     otherwise
         error('Unknown type %s\n',oType);
 end
 
 % Set up the optics and attach to OI
 optics = siSynthetic('custom',oi,siData);
+optics = opticsSet(optics,'model','shiftInvariant');
 optics = opticsSet(optics,'fnumber',flength/pupil);
 optics = opticsSet(optics,'flength',flength);
 oi     = oiSet(oi,'optics',optics);

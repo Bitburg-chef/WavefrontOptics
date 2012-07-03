@@ -117,11 +117,13 @@ switch parm
         % wvfGet(wvf,'zcoeffs',wllist)
         % wvfGet(wvf,'zcoeffs',4)
         if isempty(varargin),   val = wvf.zcoeffs;
-        else                    val = wvf.zcoeffs(varargin{1});
+        else
+            widx = wave2idx(wvf,varargin{1});
+            val = wvf.zcoeffs(widx);
         end
         DIDAGET = true;
         
-    case {'measuredpupilsize', 'measuredpupil', 'measuredpupilmm', 'measuredpupildiameter'}
+    case {'pupilsizemeasured','measuredpupilsize', 'measuredpupil', 'measuredpupilmm', 'measuredpupildiameter'}
         % Pupil diameter in mm over for which wavefront expansion is valid
         % wvfGet(wvf,'measured pupil','mm')
         % wvfGet(wvf,'measured pupil')
@@ -132,7 +134,7 @@ switch parm
         end
         DIDAGET = true;
         
-    case {'measuredwl', 'measuredwavelength'}
+    case {'wlmeasured','wavelengthmeasred','measuredwl', 'measuredwavelength'}
         % Measurement wavelength (nm)
         val = wvf.measWlNM;
         if ~isempty(varargin)
@@ -141,7 +143,7 @@ switch parm
         end
         DIDAGET = true;
         
-    case {'measuredopticalaxis', 'measuredopticalaxisdeg'}
+    case {'opticalaxismeasued','measuredopticalaxis', 'measuredopticalaxisdeg'}
         % Measurement optical axis, degrees eccentric from fovea
         val = wvf.measOpticalAxisDeg;
         DIDAGET = true;
@@ -201,11 +203,16 @@ switch (parm)
         DIDAGET = true;
         
     case {'pupilplanesize', 'pupilplanesizemm'}
-        % Total size of computed field in pupil plane, for calculated wavelengths(s).
+        % wvfGet(wvf,'pupil plane size',units,wList)
+        % Total size of computed field in pupil plane, for calculated
+        % wavelengths(s) 
+
+        % Does this require varargins?
         
-        % Get wavelengths
+        % Get wavelengths.  What if varargin{2} is empty?
+        wList = varargin{2};
+        waveIdx = wave2idx(wvf,wList);
         wavelengths = wvfGet(wvf,'calc wavelengths','nm');
-        waveIdx = varargin{2};
         
         % Figure out what's being held constant with wavelength and act
         % appropriately.
@@ -218,18 +225,21 @@ switch (parm)
             error('Unknown sample interval domain ''%s''',whichDomain);
         end
         
-        % Unit conversion
+        % Unit conversion.  If varargin{1} is empty, then the units are
+        % 'mm' and we leave it alone.
         if ~isempty(varargin)
             val = (val*1e-3)*ieUnitScaleFactor(varargin{1});
         end
         DIDAGET = true;
         
     case {'psfarcminpersample', 'psfarcminperpixel', 'arcminperpix'}
+        % wvfGet(wvf,'psf arcmin per sample',wList)
         % Arc minutes per pixel in psf domain, for calculated wavelength(s).
         
         % Get wavelengths
         wavelengths = wvfGet(wvf,'calc wavelengths','mm');
-        waveIdx = varargin{1};
+        wList = varargin{1};
+        waveIdx = wave2idx(wvf,wList);
         
         % Figure out what's being held constant with wavelength and act
         % appropriately.
@@ -246,10 +256,11 @@ switch (parm)
         
     case {'psfanglepersample','angleperpixel','angperpix'}
         % Angular extent per pixel in the psf domain, for calculated wavelength(s).
-        % wvfGet(wvf,'psf angle per sample',unit,waveIdx)
+        % wvfGet(wvf,'psf angle per sample',unit,wList)
         %  unit = 'min' (default), 'deg', or 'sec'
-        unit = varargin{1}; waveIdx = varargin{2};
-        val = wvfGet(wvf,'psf arcmin per sample',waveIdx);
+        unit  = varargin{1}; 
+        wList = varargin{2};
+        val = wvfGet(wvf,'psf arcmin per sample',wList);
         if ~isempty(unit)
             unit = lower(unit);
             switch unit
@@ -269,11 +280,12 @@ switch (parm)
         % Return one-d slice of sampled angles for psf, centered on 0, for a single wavelength
         % wvfGet(wvf,'psf angular samples',unit,waveIdx)
         %  unit = 'min' (default), 'deg', or 'sec'
-        unit = varargin{1}; waveIdx = varargin{2};
-        if (length(waveIdx) > 1)
+        unit = varargin{1}; 
+        wList = varargin{2};
+        if (length(wList) > 1)
             error('This only works for one wavelength at a time');
         end
-        anglePerPix = wvfGet(wvf,'psf angle per sample',unit,waveIdx);
+        anglePerPix = wvfGet(wvf,'psf angle per sample',unit,wList);
         middleRow = wvfGet(wvf,'middle row');
         nPixels = wvfGet(wvf,'spatial samples');
         val = anglePerPix*((1:nPixels)-middleRow);
@@ -296,9 +308,9 @@ switch (parm)
         % This parameter matters for the OTF and PSF quite a bit.
         umPerDeg = (330*10^-6);
         
-        unit = varargin{1}; waveIdx = varargin{2};
+        unit = varargin{1}; wList = varargin{2};
         % Get the samples in degrees
-        val = wvfGet(wvf,'samples angle','deg',waveIdx);
+        val = wvfGet(wvf,'samples angle','deg',wList);
         
         % Convert to meters and then to selected spatial scale
         val = val*umPerDeg;  % Sample in meters assuming 300 um / deg
@@ -356,7 +368,7 @@ switch parm
         val = wvf.calcObserverFocusCorrectionDiopters;
         DIDAGET = true;
         
-    case {'calcwavelengths','wavelengths','wavelength','wls','wave'}
+    case {'calcwave','wave','calcwavelengths','wavelengths','wavelength','wls'}
         % Wavelengths to compute on
         % wvfGet(wvf,'wave',unit,idx)
         % wvfGet(wvf,'wave','um',3)
@@ -378,7 +390,7 @@ switch parm
         val = wvf.weightingSpectrum;
         DIDAGET = true;
         
-    case {'numbercalcwavelengths','nwavelengths','nwave'}
+    case {'calcnwave','nwave','numbercalcwavelengths','nwavelengths'}
         % Number of wavelengths to calculate at
         val = length(wvf.wls);
         DIDAGET = true;
@@ -426,8 +438,8 @@ switch parm
         % Return rho values for selected wavelengths
         if ~isempty(varargin)
             wave = wvfGet(wvf,'sce wave');  % The waves for rho
-            waveList = varargin{1};
-            index = find(wave == waveList);
+            wList = varargin{1};
+            index = find(wave == wList);
             if ~isempty(index), val = val(index);
             else error('Passed wavelength not contained in sceParams');
             end
@@ -438,8 +450,8 @@ switch parm
         % wvfGet(wvf,'sce fraction',waveIdx)
         % The variable sceFrac tells you how much light
         % is lost if you correct for the SCE.
-        waveIdx = varargin{1};
-        val = wvfGet(wvf,'area pixapod',waveIdx) / wvfGet(wvf,'areapix',waveIdx);
+        wList = varargin{1};
+        val = wvfGet(wvf,'area pixapod',wList) / wvfGet(wvf,'areapix',wList);
         
         % Note what this is or when it is calculated
         %         if checkfields(wvf,'sceFrac'), val = wvf.sceFrac;
@@ -452,7 +464,7 @@ end
 % Computed pupil functions and point spread functions
 switch parm
     case {'pupilfunction','pupilfunc','pupfun'}
-        % wvfGet(wvf,'pupilfunc',idx)  (idx <= nWave)
+        % wvfGet(wvf,'pupilfunc',wList)
         %
         % The pupil function is derived from Zernicke coefficients in the
         % routine wvfComputePupilFunction If there are multiple
@@ -462,8 +474,10 @@ switch parm
         % be wavelength independent.  More explanation needed.
         
         % Can't do the get unless it has already been computed and is not stale.
-        if (~isfield(wvf,'pupilfunc') || ~isfield(wvf,'PUPILFUNCTION_STALE') || wvf.PUPILFUNCTION_STALE)
-            error('Must explicitly compute pupil function on wvf structure before getting it.  Use wvfComputePupilFunction or wvfComputePSF.');
+        if (~isfield(wvf,'pupilfunc') || ...
+                ~isfield(wvf,'PUPILFUNCTION_STALE') || ...
+                wvf.PUPILFUNCTION_STALE)
+            error('Must compute pupil function before getting it.  Use wvfComputePupilFunction or wvfComputePSF.');
         end
         
         % Return whole cell array of pupil functions over wavelength if
@@ -477,7 +491,8 @@ switch parm
                 val = wvf.pupilfunc;
             end
         else
-            idx = varargin{1}; nWave = wvfGet(wvf,'nwave');
+            wList = varargin{1}; idx = wave2idx(wvf,wList);
+            nWave = wvfGet(wvf,'nwave');
             if idx > nWave, error('idx (%d) > nWave',idx,nWave);
             else val = wvf.pupilfunc{idx};
             end
@@ -485,7 +500,7 @@ switch parm
         DIDAGET = true;
         
     case 'psf'
-        % wvfGet(wvf,'psf',idx)  (idx <= nWave)
+        % wvfGet(wvf,'psf',wList) 
         
         % Force user to code to explicitly compute the psf if it isn't done.  Not ideal
         % but should be OK.
@@ -504,68 +519,77 @@ switch parm
                 val = wvf.psf;
             end
         else
-            idx = varargin{1}; nWave = wvfGet(wvf,'nwave');
+            wList = varargin{1}; idx = wave2idx(wvf,wList);
+            nWave = wvfGet(wvf,'nwave');
             if idx > nWave, error('idx (%d) > nWave',idx,nWave);
             else val = wvf.psf{idx};
             end
         end
         DIDAGET = true;
         
-        % 'diffractionpsf' is broken right now, because of the way I redid the logic
-        % of the get on the psf.  Do we need it?  I think better to have
-        % a program that wants the diffraction limited PSF to build a
-        % a wfv object with zeros as the coefficients and simply operate
+        % 'diffractionpsf' is broken right now, because of the way I redid
+        % the logic of the get on the psf.  Do we need it?  I think better
+        % to have a program that wants the diffraction limited PSF to build
+        % a a wfv object with zeros as the coefficients and simply operate
         % on that.
         %
-        % Breaking 'diffractionpsf' also breaks 'strehl'.  Hmmm.
+    case 'diffractionpsf'
+        % wvfGet(wvf,'diffraction psf',wList);
+        % diffraction limited psf at wList
         %
-        %     case 'diffractionpsf'
-        %         % wvfGet(wvf,'diffraction psf',waveIdx);
-        %         % diffraction limited psf at wave(waveIdx)
-        %         %
-        %         waveIdx = varargin{1}; wave = wvfGet(wvf,'wave');
-        %         wvf = wvfSet(wvf,'wave',wave(waveIdx));
-        %         zcoeffs = zeros(65,1); zcoeffs(1) = 1;
-        %         wvf = wvfSet(wvf,'zcoeffs',zcoeffs);
-        %         wvf = wvfComputePSF(wvf);
-        %         val = wvfGet(wvf,'psf',1);
-        %         DIDAGET = true;
-        %
-        %     case 'strehl'
-        %         % wvfGet(wvf,'strehl',waveIdx);
-        %         % Strehl ratio.
-        %         % The strehl is the ratio of the peak of diff limited and the
-        %         % existing psf at that wavelength.
-        %
-        %         % We could write this so that with no arguments we return all of
-        %         % the ratios across wavelengths.  For now, force a request for a
-        %         % wavelength index.
-        %         waveIdx = varargin{1};
-        %         psf = wvfGet(wvf,'psf',waveIdx);
-        %         dpsf = wvfGet(wvf,'diffraction psf',waveIdx);
-        %         val = max(psf(:))/max(dpsf(:));
-        %
-        %         %         areaPixapod = wvfGet(wvf,'area pixapod',waveIdx);
-        %         %         val = max(psf(:))/areaPixapod^2;
-        %         %         % Old calculation was done in the compute pupil function routine.
-        %         % Now, we do it on the fly in here, for a wavelength
-        %         % strehl(wl) = max(max(psf{wl}))./(areapixapod(wl)^2);
-        %         DIDAGET = true;
+        if ~isempty(varargin), wList= varargin{1};
+        else                   wList = wvfGet(wvf,'wave');
+        end
+        zcoeffs = zeros(65,1);  % Not a 1 in the first term?
+        wvf = wvfSet(wvf,'zcoeffs',zcoeffs);
+        wvf = wvfSet(wvf,'wave',wList(1));
+        wvf = wvfComputePSF(wvf);
+        val = wvfGet(wvf,'psf',wList(1));
+        DIDAGET = true;
+
+    case 'strehl'
+        % wvfGet(wvf,'strehl',wList);
+        % Strehl ratio.
+        % The strehl is the ratio of the peak of diff limited and the
+        % existing psf at that wavelength.
+        
+        % We could write this so that with no arguments we return all of
+        % the ratios across wavelengths.  For now, force a request for a
+        % wavelength index.
+        wList = varargin{1};
+        psf = wvfGet(wvf,'psf',wList);
+        dpsf = wvfGet(wvf,'diffraction psf',wList);
+        val = max(psf(:))/max(dpsf(:));
+        
+        %         areaPixapod = wvfGet(wvf,'area pixapod',waveIdx);
+        %         val = max(psf(:))/areaPixapod^2;
+        %         % Old calculation was done in the compute pupil function routine.
+        % Now, we do it on the fly in here, for a wavelength
+        % strehl(wl) = max(max(psf{wl}))./(areapixapod(wl)^2);
+        DIDAGET = true;
         
     case 'psfcentered'
+        % wvfGet(wvf,'psf centered',wList)
         % Centered so that peak is at middle position in coordinate grid
-        val = psfCenter(wvfGet(wvf,'psf'));
+        if isempty(varargin), wList = wvfGet(wvf,'wave');
+        else wList = varargin{1};
+        end
+        if length(wList) > 1, error('Only one wavelength permitted');
+        else                  val = psfCenter(wvfGet(wvf,'psf',wList));
+        end
         DIDAGET = true;
         
     case '1dpsf'
-        % wvfGet(wvf,'1d psf',waveIdx,row)
+        % wvfGet(wvf,'1d psf',wList,row)
         
-        waveIdx = 1;
+        % Defaults
+        wList = wvfGet(wvf,'wave');
         whichRow = wvfGet(wvf,'middle row');
+        % Override with varargins
+        if ~isempty(varargin),   wList    = varargin{1}; end
         if length(varargin) > 1, whichRow = varargin{2}; end
-        if ~isempty(varargin),   waveIdx = varargin{1}; end
-        
-        psf = psfCenter(wvfGet(wvf,'psf',waveIdx));
+
+        psf = psfCenter(wvfGet(wvf,'psf',wList));
         val = psf(whichRow,:);
         DIDAGET = true;
         
@@ -614,3 +638,4 @@ switch (parm)
 end
 
 return
+

@@ -90,7 +90,7 @@ if (~isfield(wvf,'pupilfunc') || ~isfield(wvf,'PUPILFUNCTION_STALE') || wvf.PUPI
         
         % Set up pupil coordinates
         nPixels = wvfGet(wvf,'spatial samples');
-        pupilPlaneSizeMM = wvfGet(wvf,'pupil plane size','mm',ii);
+        pupilPlaneSizeMM = wvfGet(wvf,'pupil plane size','mm',thisWave);
         pupilPos = (0:(nPixels-1))*(pupilPlaneSizeMM/nPixels)-pupilPlaneSizeMM/2;
         [xpos ypos] = meshgrid(pupilPos);
         
