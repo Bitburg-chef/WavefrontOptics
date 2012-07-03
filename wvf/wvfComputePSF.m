@@ -1,9 +1,10 @@
 function wvf = wvfComputePSF(wvf)
-% wvr = wvfComputePSF(wvf)
+% Compute the psf for the wvf object. 
 %
-% Compute the psf for the wvf object.   If the psf is already
-% computed and not stale, this will return fast.  Otherwise it computes and
-% stores.
+%   wvf = wvfComputePSF(wvf)
+%
+% If the psf is already computed and not stale, this will return fast.
+% Otherwise it computes and stores.
 %
 % The point spread function is computed for each of the wavelengths listed
 % in the input wvf structure. The PSF computation is based on 10 orders of
@@ -26,6 +27,7 @@ if (~isfield(wvf,'psf') || ~isfield(wvf,'PSF_STALE') || ...
         ~isfield(wvf,'PUPILFUNCTION_STALE') || wvf.PUPILFUNCTION_STALE) 
   
     % Initialize parameters
+    wList = wvfGet(wvf,'wave');
     nWave = wvfGet(wvf,'nwave');
     pupilfunc = cell(nWave,1);
 
@@ -37,7 +39,7 @@ if (~isfield(wvf,'psf') || ~isfield(wvf,'PSF_STALE') || ...
     for wl = 1:nWave
         % Convert the pupil function to the PSF  Just this simple.
         % Scale so that psf sums to unity.
-        pupilfunc{wl} = wvfGet(wvf,'pupil function',wl);
+        pupilfunc{wl} = wvfGet(wvf,'pupil function',wList(wl));
         amp = fft2(pupilfunc{wl});
         inten = (amp .* conj(amp));   %intensity
         psf{wl} = real(fftshift(inten));
