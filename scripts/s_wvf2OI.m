@@ -12,27 +12,12 @@
 %% Initialize
 s_initISET
 
-
-%% First build a diffraction limited case.
-% This is designed to test whether the basic spatial scale matches, like we
-% tested for the PTB
-wave = (400:10:700); wave = wave(:);
-wvfP = wvfCreate('wave',wave,'name',sprintf('Diffraction-limited'));
-oiD = wvf2oi(wvfP,'shift invariant');
-oiD = oiSet(oiD,'name','Diffraction limited');
-vcAddAndSelectObject(oiD); oiWindow;
-
 %% Create a wavefront objects from the sample mean wvf data
 % The data were collected by Thibos and are described in the wvfLoadHuman
 % function and reference therein.
+pupilMM = 3; zCoefs = wvfLoadHuman(pupilMM);
 wave = (400:10:700); wave = wave(:);
-pupilMM = 3; 
-zCoefs = wvfLoadHuman(pupilMM);
-
 wvfP = wvfCreate('wave',wave,'zcoeffs',zCoefs,'name',sprintf('human-%d',pupilMM));
-oiD = wvf2oi(wvfP,'Human');
-oiD = oiSet(oiD,'name','Human 3mm');
-vcAddAndSelectObject(oiD); oiWindow;
 
 %% Convert the wavefront structure to an ISET optical image (OI)
 % You could save the OI if you like.  But for this purpose, we just leave

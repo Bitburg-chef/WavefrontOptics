@@ -27,6 +27,7 @@ s_initISET
 maxMIN = 2;
 maxMM  = 1;
 maxUM  = 20;
+waveIdx = 1;
 
 %% Calculate point spread for wavelength defocus
 
@@ -35,7 +36,6 @@ wvfP = wvfCreate;
 wave = 400:50:700;
 wvfP = wvfSet(wvfP,'wave',wave);
 nWave = wvfGet(wvfP,'n wave');
-wList = wvfGet(wvfP,'wave');
 
 %% Compute and plot the default
 wvfParams = wvfComputePSF(wvfP);
@@ -44,8 +44,8 @@ wvfParams = wvfComputePSF(wvfP);
 f = vcNewGraphWin([],'tall');
 for ii=1:nWave
     subplot(nWave,1,ii)
-    [f,p] = wvfPlot(wvfParams,'1d psf space','um',wList(ii),maxUM);
-    title(sprintf('wave %d',wList(ii)));
+    [f,p] = wvfPlot(wvfParams,'1d psf space','um',ii,maxUM);
+    title(sprintf('wave %d',wave(ii)));
 end
 
 % Alternative plotting method
@@ -55,8 +55,8 @@ end
 vcNewGraphWin([],'tall');
 for ii=1:nWave
     subplot(nWave,1,ii)
-    wvfPlot(wvfParams,'image psf ','um',wList(ii),maxUM);
-    title(sprintf('wave %d',wList(ii)));
+    wvfPlot(wvfParams,'image psf ','um',ii,maxUM);
+    title(sprintf('wave %d',wave(ii)));
 end
 
 %% End

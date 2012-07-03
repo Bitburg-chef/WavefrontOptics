@@ -144,9 +144,8 @@ wvfPrint(wvf0);
 % is representing the diffraction-limited PSF obtained when the Zernike
 % coefficients are all zero.
 wvf0 = wvfComputePSF(wvf0);
-wList = wvfGet(wvf0,'wave');
 vcNewGraphWin;
-wvfPlot(wvf0,'2dpsf space normalized','um',wList,maxUM);
+wvfPlot(wvf0,'2dpsf space normalized','um',waveIdx,maxUM);
 
 %% Examine how the first non-zero Zernike coefficient contributes to the PSF.
 
@@ -171,7 +170,7 @@ wvf3 = wvfComputePupilFunction(wvf3);
 % We can see that the phase changes seem to be aligned with the + and - 45
 % degree axes. 
 vcNewGraphWin;
-wvfPlot(wvf3,'2d pupil phase space','mm',wList,pupilfuncrangeMM);
+wvfPlot(wvf3,'2d pupil phase space','mm',waveIdx,pupilfuncrangeMM);
 
 %% Plot a PSF
 
@@ -190,7 +189,7 @@ wvf3 = wvfComputePSF(wvf3);
 % see that the higher the order of Zernike polynomial, the more complex the
 % associated PSF will be.
 vcNewGraphWin;
-wvfPlot(wvf3, '2d psf space normalized','um',wList,maxUM);
+wvfPlot(wvf3, '2d psf space normalized','um',waveIdx,maxUM);
 
 %% Examine effect of  the 5th coeff (j index 6), which is astigmatism
 % along the 0 or 90 degree axis.
@@ -203,9 +202,9 @@ wvf5 = wvfSet(wvf0,'zcoeffs',zcoeffs);
 wvf5 = wvfComputePSF(wvf5);
 
 vcNewGraphWin;
-wvfPlot(wvf5,'2d pupil phase space','mm',wList,maxMM);
+wvfPlot(wvf5,'2d pupil phase space','mm',waveIdx,maxMM);
 vcNewGraphWin;
-wvfPlot(wvf5,'2d psf space normalized','um',wList,maxUM);
+wvfPlot(wvf5,'2d psf space normalized','um',waveIdx,maxUM);
 
 %% Go wild and make plots of various pupil functions and their respective
 % point-spread functions for different Zernike polynomials of 2nd and 3rd orders
@@ -223,10 +222,10 @@ for ii = jindices
     wvf = wvfComputePSF(wvf);
 
     subplot(2,1,1);
-    wvfPlot(wvf,'2d pupil phase space','mm',wList,pupilfuncrangeMM);
+    wvfPlot(wvf,'2d pupil phase space','mm',waveIdx,pupilfuncrangeMM);
 
     subplot(2,1,2);
-    wvfPlot(wvf,'2d psf space','mm',wList,maxMM);
+    wvfPlot(wvf,'2d psf space','mm',waveIdx,maxMM);
 end
 
 %% How longitudinal chromatic aberration (LCA) affects the PSF / "Defocus"
@@ -255,7 +254,7 @@ wvf0 = wvfSet(wvf0,'wavelength',550);
 wvf0 = wvfComputePSF(wvf0);
 vcNewGraphWin;
 maxMM = 3; 
-wvfPlot(wvf0,'1dpsfspacenormalized','mm',wList,maxMM);
+wvfPlot(wvf0,'1dpsfspacenormalized','mm',waveIdx,maxMM);
 hold on;
 
 % Keep the calculated wavelength at default 550 nm but add in defocus.
@@ -263,20 +262,16 @@ hold on;
 % focus.  So basically, we're looking at the effect of LCA when the
 % light is at 550 nm, given nominal focus at 600 nm.
 %
-% The new psf is wider due to the longitudinal chromatic aberration, even
-% though it's still just the diffraction-limited wavefront function (the
-% Zernike coefficients are still 0).
-theWavelength = 600;
+% The new psf is wider due to the longitudinal chromatic aberration, even though
+% it's still just the diffraction-limited wavefront function (the Zernike
+% coefficients are still 0).
 wvf1 = wvfCreate;
-wvf1 = wvfSet(wvf1,'wave',theWavelength);
-wList = wvfGet(wvf1,'wave');
-lcaDiopters = wvfLCAFromWavelengthDifference(theWavelength,wvfGet(wvf1,'measured wl'));
+lcaDiopters = wvfLCAFromWavelengthDifference(600,wvfGet(wvf1,'measured wl'));
 wvf1 = wvfSet(wvf1,'calc observer focus correction',lcaDiopters);
-wvf1.PSF_STALE = 1;
 wvf1 = wvfComputePSF(wvf1);
-wvfPlot(wvf1,'1dpsf space normalized','mm',wList,maxMM);
+wvfPlot(wvf1,'1dpsfspacenormalized','mm',waveIdx,maxMM);
 
-%% Verify that the LCA effect is captured by only changing the defocus
+%% Verify that the LCA effect above is captured by only changing the defocus
 % coefficient of the Zernike expansion.
 %
 % Make a new wavefront which does not have the mismatched wavelengths.
@@ -300,8 +295,7 @@ zcoeffs = zeros(65,1);
 zcoeffs(4) = wvfDefocusDioptersToMicrons(lcaDiopters,wvfGet(wvf2,'measured pupil size'));
 wvf2 = wvfSet(wvf2,'zcoeffs',zcoeffs);
 wvf2 = wvfComputePSF(wvf2);
-wList = wvfGet(wvf2,'wave');
-[udataS, pData] = wvfPlot(wvf2,'1dpsf space normalized','mm',wList,maxMM);
+[udataS, pData] = wvfPlot(wvf2,'1dpsfspacenormalized','mm',waveIdx,maxMM);
 set(pData,'color','b','linewidth',2);
 
 %%  How cone geometry affects the PSF: the Stiles-Crawford effect (SCE)
@@ -327,11 +321,11 @@ maxMM = 2; %MM from the center of the PSF
 pupilfuncrangeMM = 5;
 vcNewGraphWin;
 subplot(2,2,1);
-wvfPlot(wvf0,'2d pupil amplitude space','mm',[],pupilfuncrangeMM);
+wvfPlot(wvf0,'2d pupil amplitude space','mm',waveIdx,pupilfuncrangeMM);
 subplot(2,2,2);
-wvfPlot(wvf0,'2d pupil phase space','mm',[],pupilfuncrangeMM);
+wvfPlot(wvf0,'2d pupil phase space','mm',waveIdx,pupilfuncrangeMM);
 subplot(2,2,3:4);
-wvfPlot(wvf0,'2d psf space','mm',[],maxMM);
+wvfPlot(wvf0,'2d psf space','mm',waveIdx,maxMM);
 
 % To this unaberrated pupil function, we add the Stiles-Crawford
 % parameters, as measured by Berendshot et al. (see sceCreate for
@@ -345,11 +339,11 @@ wvf0SCE = wvfSet(wvf0,'sceParams',sceCreate(wvfGet(wvf0,'wave'),'berendshot'));
 wvf0SCE = wvfComputePSF(wvf0SCE);
 vcNewGraphWin;
 subplot(2,2,1);
-wvfPlot(wvf0SCE,'2d pupil amplitude space','mm',[],pupilfuncrangeMM);
+wvfPlot(wvf0SCE,'2d pupil amplitude space','mm',waveIdx,pupilfuncrangeMM);
 subplot(2,2,2);
-wvfPlot(wvf0SCE,'2d pupil phase space','mm',[],pupilfuncrangeMM);
+wvfPlot(wvf0SCE,'2d pupil phase space','mm',waveIdx,pupilfuncrangeMM);
 subplot(2,2,3:4);
-wvfPlot(wvf0SCE,'2d psf space','mm',[],maxMM);
+wvfPlot(wvf0SCE,'2d psf space','mm',waveIdx,maxMM);
 
 % Compare the above with how the SCE affects an aberrated PSF. Let's create a
 % PSF with moderate astigmatism along the xy axes.
@@ -359,11 +353,11 @@ wvf5 = wvfSet(wvf0,'zcoeffs',zcoeffs);
 wvf5 = wvfComputePSF(wvf5);
 vcNewGraphWin;
 subplot(2,2,1);
-wvfPlot(wvf5,'2d pupil amplitude space','mm',[],pupilfuncrangeMM);
+wvfPlot(wvf5,'2d pupil amplitude space','mm',waveIdx,pupilfuncrangeMM);
 subplot(2,2,2);
-wvfPlot(wvf5,'2d pupil phase space','mm',[],pupilfuncrangeMM);
+wvfPlot(wvf5,'2d pupil phase space','mm',waveIdx,pupilfuncrangeMM);
 subplot(2,2,3:4);
-wvfPlot(wvf5,'2d psf space','mm',[],maxMM);
+wvfPlot(wvf5,'2d psf space','mm',waveIdx,maxMM);
 
 % Add SCE to the aberrated pupil function.
 %
@@ -374,11 +368,11 @@ wvf5SCE = wvfSet(wvf5,'sceParams',sceCreate(wvfGet(wvf5,'wave'),'berendshot'));
 wvf5SCE = wvfComputePSF(wvf5SCE);
 vcNewGraphWin;
 subplot(2,2,1);
-wvfPlot(wvf5SCE,'2d pupil amplitude space','mm',[],pupilfuncrangeMM);
+wvfPlot(wvf5SCE,'2d pupil amplitude space','mm',waveIdx,pupilfuncrangeMM);
 subplot(2,2,2);
-wvfPlot(wvf5SCE,'2d pupil phase space','mm',[],pupilfuncrangeMM);
+wvfPlot(wvf5SCE,'2d pupil phase space','mm',waveIdx,pupilfuncrangeMM);
 subplot(2,2,3:4);
-wvfPlot(wvf5SCE,'2d psf space','mm',[],maxMM);
+wvfPlot(wvf5SCE,'2d psf space','mm',waveIdx,maxMM);
 
 %% Wavefront measurements of human eyes and the effects of single-vision
 % corrective eyeglasses 
@@ -416,11 +410,11 @@ for ii = 1:nSubjects
     
     vcNewGraphWin;
     subplot(2,2,1);
-    wvfPlot(wvfHuman,'2d pupil amplitude space','mm',[],calcMM);
+    wvfPlot(wvfHuman,'2d pupil amplitude space','mm',waveIdx,calcMM);
     subplot(2,2,2);
-    wvfPlot(wvfHuman,'2d pupil phase space','mm',[],calcMM);
+    wvfPlot(wvfHuman,'2d pupil phase space','mm',waveIdx,calcMM);
     subplot(2,2,3:4);
-    wvfPlot(wvfHuman,'2d psf space','mm',[],maxMM);
+    wvfPlot(wvfHuman,'2d psf space','mm',waveIdx,maxMM);
 end
 
 %% Single-vision eyewear generally corrects only the lowest-order
@@ -453,11 +447,11 @@ for ii = 1:nSubjects
     
     vcNewGraphWin;
     subplot(2,2,1);
-    wvfPlot(wvfHuman,'2d pupil amplitude space','mm',[],calcMM);
+    wvfPlot(wvfHuman,'2d pupil amplitude space','mm',waveIdx,calcMM);
     subplot(2,2,2);
-    wvfPlot(wvfHuman,'2d pupil phase space','mm',[],calcMM);
+    wvfPlot(wvfHuman,'2d pupil phase space','mm',waveIdx,calcMM);
     subplot(2,2,3:4);
-    wvfPlot(wvfHuman,'2d psf space','mm',[],maxMM);
+    wvfPlot(wvfHuman,'2d psf space','mm',waveIdx,maxMM);
 end
 
 %% End

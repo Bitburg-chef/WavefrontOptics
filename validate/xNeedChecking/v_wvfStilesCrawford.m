@@ -23,9 +23,9 @@ sceP = sceCreate(theWavelength,'berendshot');
 wvfParams = wvfSet(wvfParams,'sce params',[]);
 wvfParams = wvfComputePSF(wvfParams);
 
-vcNewGraphWin; 
+f = vcNewGraphWin; 
 hold on
-wvfPlot(wvfParams,'1d psf angle','min',[],maxMIN);
+wvfPlot(wvfParams,'1d psf angle','min',waveIdx,maxMIN);
 
 % Make a graph of the PSF within 1 mm of center
 % vcNewGraphWin;
@@ -34,15 +34,15 @@ wvfPlot(wvfParams,'1d psf angle','min',[],maxMIN);
 %%  Include the SCE in place
 wvfParams = wvfSet(wvfParams,'sce params',sceP);
 wvfParams = wvfComputePSF(wvfParams);
+
 % vcNewGraphWin;
 % wvfPlot(wvfParams,'2dpsf space','mm',maxMM);
 
-[f,p] = wvfPlot(wvfParams,'1d psf angle','min',[],maxMIN);
+[f,p] = wvfPlot(wvfParams,'1d psf angle','min',waveIdx,maxMIN);
 set(p,'color','b')
 hold on
 
-wList = wvfGet(wvfParams,'wave');
-strehl = wvfGet(wvfParams,'strehl',wList);
+strehl = wvfGet(wvfParams,'strehl',waveIdx);
 title(sprintf('Strehl ratio:  %.1f',strehl));
 
 % Figure this out

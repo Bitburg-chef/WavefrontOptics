@@ -27,13 +27,12 @@ Zvals = [Z4(:), Z5(:)];
 
 %% Make the plot
 vcNewGraphWin;
-wList = wvfGet(wvfParams,'wave');
 for ii=1:size(Zvals,1)
     subplot(3,3,ii)
     z(4) = Zvals(ii,1); z(5) = Zvals(ii,2);
     wvfParams = wvfSet(wvfParams,'zcoeffs',z);
     wvfParams = wvfComputePSF(wvfParams);
-    wvfPlot(wvfParams,'2d psf space','um',wList,maxUM);
+    wvfPlot(wvfParams,'2d psf space','um',1,maxUM);
     title(sprintf('W4 = %.1f W5 == %.1f\n',z(4),z(5)));
 end
 

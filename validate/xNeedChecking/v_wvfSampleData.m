@@ -33,13 +33,13 @@
 
 %% Initialize
 s_initISET
+waveIdx = 1;
 maxMIN = 6;
 
 %% Use Heidi Hofer's sample data here
 
 % Set values in millimeters
 wvfP = wvfCreate('measured pupil',6,'calculated pupil',3);
-wList = wvfGet(wvfP,'wave');
 
 % Sample data
 sDataFile = fullfile(wvfRootPath,'data','sampleZernikeCoeffs.txt');
@@ -68,7 +68,7 @@ for ii = 1:nSubjects
     wvfP = wvfComputePSF(wvfP);
     % Diffraction limited
     vcNewGraphWin;
-    udataD = wvfPlot(wvfP,'1d psf angle','min',wList,maxMIN);
+    udataD = wvfPlot(wvfP,'1d psf angle','min',waveIdx,maxMIN);
     hold on;
     
     % Now, set it up for the typical subject
@@ -76,7 +76,7 @@ for ii = 1:nSubjects
     wvfP = wvfComputePSF(wvfP);
     
     vcNewGraphWin;
-    [udataS, pData] = wvfPlot(wvfP,'1d psf angle','min',wList,maxMIN);
+    [udataS, pData] = wvfPlot(wvfP,'1d psf angle','min',waveIdx,maxMIN);
     set(pData,'color','b');
     hold on;
     
@@ -84,7 +84,7 @@ for ii = 1:nSubjects
     fprintf('Strehl ratio with no defocus:  %.3f\n',strehlDirect);
     
     vcNewGraphWin;
-    wvfPlot(wvfP,'2d psf space','um',wList,20);
+    wvfPlot(wvfP,'2d psf space','um',waveIdx,20);
     
 end
 
