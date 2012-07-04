@@ -35,7 +35,8 @@
 % VALIDATION SCRIPTS (subdir validate).  These test that various pieces of the toolboxes
 % do the right thing.
 %   validate/v_wvfDiffractionPSF -            Compare PSFs obtained with wavefront calcs to direct computation of diffraction limited PSFs
-%
+%   validate/v_wvfSpatialSampling -           Compare PSFs with different spatial sampling parameters.
+
 % (c) Wavefront Toolbox Team 2011, 2012
 %
 % ****

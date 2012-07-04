@@ -301,7 +301,7 @@ switch parm
         % a more fundamental reference than the paper above, and for which
         % one wouldn't have to guess quite as much about what is meant.
         radiansPerPixel = val/(180*60/3.1416);
-        wvf.refSizeOfFieldMM = wvfGet('measured wl','mm')/radiansPerPixel;
+        wvf.refSizeOfFieldMM = wvfGet(wvf,'measured wl','mm')/radiansPerPixel;
         wvf.PUPILFUNCTION_STALE = true;
         DIDASET = true;
 end
