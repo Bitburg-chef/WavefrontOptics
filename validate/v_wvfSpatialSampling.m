@@ -3,6 +3,10 @@
 % Checks consistency of results for a diffraction limited calculation with
 % different choices of spatial sampling parameters.
 %
+% There is an issue of normalization that we need to think about.
+% Normalize psf's so that they integrate to 1 by simple summing,
+% or take spatial sampling into account when normalizing?
+%
 % See also: wvfCreate, wvfGet, wvfSet, wvfComputePSF, wvfComputePupilFucntion
 %
 % 7/4/12  dhb  Wrote it.
@@ -47,6 +51,9 @@ radians3 = (pi/180)*(arcmin3/60);
 onedPSF3 = AiryPattern(radians3,wvfGet(wvf3,'calc pupil size'),wvfGet(wvf3,'wave'));
 
 %% Make the plot
+%
+% Curently normalized to max of 1 in plot.  If you don't normalize, you will see the issue
+% with spatial sampling.
 figure; clf; hold on
 plot(arcmin0,psfLine0/max(psfLine0(:)),'ro','MarkerSize',6,'MarkerFaceColor','r');
 plot(arcmin3,psfLine3/max(psfLine3(:)),'gx','MarkerSize',6,'MarkerFaceColor','k');

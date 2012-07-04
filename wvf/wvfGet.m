@@ -62,7 +62,7 @@ function val = wvfGet(wvf,parm,varargin)
 %  +  'pupil function' - The pupil function
 %  +  'psf' - Point spread function
 %  +  'psf centered' - Peak of psf is at center of returned matrix
-%  +  '1d psf' - One dimensional slice through psf
+%  +  '1d psf' - One dimensional horizontal (along row) slice through psf centered on its max
 %
 % Need to be implemented/checked/documented
 %  +  'distanceperpix'
