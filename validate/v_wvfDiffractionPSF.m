@@ -83,9 +83,43 @@ radians = (pi/180)*(arcminutes/60);
 % Compare to what we get from PTB AiryPattern function -- should match
 onedPSF2 = AiryPattern(radians,wvf0.calcpupilMM,wvf0.wls(1));
 plot(arcminutes(index),onedPSF2(index),'b','LineWidth',2);
+figNum = gcf;
 xlabel('Arc Minutes');
 ylabel('Normalized PSF');
 title(sprintf('Diffraction limited, %0.1f mm pupil, %0.f nm',wvf0.calcpupilMM,wvf0.wls(1)));
+
+%% Show the sample plot using ISET functions
+% The conversion between ISET and these other methods is pretty good, too.
+% So, diffraction limited point spread, measured for 3.0mm is the same when
+% done with ISET, PTB and WVF.
+thisWave = 550;
+oi    = oiCreate;
+optics = oiGet(oi,'optics');
+fLength = 0.017;    % Human flength is about 17 mm
+fNumber = 17/3;     % Set a 3 mm pupil diameter
+
+optics = opticsSet(optics,'flength',fLength);  % Roughly human
+optics = opticsSet(optics,'fnumber',fNumber);   % Roughly human
+oi    = oiSet(oi,'optics',optics);
+
+[uData,g] = plotOI(oi,'psf',[],thisWave); close(g);
+
+figure(figNum)
+[r,c] = size(uData.x);
+mid = ceil(r/2);
+psfMid = uData.psf(mid,:);
+posMM = uData.x(mid,:)/1000;               % Microns to mm
+posMinutes = rad2deg(atan2(posMM,opticsGet(optics,'flength','mm')),'arcmin');
+
+g = wvfPlot(wvfParams,'1d psf angle normalized','min',wList,maxMIN);
+hold on
+plot(posMinutes,psfMid/max(psfMid(:)),'ko')
+hold on
+plot(arcminutes(index),onedPSF2(index),'b','LineWidth',2);
+xlabel('Arc min')
+set(gca,'xlim',[-2 2])
+grid on
+legend('WVF','PTB','ISET');
 
 %% Repeat the calculation with a wavelength offset.  
 % To keep the new wavelength in focus in the calculations, we add an
