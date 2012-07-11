@@ -111,7 +111,7 @@ psfMid = uData.psf(mid,:);
 posMM = uData.x(mid,:)/1000;               % Microns to mm
 posMinutes = rad2deg(atan2(posMM,opticsGet(optics,'flength','mm')),'arcmin');
 
-g = wvfPlot(wvfParams,'1d psf angle normalized','min',wList,maxMIN);
+g = wvfPlot(wvf0,'1d psf angle normalized','min',wList,maxMIN);
 hold on
 plot(posMinutes,psfMid/max(psfMid(:)),'ko')
 hold on
