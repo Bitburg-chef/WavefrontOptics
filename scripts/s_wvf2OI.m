@@ -27,7 +27,11 @@ vcAddAndSelectObject(oiD); oiWindow;
 % function and reference therein.
 wave = (400:10:700); wave = wave(:);
 pupilMM = 3; 
-zCoefs = wvfLoadHuman(pupilMM);
+
+% First, try it for a diffraction limited system.
+zCoefs = zeros(65,1);
+%
+%zCoefs = wvfLoadHuman(pupilMM);
 
 wvfP = wvfCreate('wave',wave,'zcoeffs',zCoefs,'name',sprintf('human-%d',pupilMM));
 oiD = wvf2oi(wvfP,'Human');
