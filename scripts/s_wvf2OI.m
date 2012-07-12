@@ -1,4 +1,5 @@
 %%  s_wvf2OI
+%
 %  Create an ISET optical image based on the point spread functions
 %  calculated with the wavefront toolbox.
 %
@@ -30,68 +31,75 @@ thisWave = wvfGet(wvfP,'wave');
 set(gca,'xlim',[-maxUM maxUM],'ylim',[-maxUM maxUM]);
 
 oiD = wvf2oi(wvfP,'shift invariant');
+
 oiD = oiSet(oiD,'name','Diffraction limited');
 vcAddAndSelectObject(oiD); oiWindow;
-plotOI(oiD,'psf','um',thisWave)
+uData = plotOI(oiD,'psf','um',thisWave);
 set(gca,'xlim',[-maxUM maxUM],'ylim',[-maxUM maxUM]);
 
+%% Now, compare the plot in uData and u.  They should be the same.
+% Looks good on July 12, 2012 (BW).
 
-%% Now, try it with a few different wavelengths.
-% Something wrong with multiple wavelength ...
-% wave = (400:100:700); wave = wave(:);
-% wvfP = wvfCreate('wave',wave,'name',sprintf('Diffraction-limited'));
+% Interpolate the wvf data onto the spatial grid of the ISET data.
+test = interp2(u.x,u.y,u.z,uData.x,uData.y);
 
-%% Create a wavefront objects from the sample mean wvf data
-% The data were collected by Thibos and are described in the wvfLoadHuman
-% function and reference therein.
-wave = (400:100:700); wave = wave(:);
-pupilMM = 3; 
+% The interpolation doesn't preserve the sum.  We need to deal with this
+% better, as DHB pointed out.
+test = test/sum(test(:));
 
-% First, try it for a diffraction limited system.
-zCoefs = zeros(65,1);
-wvfP = wvfCreate('wave',wave,'zcoeffs',zCoefs,'name',sprintf('DL-%d',pupilMM));
+% Here are the two meshes after interpolation to the ISET grid at 0.25
+% microns.  I am surprised (worried) because the uData grid is not 0.25
+% microns.  It is off by a little bit (BW).
+vcNewGraphWin([],'tall');
+subplot(3,1,1), mesh(uData.x,uData.y,uData.psf)
+subplot(3,1,2), mesh(uData.x,uData.y,test)
+subplot(3,1,3), mesh(uData.x,uData.y,test - uData.psf)
+
+vcNewGraphWin;
+plot(uData.psf(:),test(:),'.');
+grid on
+
+%% Diffraction case at multiple wavelength
+% This section tests whether things work OK for a few wavelengths at once.
+wave = (500:50:600); wave = wave(:);
+wvfP = wvfCreate('wave',wave,'name',sprintf('Diffraction-limited'));
 wvfP = wvfComputePSF(wvfP);
-wvfPlot(wvfP,'2d psf space','min',500);
-wvfPlot(wvfP,'2d psf space','um',500);
 
-oiD  = wvf2oi(wvfP,'shift invariant');
-oiD  = oiSet(oiD,'name','DL 3mm');
+% Edit the choice of wavelength a few times to compare.  They are all OK, I
+% think (BW).
+thisWave = wave(3);
 
-%
-%zCoefs = wvfLoadHuman(pupilMM);
-% wvfP = wvfCreate('wave',wave,'zcoeffs',zCoefs,'name',sprintf('human-%d',pupilMM));
-% oiD = wvf2oi(wvfP,'human');
-% oiD = oiSet(oiD,'name','Human 3mm');
+% The conversion between 'um' and 'min' is not right.  Look into this.
+% wvfPlot(wvfP,'2d psf space','min',thisWave);
+[u,p,f] = wvfPlot(wvfP,'2d psf space','um',thisWave);
+set(gca,'xlim',[-maxUM maxUM],'ylim',[-maxUM maxUM]);
 
+% Convert to optical image
+oiD = wvf2oi(wvfP,'shift invariant');
+
+oiD = oiSet(oiD,'name','Diffraction limited');
+vcAddAndSelectObject(oiD); oiWindow;
+uData = plotOI(oiD,'psf','um',thisWave);
+set(gca,'xlim',[-maxUM maxUM],'ylim',[-maxUM maxUM]);
+
+[u,p,f] = wvfPlot(wvfP,'2d psf space','um',thisWave);
+set(gca,'xlim',[-maxUM maxUM],'ylim',[-maxUM maxUM]);
+
+oiD = wvf2oi(wvfP,'human');
+oiD = oiSet(oiD,'name','Human 3mm');
 vcAddAndSelectObject(oiD); oiWindow;
 
-%% Convert the wavefront structure to an ISET optical image (OI)
-% You could save the OI if you like.  But for this purpose, we just leave
-% it here.
-oi = wvf2oi(wvfP,'human');
-oi = oiSet(oi,'name','Human 3mm wvf');
-%fname = fullfile(isetRootPath,'data','optics','wvfHuman30.mat');
-%vcExportObject(oi,fname);
+% Interpolate the wvf data onto the spatial grid of the ISET data.  Same as
+% above, but written more compactly.
+test = interp2(u.x,u.y,u.z,uData.x,uData.y);
+test = test/sum(test(:));
 
-%% Create an ISET scene and run it through the oi we just created
-% The wavefront measurements make a greenish image with almost no short
-% wavelength contrast.
-sweepS = sceneCreate('sweep');
-sweepS = sceneSet(sweepS,'h fov',2);
-oi = oiCompute(sweepS,oi);
-vcAddAndSelectObject(oi); oiWindow;
+vcNewGraphWin([],'tall');
+subplot(3,1,1), mesh(uData.x,uData.y,uData.psf)
+subplot(3,1,2), mesh(uData.x,uData.y,test)
+subplot(3,1,3), mesh(uData.x,uData.y,test - uData.psf)
 
-%% The graph of the wavefront line spread at each wavelength
-% This has almost no short wavelength contrast.  Seems impossible.
-plotOI(oi,'ls wavelength');
-title('Wavefront toolbox')
+vcNewGraphWin;
+plot(uData.psf(:),test(:),'.');
+grid on
 
-%% Repeat the process using the Marimont/Wandell estimate
-% This is the one I included in my textbook.  It seems much more sensible
-% to me.  So, we might be computing the wavefront wrong, possibly units.
-% We are deep into it now.
-oiMW = oiCreate('human');
-oiMW = oiCompute(sweepS,oiMW);
-vcAddAndSelectObject(oiMW); oiWindow;
-plotOI(oiMW,'ls wavelength');
-title('Marimont and Wandell')

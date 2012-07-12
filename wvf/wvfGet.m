@@ -233,8 +233,10 @@ switch (parm)
         DIDAGET = true;
         
     case {'psfarcminpersample', 'psfarcminperpixel', 'arcminperpix'}
-        % wvfGet(wvf,'psf arcmin per sample',wList)
-        % Arc minutes per pixel in psf domain, for calculated wavelength(s).
+        % wvfGet(wvf,'psf arcmin per sample',wList) 
+        % 
+        % Arc minutes per pixel in psf domain, for calculated
+        % wavelength(s).
         
         % Get wavelengths
         wavelengths = wvfGet(wvf,'calc wavelengths','mm');
@@ -247,17 +249,20 @@ switch (parm)
         if (strcmp(whichDomain,'psf'))
             val = wvfGet(wvf,'ref psf arcmin per pixel')*ones(length(waveIdx),1);
         elseif (strcmp(whichDomain,'pupil'))
-            radiansPerPixel = wavelengths(waveIdx)/wvfGet(wvf,'ref pupil plane size','mm');
-            val = (180*60/3.1416)*radiansPerPixel;
+            radiansPerPixel = ...
+                wavelengths(waveIdx)/wvfGet(wvf,'ref pupil plane size','mm');
+            val = (180*60/pi)*radiansPerPixel;
         else
             error('Unknown sample interval domain ''%s''',whichDomain);
         end
         DIDAGET = true;
         
     case {'psfanglepersample','angleperpixel','angperpix'}
-        % Angular extent per pixel in the psf domain, for calculated wavelength(s).
+        % Angular extent per pixel in the psf domain, for calculated
+        % wavelength(s).
+        % 
         % wvfGet(wvf,'psf angle per sample',unit,wList)
-        %  unit = 'min' (default), 'deg', or 'sec'
+        % unit = 'min' (default), 'deg', or 'sec'
         unit  = varargin{1}; 
         wList = varargin{2};
         val = wvfGet(wvf,'psf arcmin per sample',wList);
@@ -277,9 +282,10 @@ switch (parm)
         DIDAGET = true;
         
     case {'psfangularsamples','samplesangle','samplesarcmin','supportarcmin'}
-        % Return one-d slice of sampled angles for psf, centered on 0, for a single wavelength
+        % Return one-d slice of sampled angles for psf, centered on 0, for
+        % a single wavelength 
         % wvfGet(wvf,'psf angular samples',unit,waveIdx)
-        %  unit = 'min' (default), 'deg', or 'sec'
+        % unit = 'min' (default), 'deg', or 'sec'
         unit = varargin{1}; 
         wList = varargin{2};
         if (length(wList) > 1)
