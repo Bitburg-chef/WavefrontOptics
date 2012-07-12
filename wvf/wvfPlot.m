@@ -1,11 +1,14 @@
-function [uData, pData] = wvfPlot(wvfP,pType,varargin)
+function [uData, pData, fNum] = wvfPlot(wvfP,pType,varargin)
 % Wavefront plots
 %
-%   [userData, plotData] = wvfPlot(wvfP,pType,varargin);
+%   [userData, plotData, fNum] = wvfPlot(wvfP,pType,varargin);
+%
+% userData:  The user data that are plotted
+% plotData:  The handles from the plotted data
 %
 % Plot types:
-%   2d psf angle - mesh
-%   2d psf space - mesh
+%   2d psf angle - mesh.  wvfPlot(wvfP,'2d psf angle','arcmin',wave)
+%   2d psf space - mesh   wvfPlot(wvfP,'2d psf angle','um',wave)
 %   2d OTF       - mesh (e.g., linepairs/'um')
 %
 %   1d psf angle - graph (middle horizontal line)
@@ -24,7 +27,7 @@ function [uData, pData] = wvfPlot(wvfP,pType,varargin)
 % Examples
 %    vcNewGraphWin; wvfP = wvfCreate; wvfP = wvfComputePSF(wvfP);
 %    unit = 'um'; waveIdx = 1;
-%    [u,p]= wvfPlot(wvfP,'1d psf space',unit,waveIdx);
+%    [u,p]= wvfPlot(wvfP,'1d psf space',unit,wave);
 %    set(p,'color','k','linewidth',2)
 %
 %    wvfPlot(wvfP,'image psf',unit,waveIdx);
@@ -41,6 +44,7 @@ if ieNotDefined('pType'), pType = '1dpsf'; end
 uData = [];
 pType = ieParamFormat(pType);
 
+fNum = vcNewGraphWin;
 switch(pType)
     
     case {'2dpsf','2dpsfangle','2dpsfanglenormalized'}
@@ -51,7 +55,7 @@ switch(pType)
         end
         
         samp = wvfGet(wvfP,'samples angle',unit,wList);
-        psf = wvfGet(wvfP,'psf',wList);
+        psf  = wvfGet(wvfP,'psf',wList);
         
         % Extract within the range
         if ~isempty(pRange)

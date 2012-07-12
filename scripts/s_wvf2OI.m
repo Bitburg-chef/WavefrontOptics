@@ -11,31 +11,58 @@
 
 %% Initialize
 s_initISET
-
+maxUM = 10;
 
 %% First build a diffraction limited case.
-% This is designed to test whether the basic spatial scale matches, like we
-% tested for the PTB
-wave = (400:10:700); wave = wave(:);
-wvfP = wvfCreate('wave',wave,'name',sprintf('Diffraction-limited'));
+% Recall that we compare the diffraction limited case in
+% v_wvfDiffractionPSF.m and found agreement between WVF, ISET, and PTB.
+% Here we simply test whether we can convert a single wavelength
+% pointspread in WVF into the same pointspread in ISET using the wvf2oi
+% function.
+wvfP = wvfCreate;
+wvfP = wvfComputePSF(wvfP);
+thisWave = wvfGet(wvfP,'wave');
+
+% The conversion between minutes and 'um' is not right for the typical
+% human focal length.  Look into this.
+% wvfPlot(wvfP,'2d psf space','min',thisWave);
+[u,p,f] = wvfPlot(wvfP,'2d psf space','um',thisWave);
+set(gca,'xlim',[-maxUM maxUM],'ylim',[-maxUM maxUM]);
+
 oiD = wvf2oi(wvfP,'shift invariant');
 oiD = oiSet(oiD,'name','Diffraction limited');
 vcAddAndSelectObject(oiD); oiWindow;
+plotOI(oiD,'psf','um',thisWave)
+set(gca,'xlim',[-maxUM maxUM],'ylim',[-maxUM maxUM]);
+
+
+%% Now, try it with a few different wavelengths.
+% Something wrong with multiple wavelength ...
+% wave = (400:100:700); wave = wave(:);
+% wvfP = wvfCreate('wave',wave,'name',sprintf('Diffraction-limited'));
 
 %% Create a wavefront objects from the sample mean wvf data
 % The data were collected by Thibos and are described in the wvfLoadHuman
 % function and reference therein.
-wave = (400:10:700); wave = wave(:);
+wave = (400:100:700); wave = wave(:);
 pupilMM = 3; 
 
 % First, try it for a diffraction limited system.
 zCoefs = zeros(65,1);
+wvfP = wvfCreate('wave',wave,'zcoeffs',zCoefs,'name',sprintf('DL-%d',pupilMM));
+wvfP = wvfComputePSF(wvfP);
+wvfPlot(wvfP,'2d psf space','min',500);
+wvfPlot(wvfP,'2d psf space','um',500);
+
+oiD  = wvf2oi(wvfP,'shift invariant');
+oiD  = oiSet(oiD,'name','DL 3mm');
+
 %
 %zCoefs = wvfLoadHuman(pupilMM);
+% wvfP = wvfCreate('wave',wave,'zcoeffs',zCoefs,'name',sprintf('human-%d',pupilMM));
+% oiD = wvf2oi(wvfP,'human');
+% oiD = oiSet(oiD,'name','Human 3mm');
 
-wvfP = wvfCreate('wave',wave,'zcoeffs',zCoefs,'name',sprintf('human-%d',pupilMM));
-oiD = wvf2oi(wvfP,'Human');
-oiD = oiSet(oiD,'name','Human 3mm');
 vcAddAndSelectObject(oiD); oiWindow;
 
 %% Convert the wavefront structure to an ISET optical image (OI)
