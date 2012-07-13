@@ -119,7 +119,7 @@ plot(arcminutes(index),onedPSF2(index),'b','LineWidth',2);
 xlabel('Arc min')
 set(gca,'xlim',[-2 2])
 grid on
-legend('WVF','PTB','ISET');
+legend('WVF','ISET','PTB');
 
 %% Repeat the calculation with a wavelength offset.  
 % To keep the new wavelength in focus in the calculations, we add an

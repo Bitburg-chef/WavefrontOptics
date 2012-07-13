@@ -126,11 +126,13 @@ oiMW = oiSet(oiMW,'name','Human MW 3mm');
 scene = sceneCreate('slanted bar');
 scene = sceneSet(scene,'h fov',1);
 oiD = oiCompute(oiD,scene);
+oiD = oiSet(oiD,'name','Thibos');
 vcAddAndSelectObject(oiD); oiWindow;
 uT = plotOI(oiD,'irradiance hline',[1,200]);  % (x,y) format
 title('Thibos')
 
 oiMW = oiCompute(oiMW,scene);
+oiMW = oiSet(oiMW,'name','MW');
 vcAddAndSelectObject(oiMW); oiWindow;
 uM = plotOI(oiMW,'irradiance hline',[1,200]);  % (x,y) format
 title('Marimont and Wandell')
@@ -144,14 +146,15 @@ mesh(uT.pos,uT.wave,(uT.data - uM.data) ./ uM.data);
 %% Show the photon absorptions
 
 sensor = sensorCreate('human');
+sensor = sensorSet(sensor,'exp time',0.050);
 sensor = sensorSetSizeToFOV(sensor,sceneGet(scene,'hfov'),scene,oiD);
 
 sensorD = sensorCompute(sensor,oiD);
 sensorD = sensorSet(sensorD,'name','Thibos calc');
-vcAddAndSelectObject(sensorD); sensorWindow;
+vcAddAndSelectObject(sensorD); sensorWindow('scale',1);
 
 sensorMW = sensorCompute(sensor,oiMW);
 sensorMW = sensorSet(sensorMW,'name','MW calc');
-vcAddAndSelectObject(sensorMW); sensorWindow;
+vcAddAndSelectObject(sensorMW); sensorWindow('scale',1);
 
 
