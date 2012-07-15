@@ -1,4 +1,4 @@
-%% s_wvf2OIHuman
+%% s_wvf2OIHumanSamples
 %
 % Check the variation in the Thibos wavefront model.
 %
@@ -7,17 +7,49 @@
 % (c) Wavefront Toolbox Team, 2012
 
 
-%%
+%% Initialize
+s = which('s_wvf2OIHumanSamples');
+cd(fileparts(s));
 s_initISET
 maxUM = 10;
 wave = 400:10:700; wave = wave(:);
 pupilMM = 3; 
 
-% Create some examples
-[sample_mean S] = wvfLoadHuman(pupilMM);
-N = 10;
-zSamples = ieMvnrnd(sample_mean,S,N)';  
-nCoeffs = size(zSamples,1);
+% Create some examples.  Can use either
+% Thibos statistical model, or read in
+% the measurements we got from Heidi Hofer
+whichTypeOfSamples = 'HoferMeasurements';
+switch (whichTypeOfSamples)
+    case 'ThibosStatiscalModel'
+        N = 10;
+        [sample_mean S] = wvfLoadHuman(pupilMM);
+        zSamples = ieMvnrnd(sample_mean,S,N)';
+        measPupilSizeMM = pupilMM;
+        measWavelengthNM = 550;
+        
+    case 'HoferMeasurements'
+        % In the most recent versions of Matlab, the load returns
+        % a long row vector rather than a matrix.  I don't know why
+        % this changed.  Probably some cr/nl convention thing.  
+        % I just fix it by brute force, with some attempt to keep
+        % things from breaking if you are running on a system where
+        % the size does come back correctly.
+        zSamples = load('sampleZernikeCoeffs.txt','-ascii');
+        if (size(zSamples,2) == 585)
+            zSamples = reshape(zSamples,9,65)';
+        end
+        if (size(zSamples,1) ~= 65 || size(zSamples,2) ~= 9)
+            error('Surprising size for read in Hofer zSamples.')
+        end
+        N = size(zSamples,2);
+        measPupilSizeMM = 6;
+        measWavelengthNM = 550;
+        
+    otherwise
+        error('Unknown data source specified');
+end
+        nCoeffs = size(zSamples,1);
+
 
 %% Convert WVF human data to ISET
 oiD = cell(N,1);
@@ -26,6 +58,10 @@ oiD = cell(N,1);
 for ii=1:N
     name = sprintf('%d human-%d',ii,pupilMM);
     wvfP = wvfCreate('wave',wave,'name',name);
+    wvfP = wvfSet(wvfP,'measured wavelength',measWavelengthNM);
+    wvfP = wvfSet(wvfP,'measured pupil size',measPupilSizeMM);    
+    wvfP = wvfSet(wvfP,'calc pupil size',pupilMM);
+    
     z = wvfGet(wvfP,'zcoeffs');
     z(1:nCoeffs) = zSamples(:,ii);
     wvfP = wvfComputePSF(wvfP);
@@ -65,7 +101,8 @@ for ii=1:N
     for jj=1:3
         hold on; grid on;
         subplot(3,1,jj)
-        plot(uData{ii}.pos{jj},uData{ii}.data{jj},c{jj})     
+        plot(uData{ii}.pos{jj},uData{ii}.data{jj},c{jj})
+        title(whichTypeOfSamples);
     end
 end
 

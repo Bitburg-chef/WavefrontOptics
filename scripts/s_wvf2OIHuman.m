@@ -16,7 +16,9 @@
 % (c) Wavefront Toolbox Team, 2012
 
 
-%%
+%% Initialize
+s = which('s_wvf2OIHuman');
+cd(fileparts(s));
 s_initISET
 maxUM = 10;
 
