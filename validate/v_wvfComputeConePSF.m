@@ -1,4 +1,4 @@
-% ComputeConePSFTest
+% v_wvfComputeConePSF
 %
 % The the routines that compute L, M, and S cone PSFs from Zernike
 % coefficients.
@@ -9,11 +9,20 @@
 % The circular averaging is not a good idea for a single subject, but if
 % you want to obtain an average over subjects it seems like a good idea.
 %
-% 3/15/12  MDL  Edited to use wvfSet. Also updated to use fieldSampleSizeMMperPixel
 % 8/21/11  dhb  Wrote it.
+% 3/15/12  mdl  Edited to use wvfSet. Also updated to use fieldSampleSizeMMperPixel
 
-%% Clear
+%% Initialize
 clear; close all;
+s = which('v_wvfComputeConePSF');
+cd(fileparts(s));
+s_initISET;
+
+%% Parameters
+whichSubject = 1;
+DOSCE = 0;
+plotLimit = 2;
+CIRCULARLYAVERAGE = 1;
 
 %% Load cone sensitivities, set weighting spectrum.
 S = [400 5 61];
@@ -28,39 +37,28 @@ weightingSpectrum = SplineSpd(S_D65,spd_D65,S);
 % to produce the best PSFs.
 %
 % This appears to work correctly.
-whichSubject = 1;
-theZernikeCoeffs = load('sampleZernikeCoeffs.txt');
-
-wvfParams0 = wvfCreate;
-wvfParams0 = wvfSet(wvfParams0,'zcoeffs',theZernikeCoeffs(:,whichSubject));
-
-% Set in the create call.
-% wvfParams0.measpupilMM = 6;
-% wvfParams0.calcpupilMM = 3;
-% wvfParams0.wls = wls;
-% wvfParams0.nominalFocusWl = 550;
-% wvfParams0.defocusDiopters = 0;
-% wvfParams0.fieldSampleSizeMMperPixel = 16.212/201;
-% wvfParams0.sizeOfFieldMM = 16.212;
-% wvfParams0.T_cones = T_cones;
-% wvfParams0.weightingSpectrum = weightingSpectrum;
-
-wls = wvfGet(wvfParams0,'wave');
-diffracZcoeffs = zeros(65,1);
-plotLimit = 2;
-
-% Stiles-Crawford effect
-DOSCE = 0;
-if (DOSCE), wvfParams0 = wvfSet(wvfParams0,'sceParams',sceCreate(wls,'berendshot'));
-else        wvfParams0 = wvfSet(wvfParams0,'sceParams',sceCreate(wls,'none'));
+theZernikeCoeffs = load('sampleZernikeCoeffs.txt','-ascii');
+if (size(theZernikeCoeffs,2) == 585)
+    theZernikeCoeffs = reshape(theZernikeCoeffs,9,65)';
+end
+if (size(theZernikeCoeffs,1) ~= 65 || size(theZernikeCoeffs,2) ~= 9)
+    error('Surprising size for read in Hofer zSamples.')
+end
+wvf0 = wvfCreate;
+wvf0 = wvfSet(wvf0,'zcoeffs',theZernikeCoeffs(:,whichSubject));
+wvf0 = wvfSet(wvf0,'calc wavelengths',wls);
+if (DOSCE == 1)
+    sce = sceCreate(wls,'berendshot');
+    wvf0 = wvfSet(wvf0,'sce params',sce);
+else
+    sce = sceCreate(wls,'none');
+    wvf0 = wvfSet(wvf0,'sce params',sce);
 end
 
-CIRCULARLYAVERAGE = 1;
-
 % Compute LMS psfs both for a subject and diffraction limited
-wvfParams1 = wvfParams0;
+wvfParams1 = wvf0;
 wvfParams1 = wvfComputeConePSF(wvfParams1);
-wvfParams2 = wvfParams0;
+wvfParams2 = wvf0;
 wvfParams2.zcoeffs = diffracZcoeffs;
 wvfParams2 = wvfComputeConePSF(wvfParams2);
 
@@ -96,8 +94,10 @@ plot(arcminutes(index),onedLPSFD(index),'k','LineWidth',4);
 xlabel('Arc Minutes');
 ylabel('PSF');
 
-if (CIRCULARLYAVERAGE), title('Circularized L cone PSF');
-else                    title('L cone PSF');
+if (CIRCULARLYAVERAGE)
+    title('Circularized L cone PSF');
+else
+    title('L cone PSF');
 end
 
 subplot(1,3,2); hold on
@@ -109,8 +109,10 @@ plot(arcminutes(index),onedMPSFD(index),'k','LineWidth',4);
 xlabel('Arc Minutes');
 ylabel('PSF');
 
-if (CIRCULARLYAVERAGE),  title('Circularized M cone PSF');
-else                     title('M cone PSF');
+if (CIRCULARLYAVERAGE)
+    title('Circularized M cone PSF');
+else
+    title('M cone PSF');
 end
 
 subplot(1,3,3); hold on
@@ -122,15 +124,17 @@ plot(arcminutes(index),onedSPSFD(index),'k','LineWidth',4);
 xlabel('Arc Minutes');
 ylabel('PSF');
 
-if (CIRCULARLYAVERAGE), title('Circularized S cone PSF');
-else                    title('S cone PSF');
+if (CIRCULARLYAVERAGE)
+    title('Circularized S cone PSF');
+else
+    title('S cone PSF');
 end
 drawnow;
 
 %% TEST2.  Optimize focus and add to the plot.
 %
 % This takes a long time.
-wvfParams3 = wvfParams0;
+wvfParams3 = wvf0;
 wvfParams3.coneWeights = [1 1 0];
 wvfParams3.criterionFraction = 0.9;
 wvfParams3 = wvfComputeOptimizedConePSF(wvfParams3);

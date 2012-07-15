@@ -48,7 +48,7 @@ function val = wvfGet(wvf,parm,varargin)
 %     'calc observer accommodation' - Observer accommodation at calculation time (diopters)
 %     'calc observer focus correction' - Focus correction added optically for observer at calculation time (diopters)
 %     'calc wavelengths' - Wavelengths to calculate over (nm,*)
-%     'calcweightspectrum' - Weighting spectrum to be used in calculation of polychromatic psf
+%     'calc weight spectrum' - Weighting spectrum to be used in calculation of polychromatic psf
 %  +  'number calc wavelengths' - Number of wavelengths to calculate over
 %
 % Stiles Crawford Effect

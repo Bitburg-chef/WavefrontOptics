@@ -54,7 +54,7 @@ function wvf = wvfSet(wvf,parm,val,varargin)
 %     'calc observer accommodation' - Observer accommodation at calculation time (diopters)
 %     'calc observer focus correction' - Focus correction added optically for observer at calculation time (diopters)
 %     'calc wavelengths' - Wavelengths to calculate over (nm,*)
-%     'calcweightspectrum' - Weighting spectrum to be used in calculation of polychromatic psf
+%     'calc weight spectrum' - Weighting spectrum to be used in calculation of polychromatic psf
 %
 % Stiles Crawford Effect
 %     'sce params' - The whole sce parameter structure
