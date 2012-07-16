@@ -52,6 +52,15 @@ wList = wvfGet(wvf0,'wave');
 % Calculate the PSF, normalized to peak of 1.
 wvf0 = wvfComputePSF(wvf0);
 
+% Get out parameters for various checks
+measPupilMM = wvfGet(wvf0,'measured pupil size');
+calcPupilMM = wvfGet(wvf0,'calc pupil size');
+calcWavelength = wvfGet(wvf0,'wavelength');
+measWavelength = wvfGet(wvf0,'measured wavelength');
+if (measWavelength ~= calcWavelength)
+    error('Measured and calculation wavelengths should match at this point');
+end
+
 % Make a graph of the PSF within maxUM of center
 vcNewGraphWin([],'upper left');
 wvfPlot(wvf0,'2dpsf space','um',wList,maxUM);
@@ -81,7 +90,7 @@ index = find(abs(arcminutes) < 2);
 radians = (pi/180)*(arcminutes/60);
 
 % Compare to what we get from PTB AiryPattern function -- should match
-onedPSF2 = AiryPattern(radians,wvf0.calcpupilMM,wvf0.wls(1));
+onedPSF2 = AiryPattern(radians,calcPupilMM ,wvf0.wls(1));
 plot(arcminutes(index),onedPSF2(index),'b','LineWidth',2);
 figNum = gcf;
 xlabel('Arc Minutes');
