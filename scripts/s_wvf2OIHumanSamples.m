@@ -64,6 +64,8 @@ for ii=1:N
     
     z = wvfGet(wvfP,'zcoeffs');
     z(1:nCoeffs) = zSamples(:,ii);
+    wvfP = wvfSet(wvfP,'zcoeffs',z);
+    
     wvfP = wvfComputePSF(wvfP);
     oiD{ii} = wvf2oi(wvfP,'human');
     oiD{ii} = oiSet(oiD{ii},'name',name);
