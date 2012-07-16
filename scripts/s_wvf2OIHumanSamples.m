@@ -18,7 +18,7 @@ pupilMM = 3;
 % Create some examples.  Can use either
 % Thibos statistical model, or read in
 % the measurements we got from Heidi Hofer
-whichTypeOfSamples = 'HoferMeasurements';
+whichTypeOfSamples = 'ThibosStatiscalModel';
 switch (whichTypeOfSamples)
     case 'ThibosStatiscalModel'
         N = 10;
@@ -81,6 +81,7 @@ scene = sceneAdjustIlluminant(scene,bb);
 % vcAddAndSelectObject(scene); sceneWindow;
 
 sensor = sensorCreate('human');
+sensor = sensorSet(sensor,'noise flag',0);   % Turn off all noise.
 sensor = sensorSet(sensor,'exp time',0.050);
 sensor = sensorSetSizeToFOV(sensor,sceneGet(scene,'hfov'),scene,oiD{1});
 
