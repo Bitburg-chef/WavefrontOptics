@@ -104,7 +104,7 @@ for ii=1:N
         hold on; grid on;
         subplot(3,1,jj)
         plot(uData{ii}.pos{jj},uData{ii}.data{jj},c{jj})
-        title(whichTypeOfSamples);
+        title(sprintf('%s, pupil size %0.1f mm',whichTypeOfSamples,pupilMM));
     end
 end
 
