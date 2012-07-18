@@ -6,6 +6,11 @@ function [uData, pData, fNum] = wvfPlot(wvfP,pType,varargin)
 % userData:  The user data that are plotted
 % plotData:  The handles from the plotted data
 %
+% By default, this routine opens a new graph window (vcNewGraphWin). If the
+% final varargin argument is set to 'no window', then the vcNewGraphWin is
+% suppressed.  Hence, you can use this call to plot within a subplot of a
+% current window.
+%
 % Plot types:
 %   2d psf angle - mesh.  wvfPlot(wvfP,'2d psf angle','arcmin',wave)
 %   2d psf space - mesh   wvfPlot(wvfP,'2d psf angle','um',wave)
@@ -25,12 +30,14 @@ function [uData, pData, fNum] = wvfPlot(wvfP,pType,varargin)
 % a peak of 1.
 %
 % Examples
-%    vcNewGraphWin; wvfP = wvfCreate; wvfP = wvfComputePSF(wvfP);
-%    unit = 'um'; waveIdx = 1;
+%    wvfP = wvfCreate; wvfP = wvfComputePSF(wvfP);
+%    unit = 'um'; wave = 550;
 %    [u,p]= wvfPlot(wvfP,'1d psf space',unit,wave);
 %    set(p,'color','k','linewidth',2)
 %
-%    wvfPlot(wvfP,'image psf',unit,waveIdx);
+%    vcNewGraphWin([],'tall');
+%    subplot(2,1,1), [u,p] = wvfPlot(wvfP,'1d psf space',unit,wave,'no window');
+%    subplot(2,1,2), wvfPlot(wvfP,'image psf',unit,wave,'no window');
 %
 % See also:  wvfComputePSF, wvfLoadHuman, vcNewGraphWin
 %
@@ -44,7 +51,16 @@ if ieNotDefined('pType'), pType = '1dpsf'; end
 uData = [];
 pType = ieParamFormat(pType);
 
-fNum = vcNewGraphWin;
+% Allow the last argument to turn off window opening.
+if ~isempty(varargin)
+    v = ieParamFormat(char(varargin{end}));
+    switch v
+        case {'nowindow','nofigure','noplot'}
+        otherwise
+            fNum = vcNewGraphWin;
+    end
+end
+
 switch(pType)
     
     case {'2dpsf','2dpsfangle','2dpsfanglenormalized'}
@@ -309,7 +325,10 @@ end
 %%% - Interpret the plotting arguments
 function [units, wList, pRange] = wvfReadArg(wvfP,theseArgs)
 
-if length(theseArgs) > 2, pRange = theseArgs{3};
+if length(theseArgs) > 2 && isnumeric(theseArgs{3})
+    % Make sure the final argument is not 'no window' or a string.  If it
+    % is numeric, then set it.
+    pRange = theseArgs{3};
 else pRange = Inf;
 end
 
