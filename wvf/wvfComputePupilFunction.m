@@ -201,27 +201,38 @@ if (~isfield(wvf,'pupilfunc') || ~isfield(wvf,'PUPILFUNCTION_STALE') || wvf.PUPI
             c(59) .*sqrt(22).* (210 .* norm_radius.^10 - 504 .* norm_radius.^8 + 420 .* norm_radius.^6 - 140 .* norm_radius.^4 + 15 .* norm_radius.^2) .* sin(2 .* theta) + ...
             c(60) .*sqrt(11).* (252 .* norm_radius.^10 - 630 .* norm_radius.^8 + 560 .* norm_radius.^6 - 210 .* norm_radius.^4 + 30 .* norm_radius.^2 - 1);
         
-        % Here is the pupil function
-        rawpupilfunc = exp(-1i * 2 * pi * wavefrontAberrationsUM/waveUM(ii));
-        pupilfunc{ii} = A.*rawpupilfunc;
+        % Here is the phase of the pupil function, with unit amplitude everywhere
+        pupilfuncphase = exp(-1i * 2 * pi * wavefrontAberrationsUM/waveUM(ii));
+        
+        % Set values outside the pupil we're calculating for to 0 amplitude
+        pupilfuncphase(norm_radius > calcPupilSizeMM/measPupilSizeMM)=0;
+        
+        % Multiply phase by the pupil function amplitude function.  Important
+        % to zero out before this step, because computation of A doesn't know
+        % about the pupil size.
+        pupilfunc{ii} = A.*pupilfuncphase;
         
         % We think the ratio of these two quantities tells us how
         % much light is effectively lost in cone absorbtions because
         % of the Stiles-Crawford effect.  They might as well be
         % computed here, because they depend only on the pupil
         % function and the sce params.
-        areapix(ii) = sum(sum(abs(rawpupilfunc)));
+        areapix(ii) = sum(sum(abs(pupilfuncphase)));
         areapixapod(ii) = sum(sum(abs(pupilfunc{ii})));
         
-        % Set values outside the pupil we're calculating for to 0
-        pupilfunc{ii}(norm_radius > calcPupilSizeMM/measPupilSizeMM)=0;
-        
-        % Attach the function the the proper wavelength slot
-        %wvf = wvfSet(wvf,'pupilfunc',pupilfunc,ii);
+        % Area pix used to be computed in another way, check that we get same
+        % answer.
+        kindex = find(norm_radius <= calcPupilSizeMM/measPupilSizeMM);
+        areapixcheck = numel(kindex);
+        if (areapix(ii) ~= areapixcheck)
+            error('Two ways of computing areapix do not agree');
+        end
     end
     close(wBar)
     
     wvf.pupilfunc = pupilfunc;
+    wvf.areapix = areapix;
+    wvf.areapixapod = areapixapod;
     wvf.PUPILFUNCTION_STALE = false;
     wvf.PSF_STALE = true;
     

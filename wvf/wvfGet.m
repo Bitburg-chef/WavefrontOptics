@@ -60,13 +60,15 @@ function val = wvfGet(wvf,parm,varargin)
 %  +  'sce fraction' - How much light is effectively lost by cones because of sce
 %  +  'areapix' - Used in computation of sce fraction
 %  +  'areapixapod' - Used in computation of sce fraction
+%  +  'cone sce fraction' - SCE fraction for cone psfs
 %
 % Pupil and sointspread function
 %  +  'pupil function' - The pupil function.  Must call wvfComputePupilFunction on wvf before get
 %  +  'psf' - Point spread function.  Must call wvfComputePSF on wvf before get
-%  +  'psf centered' - Peak of psf is at center of returned matrix
-%  +  '1d psf' - One dimensional horizontal (along row) slice through psf centered on its max
-%  +  'diffraction psf' - Diffraction limite psf
+%  +  'psf centered' - Peak of PSF is at center of returned matrix
+%  +  '1d psf' - One dimensional horizontal (along row) slice through PSF centered on its max
+%  +  'diffraction psf' - Diffraction limite PSF
+%  +  'cone psf' - PSF as seen by cones for given weighting spectrum.
 %
 % Need to be implemented/checked/documented
 %  +  'distanceperpix'
@@ -96,6 +98,7 @@ function val = wvfGet(wvf,parm,varargin)
 %   7/20/12 dhb      Get rid of weighting spectrum, replace with cone psf info structure
 %           dhb      Fix up areapix, areapixapod, scefrac and add comments.
 %           dhb      Added more checking for stale pupil function and psf where needed.
+%           dhb      Get of cone psf and cone sce fraction
 
 if ~exist('parm','var') || isempty(parm), error('Parameter must be defined.'); end
 
@@ -395,7 +398,7 @@ switch parm
         if length(varargin) > 1, val = val(varargin{2}); end
         DIDAGET = true;
         
-    case {'calc cone psf info'}
+    case {'calcconepsfinfo'}
         % Weighting spectrum used in calculation of polychromatic psf
         val = wvf.conePsfInfo;
         DIDAGET = true;
@@ -470,10 +473,10 @@ switch parm
         end
         
         if isempty(varargin)
-            wvfGet(wvf,'area pixapod') / wvfGet(wvf,'areapix');
+            vak = wvfGet(wvf,'area pixapod') ./ wvfGet(wvf,'areapix');
         else
             wList = varargin{1};
-            val = wvfGet(wvf,'area pixapod',wList) / wvfGet(wvf,'areapix',wList);
+            val = wvfGet(wvf,'area pixapod',wList) ./ wvfGet(wvf,'areapix',wList);
         end
         DIDAGET = true;
         
@@ -531,6 +534,17 @@ switch parm
             else val = wvf.areapixapod(idx);
             end
         end
+        DIDAGET = true;
+        
+        case {'conescefraction'}
+        % SCE fraction for cone psfs
+
+        % Can't do this unless psf is computed and not stale
+        if (~isfield(wvf,'psf') || ~isfield(wvf,'PSF_STALE') || wvf.PSF_STALE)
+            error('Must explicitly compute PSF on wvf structure before getting it.  Use wvfComputePSF');
+        end
+        
+        [nil,coneSceFraction] = wvfComputeConePSF(wvf);
         DIDAGET = true;
 end
 
@@ -675,6 +689,20 @@ switch parm
         
         psf = psfCenter(wvfGet(wvf,'psf',wList));
         val = psf(whichRow,:);
+        DIDAGET = true;
+        
+    case 'conepsf'
+        % PSF as seen by cones for specified weighting spectrum
+        
+        % Force user to code to explicitly compute the PSF if it isn't done.  Not ideal
+        % but should be OK.
+        if (~isfield(wvf,'psf') || ~isfield(wvf,'PSF_STALE') || wvf.PSF_STALE)
+            error('Must explicitly compute PSF on wvf structure before getting it.  Use wvfComputePSF');
+        end
+        
+        % Defaults
+        val = wvfComputeConePSF(wvf);
+
         DIDAGET = true;
 end
 

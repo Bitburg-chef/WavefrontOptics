@@ -11,6 +11,7 @@
 %
 % 8/21/11  dhb  Wrote it.
 % 3/15/12  mdl  Edited to use wvfSet. Also updated to use fieldSampleSizeMMperPixel
+% 7/20/12  dhb  Got TEST1 to work without crashing, and possibly even to be correct.
 
 %% Initialize
 clear; close all;
@@ -24,13 +25,14 @@ DOSCE = 0;
 plotLimit = 2;
 CIRCULARLYAVERAGE = 1;
 
-%% Load cone sensitivities, set weighting spectrum.
-S = [400 5 61];
-wls = SToWls(S);
-load T_cones_ss2;
-T_cones = SplineCmf(S_cones_ss2,T_cones_ss2,S);
-load spd_D65
-weightingSpectrum = SplineSpd(S_D65,spd_D65,S);
+% Cone sensitivities and weighting spectrum
+load('T_cones_ss2');
+conePsfInfo.S = S_cones_ss2;
+conePsfInfo.T = T_cones_ss2;
+conePsfInfo.spdWeighting = ones(conePsfInfo.S(3),1);
+
+% Calculation wavelengths for PSF.  
+wls = SToWls([400 20 16]);
 
 %% TEST1: Just make sure the code runs for some
 % choice of parameters.  Focus is not optimized
@@ -47,6 +49,8 @@ end
 wvf0 = wvfCreate;
 wvf0 = wvfSet(wvf0,'zcoeffs',theZernikeCoeffs(:,whichSubject));
 wvf0 = wvfSet(wvf0,'calc wavelengths',wls);
+wvf0 = wvfSet(wvf0,'calc cone psf info',conePsfInfo);
+
 if (DOSCE == 1)
     sce = sceCreate(wls,'berendshot');
     wvf0 = wvfSet(wvf0,'sce params',sce);
@@ -57,17 +61,20 @@ end
 
 % Compute LMS psfs both for a subject and diffraction limited
 wvfParams1 = wvf0;
-wvfParams1 = wvfComputeConePSF(wvfParams1);
-wvfParams2 = wvf0;
-wvfParams2.zcoeffs = diffracZcoeffs;
-wvfParams2 = wvfComputeConePSF(wvfParams2);
+wvfParams1 = wvfComputePSF(wvfParams1);
+conePsf1 = wvfGet(wvfParams1,'cone psf');
 
-lpsf = psfCenter(wvfParams1.conepsf(:,:,1));
-mpsf = psfCenter(wvfParams1.conepsf(:,:,2));
-spsf = psfCenter(wvfParams1.conepsf(:,:,3));
-lpsfd = psfCenter(wvfParams2.conepsf(:,:,1));
-mpsfd = psfCenter(wvfParams2.conepsf(:,:,2));
-spsfd = psfCenter(wvfParams2.conepsf(:,:,3));
+wvfParams2 = wvf0;
+wvfParams2.zcoeffs = zeros(size(theZernikeCoeffs(:,whichSubject)));
+wvfParams2 = wvfComputePSF(wvfParams2);
+conePsf2 = wvfGet(wvfParams2,'cone psf');
+
+lpsf = psfCenter(conePsf1(:,:,1));
+mpsf = psfCenter(conePsf1(:,:,2));
+spsf = psfCenter(conePsf1(:,:,3));
+lpsfd = psfCenter(conePsf2(:,:,1));
+mpsfd = psfCenter(conePsf2(:,:,2));
+spsfd = psfCenter(conePsf2(:,:,3));
 
 if (CIRCULARLYAVERAGE)
     lpsf = psfCircularlyAverage(lpsf);
@@ -77,8 +84,13 @@ if (CIRCULARLYAVERAGE)
     mpsfd = psfCircularlyAverage(mpsfd);
     spsfd = psfCircularlyAverage(spsfd);
 end
-whichRow = floor(wvfGet(wvfParams1,'npixels')/2) + 1;
-arcminutes = wvfParams1.arcminperpix*((1:wvfGet(wvfParams1,'npixels'))-whichRow);
+whichRow = wvfGet(wvfParams1,'middle row');
+for i = 1:length(wls)
+    if (wvfGet(wvfParams1,'psf arcmin per sample',wls(1)) ~= wvfGet(wvfParams1,'psf arcmin per sample',wls(i)))
+        error('Error in spatial sampling consistency across wavelengths');
+    end
+end
+arcminutes = wvfGet(wvfParams1,'psf arcmin per sample',wls(1))*((1:wvfGet(wvfParams1,'spatial samples'))-whichRow);
 
 % Make a plot through the peak of the returned PSFs.
 theFig = figure; clf;
@@ -130,6 +142,8 @@ else
     title('S cone PSF');
 end
 drawnow;
+
+return
 
 %% TEST2.  Optimize focus and add to the plot.
 %
