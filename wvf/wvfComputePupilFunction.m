@@ -79,6 +79,8 @@ if (~isfield(wvf,'pupilfunc') || ~isfield(wvf,'PUPILFUNCTION_STALE') || wvf.PUPI
     % dependent.
     wBar = waitbar(0,'Computing pupil functions');
     pupilfunc = cell(nWavelengths,1);
+    areapix = zeros(nWavelengths,1);
+    areapixapod = zeros(nWavelengths,1);
     for ii=1:nWavelengths
         thisWave = waveNM(ii);
         waitbar(ii/nWavelengths,wBar,sprintf('Pupil function for %.0f',thisWave));
@@ -110,7 +112,12 @@ if (~isfield(wvf,'pupilfunc') || ~isfield(wvf,'PUPILFUNCTION_STALE') || wvf.PUPI
             
             % 3/9/2012, MDL: Removed nested for loop for calculating the
             % SCE. Note previous code had x as rows of matrix, y as columns of
-            % matrix. This has been corrected so that x is columns, y is rows.
+            % matrix. This has been changed so that x is columns, y is rows.
+            %
+            % This change produces a change of the orientation of the pupil
+            % function/psf relative to what Heidi's original code produced.
+            % We should find out which way actually matches the PSF on the
+            % eye, given the way the Zernike coefficients are defined.
             A = 10.^(-rho*((xpos-xo).^2+(ypos-yo).^2));
         end
         
@@ -195,7 +202,16 @@ if (~isfield(wvf,'pupilfunc') || ~isfield(wvf,'PUPILFUNCTION_STALE') || wvf.PUPI
             c(60) .*sqrt(11).* (252 .* norm_radius.^10 - 630 .* norm_radius.^8 + 560 .* norm_radius.^6 - 210 .* norm_radius.^4 + 30 .* norm_radius.^2 - 1);
         
         % Here is the pupil function
-        pupilfunc{ii} = A.*exp(-1i * 2 * pi * wavefrontAberrationsUM/waveUM(ii));
+        rawpupilfunc = exp(-1i * 2 * pi * wavefrontAberrationsUM/waveUM(ii));
+        pupilfunc{ii} = A.*rawpupilfunc;
+        
+        % We think the ratio of these two quantities tells us how
+        % much light is effectively lost in cone absorbtions because
+        % of the Stiles-Crawford effect.  They might as well be
+        % computed here, because they depend only on the pupil
+        % function and the sce params.
+        areapix(ii) = sum(sum(abs(rawpupilfunc)));
+        areapixapod(ii) = sum(sum(abs(pupilfunc{ii})));
         
         % Set values outside the pupil we're calculating for to 0
         pupilfunc{ii}(norm_radius > calcPupilSizeMM/measPupilSizeMM)=0;
