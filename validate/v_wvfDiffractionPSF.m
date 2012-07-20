@@ -6,18 +6,6 @@
 % See also: wvfCreate, wvfGet, wvfSet, wvfComputePSF, wvfComputePupilFunction,
 %   wvfLCAFromWavelengthDifference
 %
-% TODO
-%   a) Compare with ISET.  The implementation there uses spatial units, not
-%   angles, to specify the samples. Further, it uses f-number, not just
-%   pupil size.  So we need to build up ISET so that we can compute the psf
-%   in terms of visual angle using only a pupil diameter (e.g., 3mm)
-%   irrespective of the focal length (or equivalently f-number).
-%
-%   Is it the case that if we compute 
-%     * the diffraction limited function for any f-number 
-%     * use the focal length to  convert the spatial samples to arcmin 
-%     * the result is the function for that aperture size
-%
 % 6/5/12  dhb  Got this to work with current code.
 % 7/1/12  bw   Replaced waveIdx with wList in wvfGet and here and ...
 %              Maybe we should just use GIT for these comments.
@@ -29,9 +17,10 @@
 %              because the wvfPlot function creates its own windows.
 %         dhb  Verify that diffraction limited output is independent of
 %              specified measured pupil size.
-%         dhb  Only compute ISET version if iset is on path.  This is
+%         dhb  Only compute VSET version if it is on path.  This is
 %              a bit of a tilt at windmills, since there are many other
-%              iset dependencies, but it's a start.
+%              vset dependencies.
+% 7/20/12 dhb  Change iset comments to vset.
 %
 % (c) Wavefront Toolbox Team, 2012
 
@@ -65,6 +54,15 @@ wList = wvfGet(wvf0,'wave');
 
 % Calculate the PSF, normalized to peak of 1.
 wvf0 = wvfComputePSF(wvf0);
+
+% Make sure psf computed this way (with zcoeffs zeroed) matches
+% what is returned by our internal get of diffraction limited
+% psf.
+psf = wvfGet(wvf0,'psf');
+diffpsf = wvfGet(wvf0,'diffraction psf');
+if (any(abs(psf(:)-diffpsf(:)) ~= 0))
+    error('Internal computation of diffraction limited psf does not match explicit calc');
+end
 
 % Get out parameters for various checks
 calcWavelength = wvfGet(wvf0,'wavelength');
@@ -105,11 +103,11 @@ xlabel('Arc Minutes');
 ylabel('Normalized PSF');
 title(sprintf('Diffraction limited, %0.1f mm pupil, %0.f nm',calcPupilMM,calcWavelength));
 
-%% Do the same thing using iset functions, if they exist on the path
+%% Do the same thing using vset functions, if they exist on the path
 %
-% The conversion between ISET and these other methods is pretty good, too.
+% The conversion between VSET and these other methods is pretty good, too.
 % So, diffraction limited point spread, measured for 3.0mm is the same when
-% done with ISET, PTB and WVF.
+% done with VSET, PTB and WVF.
 if (exist('oiCreate','file'))
     thisWave = 550;
     oi = oiCreate;
@@ -137,7 +135,7 @@ if (exist('oiCreate','file'))
     xlabel('Arc min')
     set(gca,'xlim',[-2 2])
     grid on
-    legend('WVF','ISET','PTB');
+    legend('WVF','VSET','PTB');
 end
 
 %% Repeat the calculation with a wavelength offset.  
