@@ -54,7 +54,7 @@ function wvf = wvfSet(wvf,parm,val,varargin)
 %     'calc observer accommodation' - Observer accommodation at calculation time (diopters)
 %     'calc observer focus correction' - Focus correction added optically for observer at calculation time (diopters)
 %     'calc wavelengths' - Wavelengths to calculate over (nm,*)
-%     'calc weight spectrum' - Weighting spectrum to be used in calculation of polychromatic psf
+%     'calc cone psf info' - Structure with cone sensitivities and weighting spectrum for computing cone psfs.
 %
 % Stiles Crawford Effect
 %     'sce params' - The whole sce parameter structure
@@ -82,6 +82,7 @@ function wvf = wvfSet(wvf,parm,val,varargin)
 %                 to see if anything breaks.
 %            dhb  Added some checks for error conditions, modified some
 %                 comments, added some notes to think about.
+%   7/20/12 dhb      Get rid of weighting spectrum, replace with cone psf info structure
 %
 % (c) Wavefront Toolbox Team 2011, 2012
 
@@ -362,12 +363,11 @@ switch parm
         wvf.PUPILFUNCTION_STALE = true;
         DIDASET = true;
        
-    case {'calcweightspectrum' 'weightspectrum'}
-        % Weighting spectrum used for computation of polychromatic psfs
-        if (length(val) ~= length(wvf.wls))
-            error('Weighting spectrum dimension must match number of wavelengths');
-        end
-        wvf.weightingSpectrum = val;
+    case {'calcconepsfinfo'}
+        % Structure that has cone sensitivities and a
+        % weighting function for aggregating the polychromatic
+        % psf down to cone psfs.
+        wvf.conePsfInfo = val;
         DIDASET = true;
 end
 

@@ -10,6 +10,9 @@ function wvf = wvfCreate(varargin)
 % Examples:
 %    wvf = wvfCreate('wave',[400:10:700]);
 %
+% History
+%   7/20/12 dhb      Get rid of weighting spectrum, replace with cone psf info structure
+%
 % (c) Wavefront Toolbox Team 2011, 2012
 
 %% Book-keeping
@@ -30,30 +33,26 @@ wvf = wvfSet(wvf,'sample interval domain','psf');
 wvf = wvfSet(wvf,'spatial samples',201);
 wvf = wvfSet(wvf,'ref pupil plane size',16.212);
 
-%% Calculation
+%% Calculation parameters
 wvf = wvfSet(wvf,'calc pupil size',3);
 wvf = wvfSet(wvf,'calc wavelengths',550);
 wvf = wvfSet(wvf,'calc optical axis',0);
 wvf = wvfSet(wvf,'calc observer accommodation',0);
 wvf = wvfSet(wvf,'calc observer focus correction',0);
 
-% Something about the cones.  
-% S is a length 3 vector of the format: [start spacing Nsamples]
-% ex: S = [400 50 5]; 5 wavelength samples 400, 450, 500, 550, 600
-S = [550 1 1]; 
-T = load('T_cones_ss2');   % Probably in the PTB
-T_cones = SplineCmf(T.S_cones_ss2,T.T_cones_ss2,S);
-% vcNewGraphWin; plot(wave,T_cones'); xlabel('Wavelength (nm)');
+% Cone sensitivities and weighting spectrum for combining the PSFs across
+% wavelengths.  We keep these as a structure at something resembling a
+% wide range of wavelength samples, along with the wavelength info.  
+% When we use them, we spline down to the wavelength sampling of the psfs.
+% These follow PTB spectral conventions.
+load('T_cones_ss2');
+conePsfInfo.S = S_cones_ss2;
+conePsfInfo.T = T_cones_ss2;
+conePsfInfo.spdWeighting = ones(conePsfInfo.S(3),1);
+wvf = wvfSet(wvf,'calc cone psf info',conePsfInfo);
 
-% Weighting spectrum, for combining the PSFs in an average 
-T = load('spd_D65');
-weightingSpectrum = SplineSpd(T.S_D65,T.spd_D65,S);
-
-wvf.T_cones = T_cones;                      % Resampled cone spectral absorptions
-wvf.weightingSpectrum = weightingSpectrum;  % Probably used for combined psf
-
-% Sets up the Stiles Crawford Effect parameters. 
-wvf.sceParams = sceCreate([],'none');
+% Stiles Crawford Effect parameters. 
+wvf = wvfSet(wvf,'sce params',sceCreate([],'none'));
 
 % Handle any additional arguments via wvfSet
 if ~isempty(varargin)
