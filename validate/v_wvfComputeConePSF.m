@@ -20,10 +20,14 @@ cd(fileparts(s));
 s_initISET;
 
 %% Parameters
+% What measurement pupil size goes with Atrusseau data?
 whichSubject = 1;
+dataFile = 'autrusseauStandardObserver.txt';
 DOSCE = 0;
+CIRCULARLYAVERAGE = 0;
+CENTER = 1;
 plotLimit = 2;
-CIRCULARLYAVERAGE = 1;
+plotLimitFreq = 60;
 
 % Cone sensitivities and weighting spectrum
 load('T_cones_ss2');
@@ -39,13 +43,7 @@ wls = SToWls([400 20 16]);
 % to produce the best PSFs.
 %
 % This appears to work correctly.
-theZernikeCoeffs = load('sampleZernikeCoeffs.txt','-ascii');
-if (size(theZernikeCoeffs,2) == 585)
-    theZernikeCoeffs = reshape(theZernikeCoeffs,9,65)';
-end
-if (size(theZernikeCoeffs,1) ~= 65 || size(theZernikeCoeffs,2) ~= 9)
-    error('Surprising size for read in Hofer zSamples.')
-end
+theZernikeCoeffs = importdata(dataFile);
 wvf0 = wvfCreate;
 wvf0 = wvfSet(wvf0,'zcoeffs',theZernikeCoeffs(:,whichSubject));
 wvf0 = wvfSet(wvf0,'calc wavelengths',wls);
@@ -69,12 +67,21 @@ wvfParams2.zcoeffs = zeros(size(theZernikeCoeffs(:,whichSubject)));
 wvfParams2 = wvfComputePSF(wvfParams2);
 conePsf2 = wvfGet(wvfParams2,'cone psf');
 
-lpsf = psfCenter(conePsf1(:,:,1));
-mpsf = psfCenter(conePsf1(:,:,2));
-spsf = psfCenter(conePsf1(:,:,3));
-lpsfd = psfCenter(conePsf2(:,:,1));
-mpsfd = psfCenter(conePsf2(:,:,2));
-spsfd = psfCenter(conePsf2(:,:,3));
+if (CENTER)
+    lpsf = psfCenter(conePsf1(:,:,1));
+    mpsf = psfCenter(conePsf1(:,:,2));
+    spsf = psfCenter(conePsf1(:,:,3));
+    lpsfd = psfCenter(conePsf2(:,:,1));
+    mpsfd = psfCenter(conePsf2(:,:,2));
+    spsfd = psfCenter(conePsf2(:,:,3));
+else
+    lpsf = conePsf1(:,:,1);
+    mpsf = conePsf1(:,:,2);
+    spsf = conePsf1(:,:,3);
+    lpsfd = conePsf2(:,:,1);
+    mpsfd = conePsf2(:,:,2);
+    spsfd = conePsf2(:,:,3);
+end
 
 if (CIRCULARLYAVERAGE)
     lpsf = psfCircularlyAverage(lpsf);
@@ -84,6 +91,7 @@ if (CIRCULARLYAVERAGE)
     mpsfd = psfCircularlyAverage(mpsfd);
     spsfd = psfCircularlyAverage(spsfd);
 end
+
 whichRow = wvfGet(wvfParams1,'middle row');
 for i = 1:length(wls)
     if (wvfGet(wvfParams1,'psf arcmin per sample',wls(1)) ~= wvfGet(wvfParams1,'psf arcmin per sample',wls(i)))
@@ -105,7 +113,6 @@ plot(arcminutes(index),onedLPSF(index),'r','LineWidth',2);
 plot(arcminutes(index),onedLPSFD(index),'k','LineWidth',4);
 xlabel('Arc Minutes');
 ylabel('PSF');
-
 if (CIRCULARLYAVERAGE)
     title('Circularized L cone PSF');
 else
@@ -120,7 +127,6 @@ plot(arcminutes(index),onedMPSF(index),'g','LineWidth',2);
 plot(arcminutes(index),onedMPSFD(index),'k','LineWidth',4);
 xlabel('Arc Minutes');
 ylabel('PSF');
-
 if (CIRCULARLYAVERAGE)
     title('Circularized M cone PSF');
 else
@@ -135,7 +141,67 @@ plot(arcminutes(index),onedSPSF(index),'b','LineWidth',2);
 plot(arcminutes(index),onedSPSFD(index),'k','LineWidth',4);
 xlabel('Arc Minutes');
 ylabel('PSF');
+if (CIRCULARLYAVERAGE)
+    title('Circularized S cone PSF');
+else
+    title('S cone PSF');
+end
+drawnow;
 
+%% Take a look in frequency domain.
+%
+% This is not right yet.  
+lotf = psf2otf(lpsf);
+motf = psf2otf(mpsf);
+sotf = psf2otf(spsf);
+lotfd = psf2otf(lpsfd);
+motfd = psf2otf(mpsfd);
+sotfd = psf2otf(spsfd);
+totalDegrees = (arcminutes(end)-arcminutes(1))/60;
+cyclesDegreePerPixel = 1/totalDegrees;
+cyclesdegree = cyclesDegreePerPixel*((1:wvfGet(wvfParams1,'spatial samples'))-whichRow);
+
+% Make a plot of the horizontal MTF
+theFig = figure; clf;
+position = get(gcf,'Position');
+position(3) = 1600;
+set(gcf,'Position',position);
+subplot(1,3,1); hold on
+onedLOTF = abs(lotf(whichRow,:));
+onedLOTFD = abs(lotfd(whichRow,:));
+index = find(abs(cyclesdegree) < plotLimitFreq);
+%plot(cyclesdegree(index),onedLOTF(index),'r','LineWidth',2);
+plot(cyclesdegree(index),onedLOTFD(index),'k','LineWidth',4);
+xlabel('Cycles/Degree');
+ylabel('OTF');
+if (CIRCULARLYAVERAGE)
+    title('Circularized L cone PSF');
+else
+    title('L cone OTF');
+end
+
+subplot(1,3,2); hold on
+onedMPSF = mpsf(whichRow,:);
+onedMPSFD = mpsfd(whichRow,:);
+index = find(abs(arcminutes) < plotLimit);
+plot(arcminutes(index),onedMPSF(index),'g','LineWidth',2);
+plot(arcminutes(index),onedMPSFD(index),'k','LineWidth',4);
+xlabel('Arc Minutes');
+ylabel('PSF');
+if (CIRCULARLYAVERAGE)
+    title('Circularized M cone PSF');
+else
+    title('M cone PSF');
+end
+
+subplot(1,3,3); hold on
+onedSPSF = spsf(whichRow,:);
+onedSPSFD = spsfd(whichRow,:);
+index = find(abs(arcminutes) < plotLimit);
+plot(arcminutes(index),onedSPSF(index),'b','LineWidth',2);
+plot(arcminutes(index),onedSPSFD(index),'k','LineWidth',4);
+xlabel('Arc Minutes');
+ylabel('PSF');
 if (CIRCULARLYAVERAGE)
     title('Circularized S cone PSF');
 else
