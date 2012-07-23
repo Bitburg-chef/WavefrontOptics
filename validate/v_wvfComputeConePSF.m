@@ -3,7 +3,9 @@
 % Test the routines that compute L, M, and S cone PSFs from Zernike
 % coefficients.
 %
-% The idea is to reproduce the calculatoins in Autrusseau et al.
+% The idea is to reproduce the calculations in Autrusseau et al.
+% This is getting answers in the same ballpark, but not exactly the
+% same.
 %
 % See also: wvfComputeConePSF, wvfComputePSF, wvfComputePupilFunction,
 %   sceGetParams, wvfGetDefocusFromWavelengthDifference
@@ -30,7 +32,7 @@ DOSCE = 0;
 
 
 CIRCULARLYAVERAGE = 0;
-CENTER = 1;
+CENTER = 0;
 plotLimit = 6;
 plotLimitFreq = 80;
 
@@ -41,15 +43,18 @@ plotLimitFreq = 80;
 % 0th Zernike mode number, and we don't use
 % this.  But I am not 100 percent sure.
 %
-% I think their coefficients are for a measured
+% Their coefficients are for a measured
 % pupil of 6 mm and that their calculations are
-% also for 6 mm.  Again, not 100 percent sure.
+% also for 6 mm. They use 570 nm as their
+% measured (in focus) wavelength.  [Their methods,
+% p. 2284]. 
 whichSubject = 1;
 dataFile = 'autrusseauStandardObserver.txt';
 theZernikeCoeffs = importdata(dataFile);
 theZernikeCoeffs = theZernikeCoeffs(2:end);
 measPupilMM = 6;
 calcPupilMM = 6;
+measWavelength = 570;
 
 % Cone sensitivities and equal energy weighting spectrum
 load('T_cones_ss2');
@@ -58,17 +63,23 @@ conePsfInfo.T = T_cones_ss2;
 conePsfInfo.spdWeighting = ones(conePsfInfo.S(3),1);
 
 % Calculation wavelengths for PSF.  
-wls = SToWls([400 20 16]);
+wls = SToWls([400 10 31]);
 
-%% TEST1: Just make sure the code runs for some
-% choice of parameters.  Focus is not optimized
-% to produce the best PSFs.
-%
-% This appears to work correctly.
+%% TEST1: Try to reproduce Autrusseau et al. results.
+% No focus optimization.
 wvf0 = wvfCreate;
+
+% The short wavelength PSFs get blurred enough that we need more pixels to
+% contain them than our defaults provide.  Adjust to keep sempling density
+% in psf plane the same, but increase space sampled.
+origSamples = wvfGet(wvf0,'spatial samples');
+newSamples = 301;
+wvf0 = wvfSet(wvf0,'spatial samples',newSamples);
+wvf = wvfSet(wvf0,'ref pupil plane size',newSamples/origSamples*wvfGet(wvf0,'ref pupil plane size'));
 wvf0 = wvfSet(wvf0,'measured pupil size',measPupilMM);
 wvf0 = wvfSet(wvf0,'calc pupil size',calcPupilMM);
 wvf0 = wvfSet(wvf0,'zcoeffs',theZernikeCoeffs(:,whichSubject));
+wvf0 = wvfSet(wvf0,'measured wavelength',measWavelength);
 wvf0 = wvfSet(wvf0,'calc wavelengths',wls);
 wvf0 = wvfSet(wvf0,'calc cone psf info',conePsfInfo);
 
@@ -86,7 +97,7 @@ wvfParams1 = wvfComputePSF(wvfParams1);
 conePsf1 = wvfGet(wvfParams1,'cone psf');
 
 wvfParams2 = wvf0;
-wvfParams2.zcoeffs = zeros(size(theZernikeCoeffs(:,whichSubject)));
+wvfParams2 = wvfSet(wvfParams2,'zcoeffs',zeros(65,1));
 wvfParams2 = wvfComputePSF(wvfParams2);
 conePsf2 = wvfGet(wvfParams2,'cone psf');
 
@@ -192,8 +203,16 @@ cyclesdegree = cyclesDegreePerPixel*((1:wvfGet(wvfParams1,'spatial samples'))-wh
 
 % Read in Autrusseau data for comparison
 %
-% The fields come in badly labeled.  The mtf is not
-% log mtf, it's just straight mtf.
+% The fields come in badly labeled, because I misunderstood
+% the graph when I digitzed it.  The mtf in the file is not
+% log mtf, it's just the straight mtf.
+%
+% Note that Autrussea et al. didn't use the Fourier transform
+% instead literally convolved the psf at each wavelength
+% with a sinusoidal stimulus at the same wavelength, and then summed
+% up the results over wavelength, weighting by the cone sensitivities.
+% I think what we do is equivalent, but we may have to code it up and
+% check.
 autrusseauFigure11 = ReadStructsFromText('autrusseauFigure11.txt');
 
 % Make a plot of the horizontal MTF
@@ -258,6 +277,33 @@ else
     title('S cone OTF');
 end
 drawnow;
+
+%% Make a figure comparable to Autrusseau et al, Figure 2
+% (top row) and Figure 3b (bottom row).
+%
+% This shows diffraction limited and standard observer PSFs at different
+% wavelengths, given focus at 570.
+figure; clf;
+wavelengths = [400 550 700];
+for i = 1:length(wavelengths);
+    wavelength = wavelengths(i);
+    focusWl = wvfGet(wvfParams2,'measured wavelength');
+    subplot(2,length(wavelengths),i); hold on
+    psf = wvfGet(wvfParams2,'psf',wavelength);
+    maxVal = max(psf(:));
+    [nil,p] = wvfPlot(wvfParams2,'2d psf angle','min',wavelength,'no window');
+    h = get(p,'Parent');
+    view([0 90]); ylim([-30 30]); xlim([-30 30]); axis('square');
+    title(sprintf('%d nm, focus %d nm, max = %0.5f',wavelength,focusWl,maxVal));
+    
+    subplot(2,length(wavelengths),i+3); hold on
+    psf = wvfGet(wvfParams1,'psf',wavelength);
+    maxVal = max(psf(:));
+    [nil,p] = wvfPlot(wvfParams1,'2d psf angle','min',wavelength,'no window');
+    h = get(p,'Parent');
+    view([0 90]); ylim([-30 30]); xlim([-30 30]); axis('square');
+    title(sprintf('%d nm, focus %d nm, max = %0.5f',wavelength,focusWl,maxVal));
+end
 
 return
 
