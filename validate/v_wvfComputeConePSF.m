@@ -3,8 +3,7 @@
 % Test the routines that compute L, M, and S cone PSFs from Zernike
 % coefficients.
 %
-% The idea is to reproduce the calculatoins in Autrusseau et al.  At
-% present, we get a ballpark similar answer but differ in many details
+% The idea is to reproduce the calculatoins in Autrusseau et al.
 %
 % See also: wvfComputeConePSF, wvfComputePSF, wvfComputePupilFunction,
 %   sceGetParams, wvfGetDefocusFromWavelengthDifference
@@ -25,14 +24,32 @@ cd(fileparts(s));
 s_initISET;
 
 %% Parameters
-% What measurement pupil size goes with Atrusseau data?
-whichSubject = 1;
-dataFile = 'autrusseauStandardObserver.txt';
+%
+% Did Autruesseau et al. incorporate a model of the SCE?
 DOSCE = 0;
+
+
 CIRCULARLYAVERAGE = 0;
 CENTER = 1;
 plotLimit = 6;
 plotLimitFreq = 80;
+
+%% Test data
+%
+% This is the Autrussea standard observer.
+% I think their first coefficient is the
+% 0th Zernike mode number, and we don't use
+% this.  But I am not 100 percent sure.
+%
+% I think their coefficients are for a measured
+% pupil of 6 mm and that their calculations are
+% also for 6 mm.  Again, not 100 percent sure.
+whichSubject = 1;
+dataFile = 'autrusseauStandardObserver.txt';
+theZernikeCoeffs = importdata(dataFile);
+theZernikeCoeffs = theZernikeCoeffs(2:end);
+measPupilMM = 6;
+calcPupilMM = 6;
 
 % Cone sensitivities and equal energy weighting spectrum
 load('T_cones_ss2');
@@ -48,8 +65,9 @@ wls = SToWls([400 20 16]);
 % to produce the best PSFs.
 %
 % This appears to work correctly.
-theZernikeCoeffs = importdata(dataFile);
 wvf0 = wvfCreate;
+wvf0 = wvfSet(wvf0,'measured pupil size',measPupilMM);
+wvf0 = wvfSet(wvf0,'calc pupil size',calcPupilMM);
 wvf0 = wvfSet(wvf0,'zcoeffs',theZernikeCoeffs(:,whichSubject));
 wvf0 = wvfSet(wvf0,'calc wavelengths',wls);
 wvf0 = wvfSet(wvf0,'calc cone psf info',conePsfInfo);
@@ -165,6 +183,9 @@ sotf = fftshift(fft2(spsf));
 lotfd = fftshift(fft2(lpsfd));
 motfd = fftshift(fft2(mpsfd));
 sotfd = fftshift(fft2(spsfd));
+
+% Figure out the scale in the frequency domain.
+% THIS NEEDS DOUBLE CHECKING.
 totalDegrees = (arcminutes(end)-arcminutes(1))/60;
 cyclesDegreePerPixel = 1/totalDegrees;
 cyclesdegree = cyclesDegreePerPixel*((1:wvfGet(wvfParams1,'spatial samples'))-whichRow);
@@ -225,7 +246,7 @@ onedSOTFD = abs(sotfd(whichRow,:));
 index = find(abs(cyclesdegree) < plotLimitFreq);
 plot(cyclesdegree(index),log10(onedSOTFH(index)),'b','LineWidth',2);
 plot(cyclesdegree(index),log10(onedSOTFV(index)),'b:','LineWidth',2);
-plot([autrusseauFigure11.sf_cpd],log10([autrusseauFigure11.log10_Mmtf_ees]),'bo','MarkerSize',8,'MarkerFaceColor','b');
+plot([autrusseauFigure11.sf_cpd],log10([autrusseauFigure11.log10_Smtf_ees]),'bo','MarkerSize',8,'MarkerFaceColor','b');
 plot(cyclesdegree(index),log10(onedSOTFD(index)),'k','LineWidth',1);
 xlim([0 plotLimitFreq]);
 ylim([-3 0]);
