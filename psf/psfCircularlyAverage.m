@@ -1,11 +1,13 @@
 function outPSF = psfCircularlyAverage(inPSF)
 % outPSF = psfCircularlyAverage(inPSF)
 %
-% As the name suggests.
+% As the name suggests.  The output volume is
+% scaled to match the input volume.
 %
 % 7/19/07   dhb  Wrote it.
 % 12/22/09  dhb  Fix bug in how peakRow and peakCol are computed.
 % 12/22/09  dhb  Make computation a little more fine grained.
+% 7/23/12   dhb  Match out volume to in volume.
 
 % Define quantization.  Four was used in early code, but 1 makes more sense.
 quantizationFactor = 1;
@@ -28,4 +30,4 @@ for q = 1:length(radii)-1;
         outPSF(index) = mean(inPSF(index));
     end
 end
-outPSF = outPSF/sum(outPSF(:));
+outPSF = sum(inPSF(:))*outPSF/sum(outPSF(:));
