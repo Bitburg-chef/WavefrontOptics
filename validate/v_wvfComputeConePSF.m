@@ -1,17 +1,22 @@
 % v_wvfComputeConePSF
 %
-% The the routines that compute L, M, and S cone PSFs from Zernike
+% Test the routines that compute L, M, and S cone PSFs from Zernike
 % coefficients.
+%
+% The idea is to reproduce the calculatoins in Autrusseau et al.  At
+% present, we get a ballpark similar answer but differ in many details
 %
 % See also: wvfComputeConePSF, wvfComputePSF, wvfComputePupilFunction,
 %   sceGetParams, wvfGetDefocusFromWavelengthDifference
 %
 % The circular averaging is not a good idea for a single subject, but if
-% you want to obtain an average over subjects it seems like a good idea.
+% you want to obtain an average over subjects it might be good.
 %
 % 8/21/11  dhb  Wrote it.
 % 3/15/12  mdl  Edited to use wvfSet. Also updated to use fieldSampleSizeMMperPixel
 % 7/20/12  dhb  Got TEST1 to work without crashing, and possibly even to be correct.
+% 7/23/12  dhb  OTF plot is looking reasonable, although still could be wrong.
+%               Added Autrusseau equal energy OTFs for comparison
 
 %% Initialize
 clear; close all;
@@ -26,10 +31,10 @@ dataFile = 'autrusseauStandardObserver.txt';
 DOSCE = 0;
 CIRCULARLYAVERAGE = 0;
 CENTER = 1;
-plotLimit = 2;
-plotLimitFreq = 60;
+plotLimit = 6;
+plotLimitFreq = 80;
 
-% Cone sensitivities and weighting spectrum
+% Cone sensitivities and equal energy weighting spectrum
 load('T_cones_ss2');
 conePsfInfo.S = S_cones_ss2;
 conePsfInfo.T = T_cones_ss2;
@@ -150,16 +155,25 @@ drawnow;
 
 %% Take a look in frequency domain.
 %
-% This is not right yet.  
-lotf = psf2otf(lpsf);
-motf = psf2otf(mpsf);
-sotf = psf2otf(spsf);
-lotfd = psf2otf(lpsfd);
-motfd = psf2otf(mpsfd);
-sotfd = psf2otf(spsfd);
+% I started using psf2otf, but it 
+% centers its output in a way I find
+% counterintuitive so I just went back 
+% to the straight fft.
+lotf = fftshift(fft2(lpsf));
+motf = fftshift(fft2(mpsf));
+sotf = fftshift(fft2(spsf));
+lotfd = fftshift(fft2(lpsfd));
+motfd = fftshift(fft2(mpsfd));
+sotfd = fftshift(fft2(spsfd));
 totalDegrees = (arcminutes(end)-arcminutes(1))/60;
 cyclesDegreePerPixel = 1/totalDegrees;
 cyclesdegree = cyclesDegreePerPixel*((1:wvfGet(wvfParams1,'spatial samples'))-whichRow);
+
+% Read in Autrusseau data for comparison
+%
+% The fields come in badly labeled.  The mtf is not
+% log mtf, it's just straight mtf.
+autrusseauFigure11 = ReadStructsFromText('autrusseauFigure11.txt');
 
 % Make a plot of the horizontal MTF
 theFig = figure; clf;
@@ -167,13 +181,18 @@ position = get(gcf,'Position');
 position(3) = 1600;
 set(gcf,'Position',position);
 subplot(1,3,1); hold on
-onedLOTF = abs(lotf(whichRow,:));
+onedLOTFH = abs(lotf(whichRow,:));
+onedLOTFV = abs(lotf(:,whichRow));
 onedLOTFD = abs(lotfd(whichRow,:));
 index = find(abs(cyclesdegree) < plotLimitFreq);
-%plot(cyclesdegree(index),onedLOTF(index),'r','LineWidth',2);
-plot(cyclesdegree(index),onedLOTFD(index),'k','LineWidth',4);
+plot(cyclesdegree(index),log10(onedLOTFH(index)),'r','LineWidth',2);
+plot(cyclesdegree(index),log10(onedLOTFV(index)),'r:','LineWidth',2);
+plot([autrusseauFigure11.sf_cpd],log10([autrusseauFigure11.log10_Lmtf_ees]),'ro','MarkerSize',8,'MarkerFaceColor','r');
+plot(cyclesdegree(index),log10(onedLOTFD(index)),'k','LineWidth',1);
+xlim([0 plotLimitFreq]);
+ylim([-3 0]);
 xlabel('Cycles/Degree');
-ylabel('OTF');
+ylabel('LOG10 OTF');
 if (CIRCULARLYAVERAGE)
     title('Circularized L cone PSF');
 else
@@ -181,31 +200,41 @@ else
 end
 
 subplot(1,3,2); hold on
-onedMPSF = mpsf(whichRow,:);
-onedMPSFD = mpsfd(whichRow,:);
-index = find(abs(arcminutes) < plotLimit);
-plot(arcminutes(index),onedMPSF(index),'g','LineWidth',2);
-plot(arcminutes(index),onedMPSFD(index),'k','LineWidth',4);
-xlabel('Arc Minutes');
-ylabel('PSF');
+onedMOTFH = abs(motf(whichRow,:));
+onedMOTFV = abs(motf(:,whichRow));
+onedMOTFD = abs(motfd(whichRow,:));
+index = find(abs(cyclesdegree) < plotLimitFreq);
+plot(cyclesdegree(index),log10(onedMOTFH(index)),'g','LineWidth',2);
+plot(cyclesdegree(index),log10(onedMOTFV(index)),'g:','LineWidth',2);
+plot([autrusseauFigure11.sf_cpd],log10([autrusseauFigure11.log10_Mmtf_ees]),'go','MarkerSize',8,'MarkerFaceColor','g');
+plot(cyclesdegree(index),log10(onedMOTFD(index)),'k','LineWidth',1);
+xlim([0 plotLimitFreq]);
+ylim([-3 0]);
+xlabel('Cycles/Degree');
+ylabel('LOG10 OTF');
 if (CIRCULARLYAVERAGE)
     title('Circularized M cone PSF');
 else
-    title('M cone PSF');
+    title('M cone OTF');
 end
 
 subplot(1,3,3); hold on
-onedSPSF = spsf(whichRow,:);
-onedSPSFD = spsfd(whichRow,:);
-index = find(abs(arcminutes) < plotLimit);
-plot(arcminutes(index),onedSPSF(index),'b','LineWidth',2);
-plot(arcminutes(index),onedSPSFD(index),'k','LineWidth',4);
-xlabel('Arc Minutes');
-ylabel('PSF');
+onedSOTFH = abs(sotf(whichRow,:));
+onedSOTFV = abs(sotf(:,whichRow));
+onedSOTFD = abs(sotfd(whichRow,:));
+index = find(abs(cyclesdegree) < plotLimitFreq);
+plot(cyclesdegree(index),log10(onedSOTFH(index)),'b','LineWidth',2);
+plot(cyclesdegree(index),log10(onedSOTFV(index)),'b:','LineWidth',2);
+plot([autrusseauFigure11.sf_cpd],log10([autrusseauFigure11.log10_Mmtf_ees]),'bo','MarkerSize',8,'MarkerFaceColor','b');
+plot(cyclesdegree(index),log10(onedSOTFD(index)),'k','LineWidth',1);
+xlim([0 plotLimitFreq]);
+ylim([-3 0]);
+xlabel('Cycles/Degree');
+ylabel('LOG10 OTF');
 if (CIRCULARLYAVERAGE)
     title('Circularized S cone PSF');
 else
-    title('S cone PSF');
+    title('S cone OTF');
 end
 drawnow;
 
