@@ -452,7 +452,7 @@ switch parm
         if ~isempty(varargin)
             wave = wvfGet(wvf,'sce wave');  % The waves for rho
             wList = varargin{1};
-            index = find(wave == wList);
+            index = find(ismember(round(wave),round(wList)));
             if ~isempty(index), val = val(index);
             else error('Passed wavelength not contained in sceParams');
             end

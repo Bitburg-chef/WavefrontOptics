@@ -10,7 +10,7 @@ function idx = wvfwvfWave2idx(wvf,wList)
 % And throws an error if there are none.
 %
 % Note: Is this really only for 'calc wavelengths'?  Should we have a flag for
-% 'measured wavelength'?
+% 'measured wavelength' and 'sce wavelength'?
 %
 % Example
 %  wvf = wvfCreate;
