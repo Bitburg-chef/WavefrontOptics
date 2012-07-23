@@ -13,7 +13,7 @@ function [uData, pData, fNum] = wvfPlot(wvfP,pType,varargin)
 %
 % Plot types:
 %   2d psf angle - mesh.  wvfPlot(wvfP,'2d psf angle','arcmin',wave)
-%   2d psf space - mesh   wvfPlot(wvfP,'2d psf angle','um',wave)
+%   2d psf space - mesh   wvfPlot(wvfP,'2d psf space','um',wave)
 %   2d OTF       - mesh (e.g., linepairs/'um')
 %
 %   1d psf angle - graph (middle horizontal line)
