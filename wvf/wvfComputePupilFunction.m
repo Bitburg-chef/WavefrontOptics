@@ -18,12 +18,13 @@ function wvf = wvfComputePupilFunction(wvf)
 % Goodman, Intro to Fourier Optics, 3rd ed, p. 131. (MDL)
 %
 % These functions are calculated for 10 orders of Zernike coeffcients specified to
-% the OSA standard. Includes SCE (Stiles-Crawford Effect) if specified.
+% the OSA standard, with the convention that we assume that the coefficient for
+% j = 0 is 0, and that the first entry of the passed coefficients corresonds to
+% j = 1.  Adding in the j = 0 term does not change the psf.
+%
+% Includes SCE (Stiles-Crawford Effect) if specified.
 % The SCE is modeled as an apodization filter (a spatially-varying amplitude
 % attenuation) to the pupil function. In this case, it is a decaying exponential.
-%
-% Transverse chromatic aberration (TCA), which is a wavelength dependent tip
-% or tilt, has also not been included.
 %
 % See also: wvfCreate, wvfGet, wfvSet, wvfComputePSF
 %
@@ -35,6 +36,9 @@ function wvf = wvfComputePupilFunction(wvf)
 % 5/29/12 dhb      Removed comments about old inputs, since this now gets
 %                  its data via wvfGet.
 % 6/4/12  dhb      Implement caching system.
+% 7/23/12 dhb      Add in tip and tilt terms to be consistent with OSA standard.
+%                  Verified that these just offset the position of the psf by
+%                  a wavelength independent amount for the current calculation.
 %
 % (c) Wavefront Toolbox Team 2011, 2012
 
@@ -132,14 +136,15 @@ if (~isfield(wvf,'pupilfunc') || ~isfield(wvf,'PUPILFUNCTION_STALE') || wvf.PUPI
         %
         % And by convention expanding gives us the wavefront aberrations in
         % microns.
-        %
-        % Note that piston, tilt, and tip do not appear in the expansion below.
         norm_radius = (sqrt(xpos.^2+ypos.^2))/(measPupilSizeMM/2);
         theta = atan2(ypos,xpos);
-        wavefrontAberrationsUM = 0 + ...
-            c(5) .* sqrt(6).*norm_radius.^2 .* cos(2 .* theta) + ...
+        wavefrontAberrationsUM = ...
+            0 + ...                                            
+            c(1) .* 2 .* norm_radius .* sin(theta) + ...
+            c(2) .* 2 .* norm_radius .* cos(theta) + ...
             c(3) .* sqrt(6).*norm_radius.^2 .* sin(2 .* theta) + ...
             (c(4)+lcaMicrons+defocusCorrectionMicrons) .* sqrt(3).*(2 .* norm_radius.^2 - 1) + ...
+            c(5) .* sqrt(6).*norm_radius.^2 .* cos(2 .* theta) + ...
             c(9) .*sqrt(8).* norm_radius.^3 .* cos(3 .* theta) + ...
             c(6) .*sqrt(8).* norm_radius.^3 .* sin(3 .* theta) + ...
             c(8) .*sqrt(8).* (3 .* norm_radius.^3 - 2 .* norm_radius) .* cos(theta) + ...
