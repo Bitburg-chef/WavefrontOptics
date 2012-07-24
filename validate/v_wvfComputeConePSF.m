@@ -29,8 +29,6 @@ s_initISET;
 %
 % Did Autruesseau et al. incorporate a model of the SCE?
 DOSCE = 0;
-
-
 CIRCULARLYAVERAGE = 0;
 CENTER = 0;
 plotLimit = 6;
@@ -41,7 +39,9 @@ plotLimitFreq = 80;
 % This is the Autrussea standard observer.
 % I think their first coefficient is the
 % 0th Zernike mode number, and we don't use
-% this.  But I am not 100 percent sure.
+% this.  It was removed from the data we
+% load in, so we don't need to worry about
+% that here.
 %
 % Their coefficients are for a measured
 % pupil of 6 mm and that their calculations are
@@ -51,7 +51,7 @@ plotLimitFreq = 80;
 whichSubject = 1;
 dataFile = 'autrusseauStandardObserver.txt';
 theZernikeCoeffs = importdata(dataFile);
-theZernikeCoeffs = theZernikeCoeffs(2:end);
+theZernikeCoeffs = theZernikeCoeffs(1:end);
 measPupilMM = 6;
 calcPupilMM = 6;
 measWavelength = 570;
@@ -279,7 +279,7 @@ end
 drawnow;
 
 %% Make a figure comparable to Autrusseau et al, Figure 2
-% (top row) and Figure 3b (bottom row).
+% (top row) and Figure 4b (bottom row).
 %
 % This shows diffraction limited and standard observer PSFs at different
 % wavelengths, given focus at 570.
