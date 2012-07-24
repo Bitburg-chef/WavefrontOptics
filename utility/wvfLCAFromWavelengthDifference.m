@@ -10,7 +10,7 @@ function lcaDiopters = wvfLCAFromWavelengthDifference(wl1NM,wl2NM)
 % Either input argument may be a vector, but if both are vectors they need
 % to have the same dimensions.
 %
-% Here is what Heidi told me about her code:
+% Here is what Heidi told wrote about her code:
 %     The LCA is the difference in the focusing power of the eye at different wavelengths.
 %     The majority of the eye's refracting power comes from the air/cornea interface, and
 %     to a first approximation the eye can be treated like a ball of water.
@@ -50,14 +50,17 @@ function lcaDiopters = wvfLCAFromWavelengthDifference(wl1NM,wl2NM)
 %     so across the visible spectrum, but this is just not very noticeable at all unless you are able
 %     to remove the mean aberration (as is the case with defocus), and even then it doesn't make sense
 %     to consider this difference until such a time as our error in measurement decreases significantly -
-%     this is why we only focus on LCA- and just let the other zernike terms stay constant with wavelength]
+%     this is why we only focus on LCA - and just let the other zernike terms stay constant with wavelength]
 %
-% I also implemented what I understood from the Thibos paper and verified that it gives the same answer to
+% We also implemented what we understood from the Thibos paper and verified that it gives the same answer to
 % several places, with the difference probably attributable in rounding of the constants.
+%
+% The sign of the difference produced by this routine agrees with the figures in the Thibos paper.
 %
 % 8/21/11  dhb  Pulled out from code supplied by Heidi Hofer.
 % 9/5/11   dhb  Rename.  Rewrite for wvfPrams i/o.
-% 5/29/12  dhb  Pulled out just the bit tah
+% 5/29/12  dhb  Pulled out just the bit that does the computation of diopters
+% 7/24/12  dhb  Verify against Thibos paper formulae.  
 %
 % (c) Wavefront Toolbox Team 2011, 2012
 
@@ -66,25 +69,28 @@ constant = 1.8859 - (0.63346/(0.001*wl1NM-0.2141));
 lcaDiopters = 1.8859 - constant - (0.63346/(0.001*wl2NM-0.2141));
 
 %% Now do it following Thibos et al. 
-
-% Constants from the top of page 3596
-rMM = 5.55 ;          % mm
-rM = rMM*1e-3;
-nD = 1.333;
-
-% Constants from bottom of page 3596
-a = 1.320535;
-b = 0.004685;
-c = 0.214102;
-
-% Get refractive indices
-wl1UM = wl1NM*1e-3;
-wl2UM = wl2NM*1e-3;
-n1 = a + b/(wl1UM-c);
-n2 = a + b/(wl2UM-c);
-
-% Use equation 1 and take the difference of the two deltas
-% in diopters.
-lcaDiopters1 = (n1 - n2)/(nD*rM);
+VERIFY = 0;
+if (VERIFY)
+    
+    % Constants from the top of page 3596
+    rMM = 5.55 ;          % mm
+    rM = rMM*1e-3;
+    nD = 1.333;
+    
+    % Constants from bottom of page 3596
+    a = 1.320535;
+    b = 0.004685;
+    c = 0.214102;
+    
+    % Get refractive indices
+    wl1UM = wl1NM*1e-3;
+    wl2UM = wl2NM*1e-3;
+    n1 = a + b/(wl1UM-c);
+    n2 = a + b/(wl2UM-c);
+    
+    % Use equation 1 and take the difference of the two deltas
+    % in diopters.
+    lcaDiopters1 = (n1 - n2)/(nD*rM);
+end
 
 return
