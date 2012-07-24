@@ -87,6 +87,9 @@ for i = 1:length(theFiles)
     %
     % Notice that I need to pull out the column from the old
     % computation to match the row of the current computation.
+    % I think the y direction is also inverted in the old calculation
+    % but this turns out not to matter because the middle row corresponds
+    % to y = 0.
     figure; clf; hold on
     if (PLOT_DIFFRACTION)
         plot(diffracarcmin0,diffracpsfLine0,'r','LineWidth',3);
