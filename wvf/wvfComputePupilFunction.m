@@ -39,6 +39,7 @@ function wvf = wvfComputePupilFunction(wvf)
 % 7/23/12 dhb      Add in tip and tilt terms to be consistent with OSA standard.
 %                  Verified that these just offset the position of the psf by
 %                  a wavelength independent amount for the current calculation.
+% 7/24/12 dhb      Switch sign of y coord to match OSA standard.
 %
 % (c) Wavefront Toolbox Team 2011, 2012
 
@@ -99,6 +100,7 @@ if (~isfield(wvf,'pupilfunc') || ~isfield(wvf,'PUPILFUNCTION_STALE') || wvf.PUPI
         pupilPlaneSizeMM = wvfGet(wvf,'pupil plane size','mm',thisWave);
         pupilPos = (0:(nPixels-1))*(pupilPlaneSizeMM/nPixels)-pupilPlaneSizeMM/2;
         [xpos ypos] = meshgrid(pupilPos);
+        ypos = ypos(:,end:-1:1);
         
         % Set up the amplitude of the pupil function.
         % This appears to depend entirely on the SCE correction.  For
@@ -118,10 +120,13 @@ if (~isfield(wvf,'pupilfunc') || ~isfield(wvf,'PUPILFUNCTION_STALE') || wvf.PUPI
             % SCE. Note previous code had x as rows of matrix, y as columns of
             % matrix. This has been changed so that x is columns, y is rows.
             %
-            % 7/24/12, DHB: The above change produces a change of the orientation of the pupil
-            % function/psf relative to what Heidi's original code produced.
-            % I think the way we now have it here matches Figure 7 of the OSA
-            % Zernike standards document.
+            % 7/24/12, DHB: The above change produces a change of the orientation
+            % of the pupil function/psf relative to what Heidi's original code produced.
+            % I think Heidi's was not right.  But we also need to flip the y coordinate,
+            % so that positive values go up in the image.  I did this and I think it
+            % now matches Figure 7 of the OSA Zernike standards document.  Also, doing
+            % this makes my pictures of the PSF match in gross form the orientation in
+            % Figure 4b in Autrussea et al. 2011.
             A = 10.^(-rho*((xpos-xo).^2+(ypos-yo).^2));
         end
         
