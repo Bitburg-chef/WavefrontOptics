@@ -52,6 +52,7 @@ whichSubject = 1;
 dataFile = 'autrusseauStandardObserver.txt';
 theZernikeCoeffs = importdata(dataFile);
 theZernikeCoeffs = theZernikeCoeffs(1:end);
+theZernikeCoeffs(4) = 0;
 measPupilMM = 6;
 calcPupilMM = 6;
 measWavelength = 570;
