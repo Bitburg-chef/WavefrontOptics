@@ -4,6 +4,8 @@
 %
 % See also: s_wvf2OIHuman and s_wvf2OI
 %
+% 7/23/12  dhb  Drop off what I believe to be j=0 value from Thibos model.
+%
 % (c) Wavefront Toolbox Team, 2012
 
 
@@ -24,20 +26,16 @@ switch (whichTypeOfSamples)
         N = 10;
         [sample_mean S] = wvfLoadHuman(pupilMM);
         zSamples = ieMvnrnd(sample_mean,S,N)';
+        
+        % Thibos model has, I think, j = 0 term included
+        % Lop it off here.
+        zSamples = zSamples(2:end,:);
+        
         measPupilSizeMM = pupilMM;
         measWavelengthNM = 550;
         
     case 'HoferMeasurements'
-        % In the most recent versions of Matlab, the load returns
-        % a long row vector rather than a matrix.  I don't know why
-        % this changed.  Probably some cr/nl convention thing.  
-        % I just fix it by brute force, with some attempt to keep
-        % things from breaking if you are running on a system where
-        % the size does come back correctly.
-        zSamples = load('sampleZernikeCoeffs.txt','-ascii');
-        if (size(zSamples,2) == 585)
-            zSamples = reshape(zSamples,9,65)';
-        end
+        zSamples = importdata('sampleZernikeCoeffs.txt');
         if (size(zSamples,1) ~= 65 || size(zSamples,2) ~= 9)
             error('Surprising size for read in Hofer zSamples.')
         end
