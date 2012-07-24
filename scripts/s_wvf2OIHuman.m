@@ -32,7 +32,10 @@ wave = 550; wave = wave(:);
 pupilMM = 3; 
 
 % Load human wvf
+% 
+% Lop off j = 0 coefficient that we get with Thibos data.
 zCoefs = wvfLoadHuman(pupilMM);
+zCoefs = zCoefs(2:end);
 wvfP = wvfCreate('wave',wave,'zcoeffs',zCoefs,'name',sprintf('human-%d',pupilMM));
 wvfP = wvfComputePSF(wvfP);
 
