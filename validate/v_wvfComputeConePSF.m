@@ -4,8 +4,15 @@
 % coefficients.
 %
 % The idea is to reproduce the calculations in Autrusseau et al.
-% This is getting answers in the same ballpark, but not exactly the
-% same.
+% This is currently getting answers in the same ballpark, but not 
+% close enough to make me happy.
+%
+% The diffraction limited calcs seem to match up with their
+% Figure 2 pretty well, and the L and M MTFs are OK,
+%
+% The S MTF is off. But more worrisome is that we do not
+% reproduce either Figure 4a or 4b of the Autrussea et al paper
+% very well at all.
 %
 % See also: wvfComputeConePSF, wvfComputePSF, wvfComputePupilFunction,
 %   sceGetParams, wvfGetDefocusFromWavelengthDifference
@@ -16,7 +23,7 @@
 % 8/21/11  dhb  Wrote it.
 % 3/15/12  mdl  Edited to use wvfSet. Also updated to use fieldSampleSizeMMperPixel
 % 7/20/12  dhb  Got TEST1 to work without crashing, and possibly even to be correct.
-% 7/23/12  dhb  OTF plot is looking reasonable, although still could be wrong.
+% 7/23/12  dhb  OTF plot is looking vaguely reasonable.
 %               Added Autrusseau equal energy OTFs for comparison
 
 %% Initialize
@@ -35,27 +42,39 @@ plotLimit = 6;
 plotLimitFreq = 80;
 
 %% Test data
-%
-% This is the Autrussea standard observer.
-% I think their first coefficient is the
-% 0th Zernike mode number, and we don't use
-% this.  It was removed from the data we
-% load in, so we don't need to worry about
-% that here.
-%
-% Their coefficients are for a measured
-% pupil of 6 mm and that their calculations are
-% also for 6 mm. They use 570 nm as their
-% measured (in focus) wavelength.  [Their methods,
-% p. 2284]. 
-whichSubject = 1;
-dataFile = 'autrusseauStandardObserver.txt';
-theZernikeCoeffs = importdata(dataFile);
-theZernikeCoeffs = theZernikeCoeffs(1:end);
-theZernikeCoeffs(4) = 0;
-measPupilMM = 6;
-calcPupilMM = 6;
-measWavelength = 570;
+dataSource = 'ThibosStatisticalModelMean';
+switch (dataSource)
+    case 'AutrusseauStandard';
+        % This is the Autrussea standard observer.
+        % I think their first coefficient is the
+        % j = 0 Zernike mode number, and we don't use
+        % this.  So we lop it off.
+        %
+        % Their coefficients are for a measured
+        % pupil of 6 mm and that their calculations are
+        % also for 6 mm. They use 570 nm as their
+        % measured (in focus) wavelength.  [Their methods,
+        % p. 2284].
+        whichSubject = 1;
+        dataFile = 'autrusseauStandardObserver.txt';
+        theZernikeCoeffs = importdata(dataFile);
+        theZernikeCoeffs = theZernikeCoeffs(2:end);
+        %theZernikeCoeffs(4) = 0;
+        measPupilMM = 6;
+        calcPupilMM = 6;
+        measWavelength = 570;
+    case 'ThibosStatisticalModelMean'
+        % This is the mean data from the Thibos model
+        % for a 6 mm pupil.
+        whichSubject = 1;
+        load('IASstats60','sample_mean');
+        theZernikeCoeffs = sample_mean;
+        theZernikeCoeffs = theZernikeCoeffs(2:end);
+        %theZernikeCoeffs(4) = 0;
+        measPupilMM = 6;
+        calcPupilMM = 6;
+        measWavelength = 570;
+end
 
 % Cone sensitivities and equal energy weighting spectrum
 load('T_cones_ss2');
