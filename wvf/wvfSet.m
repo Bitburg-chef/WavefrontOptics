@@ -43,7 +43,7 @@ function wvf = wvfSet(wvf,parm,val,varargin)
 %
 %  Spatial sampling parameters
 %    'sample interval domain' - Which domain has sample interval held constant with wavelength ('psf', 'pupil')
-%    'spatial samples' - Number of spatial samples (pixel) for pupil function and psf
+%    'number spatial samples' - Number of spatial samples (pixel) for pupil function and psf
 %    'ref pupil plane size' - Size of sampled pupil plane at measurement wavelength (mm)
 %    'ref pupil plane sample interval' - Pixel sample interval in pupil plane at measurement wavelength (mm)
 %    'ref psf sample interval' - Sampling interval for psf at measurment wavelength (arcminute/pixel)
@@ -230,7 +230,7 @@ switch parm
         wvf.constantSampleIntervalDomain = val;
         DIDASET = true;
         
-    case {'spatialsamples', 'npixels', 'fieldsizepixels'}
+    case {'numberspatialsamples','spatialsamples', 'npixels', 'fieldsizepixels'}
         % Number of pixels that both pupil and psf planes are discretized
         % with.
         %

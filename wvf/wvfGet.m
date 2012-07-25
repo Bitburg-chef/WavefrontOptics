@@ -32,7 +32,7 @@ function val = wvfGet(wvf,parm,varargin)
 %
 %  Spatial sampling parameters
 %    'sample interval domain' - Which domain has sample interval held constant with wavelength ('psf', 'pupil')
-%    'spatial samples' - Number of spatial samples (pixel) for pupil function and psf
+%    'number spatial samples' - Number of spatial samples (pixel) for pupil function and psf
 %    'ref pupil plane size' - Size of sampled pupil plane at measurement wavelength (mm,*)
 %    'ref pupil plane sample interval' - Pixel sample interval in pupil plane at measurement wavelength (mm,*)
 %    'ref psf sample interval' - Sampling interval for psf at measurment wavelength (arcminute/pixel)
@@ -40,6 +40,8 @@ function val = wvfGet(wvf,parm,varargin)
 %  + 'psf arcmin per sample' - Sampling interval for psf at any calculated wavelength(s) (min/pixel)
 %  + 'psf angle per sample' - Sampling interval for psf at any calculated wavelength(s) (min,*/pixel)
 %  + 'psf angular samples' - One-d slice of sampled angles for psf, centered on 0, for a single wavelength (min,*)
+%  + 'psf spatial samples' - One-d slice of sampled psf in spatial units, centered on 0 for a single wavelength (*)
+%  + 'pupil spatial samples' - One-d slice of sampled pupil function in spatial units, centered on 0 for a single wavelength (*)
 %  + 'middle row' - The middle row of sampled functions
 %
 %  Calculation parameters
@@ -174,7 +176,7 @@ switch (parm)
         val = wvf.constantSampleIntervalDomain;
         DIDAGET = true;
         
-    case {'spatialsamples', 'npixels', 'fieldsizepixels'}
+    case {'numberspatialsamples','spatialsamples', 'npixels', 'fieldsizepixels'}
         % Number of pixels that both pupil and psf planes are discretized
         % with.  This is a master value.
         val = wvf.nSpatialSamples;
@@ -213,9 +215,7 @@ switch (parm)
         % wvfGet(wvf,'pupil plane size',units,wList)
         % Total size of computed field in pupil plane, for calculated
         % wavelengths(s)
-        
-        % Does this require varargins?
-        
+                
         % Get wavelengths.  What if varargin{2} is empty?
         wList = varargin{2};
         waveIdx = wvfWave2idx(wvf,wList);
@@ -304,42 +304,39 @@ switch (parm)
         val = anglePerPix*((1:nPixels)-middleRow);
         DIDAGET = true;
         
-    case {'distanceperpix','distperpix','distanceperpixel'}
-        % Distance per pixel in specified unit ('mm')
-        %   wvf(wvf,'distance per pixel','um');
-        if isempty(varargin), unit = 'mm';
-        else unit = varargin{1};
-        end
-        val = wvfGet(wvf,'field size',unit)/wvfGet(wvf,'spatial samples');
-        DIDAGET = true;
-        
-    case {'samplesspace','supportspace','spatialsupport'}
-        % wvfGet(wvf,'samples space','um')
+    case {'psfspatialsamples','samplesspace','supportspace','spatialsupport'}
+        % wvfGet(wvf,'samples space','um',wList)
         % Spatial support in samples, centered on 0
         % Unit and wavelength must be specified
         
-        % This parameter matters for the OTF and PSF quite a bit.
+        % This parameter matters for the OTF and PSF quite a bit.  It
+        % is the number of um per degree on the retina.
         umPerDeg = (330*10^-6);
         
         unit = varargin{1}; wList = varargin{2};
+        
         % Get the samples in degrees
-        val = wvfGet(wvf,'samples angle','deg',wList);
+        val = wvfGet(wvf,'psf angular samples','deg',wList);
         
         % Convert to meters and then to selected spatial scale
         val = val*umPerDeg;  % Sample in meters assuming 300 um / deg
         val = val*ieUnitScaleFactor(unit);
-        
-        % Old code.  This used the distance in the pupil plane, which is
-        % wrong (I think).  I think that the angle calculation is probably
-        % correct.  We should use the fact that we know that 1 deg in the
-        % human eye is 300 um, and then get the better calculation (based
-        % on numerical aperture?) from HH or DHB or someone.
-        %         distPerPix = wvfGet(wvf,'distperpix',unit);
-        %         middleRow  = wvfGet(wvf,'middle row');
-        %         nPixels    = wvfGet(wvf,'npixels');
-        %         val = distPerPix*((1:nPixels)-middleRow);
         DIDAGET = true;
         
+    case {'pupilspatialsamples'}
+        % wvfGet(wvf,'pupil spatial samples','mm',wList)
+        % Spatial support in samples, centered on 0
+        % Unit and wavelength must be specified
+        
+        unit = varargin{1}; wList = varargin{2};
+        
+        % Get the sampling rate in the pupil plane in space per sample
+        spacePerSample = wvfGet(wvf,'pupil plane size',unit,wList)/wvfGet(wvf,'spatial samples');
+        nSamples = wvfGet(wvf,'spatial samples');
+        middleRow = wvfGet(wvf,'middle row');
+        val = spacePerSample*((1:nSamples)-middleRow);
+        DIDAGET = true;
+       
     case {'middlerow'}
         val = floor(wvfGet(wvf,'npixels')/2) + 1;
         DIDAGET = true;
