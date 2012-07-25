@@ -19,7 +19,8 @@ function [uData, pData, fNum] = wvfPlot(wvfP,pType,varargin)
 %   1d psf angle - graph (middle horizontal line)
 %   1d psf space - graph (middle horizontal line)
 %
-%   image psf    - image ('mm')
+%   image psf angle    - image ('min')
+%   image psf space    - image ('um')
 %   image pupil amp    - image ('mm')
 %   image pupil phase  - image ('mm')
 %
@@ -130,7 +131,40 @@ switch(pType)
             [unit, wList, pRange] = wvfReadArg(wvfP,varargin);
         end
         
-        samp = wvfGet(wvfP,'samples space',unit,wList);
+        samp = wvfGet(wvfP,'psf spatial samples',unit,wList);
+        psf = wvfGet(wvfP,'psf',wList);
+        % If the string contains normalized
+        if ~isempty(strfind(pType,'normalized'))
+            psf = psf/max(psf(:));
+        end
+        
+        % Extract within the range
+        if ~isempty(pRange)
+            index = (abs(samp) < pRange);
+            samp = samp(index);
+            psf = psf(index,index);
+        end
+        
+        % Put up the image
+        imagesc(samp,samp,psf); colormap(hot); axis image
+        grid(gca,'on');
+        set(gca,'xcolor',[.5 .5 .5]); set(gca,'ycolor',[.5 .5 .5]);
+        s = sprintf('Position (%s)',unit);
+        xlabel(s); ylabel(s);
+        title('Relative amplitude')
+        
+        % Save the data
+        uData.x = samp; uData.y = samp; uData.z = psf;
+        set(gcf,'userdata',uData);
+        
+    case {'imagepsfangle'}
+        % wvfPlot(wvfP,'image psf angle',unit,waveIdx, plotRangeArcMin);
+        %
+        if ~isempty(varargin)
+            [unit, wList, pRange] = wvfReadArg(wvfP,varargin);
+        end
+        
+        samp = wvfGet(wvfP,'psf angular samples',unit,wList);
         psf = wvfGet(wvfP,'psf',wList);
         % If the string contains normalized
         if ~isempty(strfind(pType,'normalized'))
