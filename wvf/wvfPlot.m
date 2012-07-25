@@ -102,7 +102,7 @@ switch(pType)
             [unit, wList, pRange] = wvfReadArg(wvfP,varargin);
         end
         
-        samp = wvfGet(wvfP,'samples space',unit,wList);
+        samp = wvfGet(wvfP,'psf samples space',unit,wList);
         psf = wvfGet(wvfP,'psf',wList);
         if ~isempty(strfind(pType,'normalized'))
             psf = psf/max(psf(:));
@@ -234,7 +234,7 @@ switch(pType)
             psfLine = psfLine/max(psfLine(:));
         end
         
-        samp = wvfGet(wvfP,'spatial support',unit, wList);
+        samp = wvfGet(wvfP,'psf spatial samples',unit, wList);
         
         % Make a plot through of the returned PSF in the central region.
         if ~isempty(pRange)
@@ -255,15 +255,12 @@ switch(pType)
         %plots the 2d pupil function amplitude for calculated pupil
         % Things to fix
         %  1. code in other plotting scales (distances or angles)
-        %  2. fix units of pupil function plot
         
         if ~isempty(varargin)
             [unit, wList, pRange] = wvfReadArg(wvfP,varargin);
         end
-        % need to change this, pupil function shouldn't be a mm related
-        % plot...
         
-        samp      = wvfGet(wvfP,'samples space','um',wList);
+        samp      = wvfGet(wvfP,'pupil spatial samples',unit,wList);
         pupilfunc = wvfGet(wvfP,'pupil function',wList);
         
         % Extract within the range
@@ -277,7 +274,7 @@ switch(pType)
         s = sprintf('Position (%s)',unit);
         % this is a placeholder, need to fix with actual units?
         xlabel(s); ylabel(s);
-        zlabel('Phase'); title('Pupil Function Amplitude'); colorbar;
+        zlabel('Amplitude'); title('Pupil Function Amplitude'); colorbar;
         axis image;
         
     case {'imagepupilphase','2dpupilphasespace'}
@@ -290,13 +287,12 @@ switch(pType)
         %2. code in other plotting scales (distances or angles)
         %3. confirm plotting: currently 90deg flipped of wikipedia
         %4. somehow remove the 0 phase areas outside of calculated pupil
-        %5. fix units of pupil function plot
         
         if ~isempty(varargin)
             [unit, wList, pRange] = wvfReadArg(wvfP,varargin);
         end
-        
-        samp = wvfGet(wvfP,'samples space','um',wList);
+                
+        samp      = wvfGet(wvfP,'pupil spatial samples',unit,wList);
         pupilfunc = wvfGet(wvfP,'pupil function',wList);
         
         % Extract within the range
