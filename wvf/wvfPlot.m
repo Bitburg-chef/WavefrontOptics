@@ -146,7 +146,7 @@ switch(pType)
         end
         
         % Put up the image
-        imagesc(samp,samp,psf); colormap(hot); axis image
+        pData = imagesc(samp,samp,psf); colormap(hot); axis image
         grid(gca,'on');
         set(gca,'xcolor',[.5 .5 .5]); set(gca,'ycolor',[.5 .5 .5]);
         s = sprintf('Position (%s)',unit);
@@ -179,7 +179,7 @@ switch(pType)
         end
         
         % Put up the image
-        imagesc(samp,samp,psf); colormap(hot); axis image
+        pData =  imagesc(samp,samp,psf); colormap(hot); axis image
         grid(gca,'on');
         set(gca,'xcolor',[.5 .5 .5]); set(gca,'ycolor',[.5 .5 .5]);
         s = sprintf('Position (%s)',unit);
@@ -310,6 +310,8 @@ switch(pType)
         xlabel(s); ylabel(s);
         zlabel('Amplitude'); title('Pupil Function Amplitude'); colorbar;
         axis image;
+        uData.x = samp; uData.y = samp; uData.z = abs(pupilfunc);
+        set(gcf,'userdata',uData);
         
     case {'imagepupilphase','2dpupilphasespace'}
         %plots the 2d pupil function PHASE for calculated pupil
@@ -342,6 +344,8 @@ switch(pType)
         xlabel(s); ylabel(s);
         zlabel('Phase'); title('Pupil Function Phase'); colorbar;
         axis image;
+        uData.x = samp; uData.y = samp; uData.z = angle(pupilfunc);
+        set(gcf,'userdata',uData);
         
         
     otherwise
