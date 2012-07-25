@@ -42,7 +42,7 @@ plotLimit = 6;
 plotLimitFreq = 80;
 
 %% Test data
-dataSource = 'ThibosStatisticalModelMean';
+dataSource = 'AutrusseauStandard';
 switch (dataSource)
     case 'AutrusseauStandard';
         % This is the Autrussea standard observer.
@@ -65,11 +65,13 @@ switch (dataSource)
         measWavelength = 570;
     case 'ThibosStatisticalModelMean'
         % This is the mean data from the Thibos model
-        % for a 6 mm pupil.
+        % for a 6 mm pupil.  The methods of the Autrusseau
+        % indicate that they only used the first 15 (starting
+        % at j = 0 coefficients.
         whichSubject = 1;
         load('IASstats60','sample_mean');
         theZernikeCoeffs = sample_mean;
-        theZernikeCoeffs = theZernikeCoeffs(2:end);
+        theZernikeCoeffs = theZernikeCoeffs(2:15);
         %theZernikeCoeffs(4) = 0;
         measPupilMM = 6;
         calcPupilMM = 6;
@@ -89,19 +91,32 @@ wls = SToWls([400 10 31]);
 % No focus optimization.
 wvf0 = wvfCreate;
 
-% The short wavelength PSFs get blurred enough that we need more pixels to
-% contain them than our defaults provide.  Adjust to keep sempling density
-% in psf plane the same, but increase space sampled.
-origSamples = wvfGet(wvf0,'spatial samples');
-newSamples = 301;
-wvf0 = wvfSet(wvf0,'spatial samples',newSamples);
-wvf = wvfSet(wvf0,'ref pupil plane size',newSamples/origSamples*wvfGet(wvf0,'ref pupil plane size'));
+% Set important parameters
 wvf0 = wvfSet(wvf0,'measured pupil size',measPupilMM);
 wvf0 = wvfSet(wvf0,'calc pupil size',calcPupilMM);
 wvf0 = wvfSet(wvf0,'zcoeffs',theZernikeCoeffs(:,whichSubject));
 wvf0 = wvfSet(wvf0,'measured wavelength',measWavelength);
 wvf0 = wvfSet(wvf0,'calc wavelengths',wls);
 wvf0 = wvfSet(wvf0,'calc cone psf info',conePsfInfo);
+
+% The short wavelength PSFs get blurred enough that we need more pixels to
+% contain them than our defaults provide.  Adjust to keep sempling density
+% in psf plane the same, but increase space sampled.
+origSamples = wvfGet(wvf0,'spatial samples');
+newSamples = 301;
+wvf0 = wvfSet(wvf0,'spatial samples',newSamples);
+%wvf0 = wvfSet(wvf0,'ref pupil plane size',newSamples/origSamples*wvfGet(wvf0,'ref pupil plane size'));
+fprintf('Sampling pupil plane/psf with %d pixels\n',wvfGet(wvf0,'spatial samples'));
+fprintf('Pupil plane info\n');
+for wavelength = [400 500 600 700];
+    fprintf('\t%d nm, %0.1f mm, %0.3f mm/pixel\n',...
+        wavelength,wvfGet(wvf0,'pupil plane size','mm',wavelength),wvfGet(wvf0,'pupil plane size','mm',wavelength)/wvfGet(wvf0,'spatial samples'));
+end
+fprintf('PSF plane info\n');
+for wavelength = [400 500 600 700];
+    fprintf('\t%d nm, %0.1f minutes, %0.3f min/pixel\n',...
+        wavelength,wvfGet(wvf0,'psf angle per sample','min',wavelength)*wvfGet(wvf0,'spatial samples'),wvfGet(wvf0,'psf angle per sample','min',wavelength));
+end
 
 if (DOSCE == 1)
     sce = sceCreate(wls,'berendshot');
@@ -303,20 +318,37 @@ drawnow;
 %
 % This shows diffraction limited and standard observer PSFs at different
 % wavelengths, given focus at 570.
-figure; clf;
+
 wavelengths = [400 550 700];
+figure; clf;
 for i = 1:length(wavelengths);
     wavelength = wavelengths(i);
-    focusWl = wvfGet(wvfParams2,'measured wavelength');
+    
     subplot(2,length(wavelengths),i); hold on
+    maxVal = max(psf(:));
+    [nil,p] = wvfPlot(wvfParams2,'image pupil phase','mm',wavelength,'no window');
+    
+    focusWl = wvfGet(wvfParams2,'measured wavelength');
+    subplot(2,length(wavelengths),i+length(wavelengths)); hold on
     psf = wvfGet(wvfParams2,'psf',wavelength);
     maxVal = max(psf(:));
     [nil,p] = wvfPlot(wvfParams2,'2d psf angle','min',wavelength,'no window');
     h = get(p,'Parent');
     view([0 90]); ylim([-30 30]); xlim([-30 30]); axis('square');
     title(sprintf('%d nm, focus %d nm, max = %0.5f',wavelength,focusWl,maxVal));
+end
+
+figure; clf;
+for i = 1:length(wavelengths);
+    wavelength = wavelengths(i);
     
-    subplot(2,length(wavelengths),i+3); hold on
+    subplot(2,length(wavelengths),i); hold on
+    [nil,p] = wvfPlot(wvfParams1,'image pupil phase','mm',wavelength,'no window');
+    %h = get(p,'Parent');
+    %view([0 90]); ylim([-30 30]); xlim([-30 30]); axis('square');
+    %title(sprintf('%d nm, focus %d nm, max = %0.5f',wavelength,focusWl,maxVal));
+
+    subplot(2,length(wavelengths),i+length(wavelengths)); hold on
     psf = wvfGet(wvfParams1,'psf',wavelength);
     maxVal = max(psf(:));
     [nil,p] = wvfPlot(wvfParams1,'2d psf angle','min',wavelength,'no window');
