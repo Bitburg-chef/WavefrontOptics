@@ -58,7 +58,7 @@ switch (dataSource)
         whichSubject = 1;
         dataFile = 'autrusseauStandardObserver.txt';
         theZernikeCoeffs = importdata(dataFile);
-        theZernikeCoeffs = theZernikeCoeffs(2:end);
+        theZernikeCoeffs = theZernikeCoeffs(2:15);
         %theZernikeCoeffs(4) = 0;
         measPupilMM = 6;
         calcPupilMM = 6;
@@ -325,14 +325,14 @@ for i = 1:length(wavelengths);
     wavelength = wavelengths(i);
     
     subplot(2,length(wavelengths),i); hold on
-    maxVal = max(psf(:));
     [nil,p] = wvfPlot(wvfParams2,'image pupil phase','mm',wavelength,'no window');
     
     focusWl = wvfGet(wvfParams2,'measured wavelength');
     subplot(2,length(wavelengths),i+length(wavelengths)); hold on
     psf = wvfGet(wvfParams2,'psf',wavelength);
     maxVal = max(psf(:));
-    [nil,p] = wvfPlot(wvfParams2,'2d psf angle','min',wavelength,'no window');
+    % [nil,p] = wvfPlot(wvfParams2,'2d psf angle','min',wavelength,'no window');
+    [nil,p] = wvfPlot(wvfParams2,'image psf angle','min',wavelength,'no window');
     h = get(p,'Parent');
     view([0 90]); ylim([-30 30]); xlim([-30 30]); axis('square');
     title(sprintf('%d nm, focus %d nm, max = %0.5f',wavelength,focusWl,maxVal));
@@ -351,7 +351,8 @@ for i = 1:length(wavelengths);
     subplot(2,length(wavelengths),i+length(wavelengths)); hold on
     psf = wvfGet(wvfParams1,'psf',wavelength);
     maxVal = max(psf(:));
-    [nil,p] = wvfPlot(wvfParams1,'2d psf angle','min',wavelength,'no window');
+    %[nil,p] = wvfPlot(wvfParams1,'2d psf angle','min',wavelength,'no window');
+    [nil,p] = wvfPlot(wvfParams1,'image psf angle','min',wavelength,'no window');
     h = get(p,'Parent');
     view([0 90]); ylim([-30 30]); xlim([-30 30]); axis('square');
     title(sprintf('%d nm, focus %d nm, max = %0.5f',wavelength,focusWl,maxVal));
