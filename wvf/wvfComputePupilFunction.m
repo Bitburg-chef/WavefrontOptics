@@ -69,6 +69,8 @@ if (~isfield(wvf,'pupilfunc') || ~isfield(wvf,'PUPILFUNCTION_STALE') || wvf.PUPI
     % the defocus correction at measurement time and the defocus correction we're calculating for.
     % This models lenses external to the observer's eye, which affect focus but
     % not the accommodative state.
+    %
+    % The sign on this could be wrong, as we have not yet used it.
     defocusCorrectionDiopters = wvfGet(wvf,'calc observer focus correction') - wvfGet(wvf,'measured observer focus correction');
     defocusCorrectionMicrons = defocusCorrectionDiopters * (measPupilSizeMM )^2/(16*sqrt(3));
     
@@ -143,7 +145,11 @@ if (~isfield(wvf,'pupilfunc') || ~isfield(wvf,'PUPILFUNCTION_STALE') || wvf.PUPI
         % microns.
         %
         % 7/24/12 dhb  Checked the formula out to c(15) against OSA table and didn't find
-        %              any typos
+        %              any typos.  Someday we should rewrite this using a funciton
+        %              that evaluates Zernikes of any order.  Such functions seem
+        %              seem to be available: http://www.mathworks.com/matlabcentral/fileexchange/7687.
+        %              The OSA standard gives formulae for converting between OSA indexing
+        %              and standard Zernike 2 index notation.
         norm_radius = (sqrt(xpos.^2+ypos.^2))/(measPupilSizeMM/2);
         theta = atan2(ypos,xpos);
         wavefrontAberrationsUM = ...
