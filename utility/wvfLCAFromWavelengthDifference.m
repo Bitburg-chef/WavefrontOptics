@@ -73,7 +73,7 @@ VERIFY = 0;
 if (VERIFY)
     
     % Constants from the top of page 3596
-    rMM = 5.55 ; 
+    rMM = 5.55 ;          % mm
     rM = rMM*1e-3;
     nD = 1.333;
     
@@ -85,12 +85,12 @@ if (VERIFY)
     % Get refractive indices
     wl1UM = wl1NM*1e-3;
     wl2UM = wl2NM*1e-3;
-    n1 = a + b./(wl1UM-c);
-    n2 = a + b./(wl2UM-c);
+    n1 = a + b/(wl1UM-c);
+    n2 = a + b/(wl2UM-c);
     
     % Use equation 1 and take the difference of the two deltas
     % in diopters.
-    lcaDiopters1 = (n1 - n2)./(nD*rM);
+    lcaDiopters1 = (n1 - n2)/(nD*rM);
 end
 
 return

@@ -3,16 +3,10 @@
 % Test the routines that compute L, M, and S cone PSFs from Zernike
 % coefficients.
 %
-% The idea is to reproduce the calculations in Autrusseau et al.
-% This is currently getting answers in the same ballpark, but not 
-% close enough to make me happy.
-%
 % The diffraction limited calcs seem to match up with their
-% Figure 2 pretty well, and the L and M MTFs are OK,
-%
-% The S MTF is off. But more worrisome is that we do not
-% reproduce either Figure 4a or 4b of the Autrussea et al paper
-% very well at all.
+% Figure 2 pretty well, the MTFs agree well, and Figure 4B
+% is reproduced to good approximation.  Still need to check
+% Figure 4a.
 %
 % See also: wvfComputeConePSF, wvfComputePSF, wvfComputePupilFunction,
 %   sceGetParams, wvfGetDefocusFromWavelengthDifference
@@ -103,7 +97,7 @@ wvf0 = wvfSet(wvf0,'calc cone psf info',conePsfInfo);
 % contain them than our defaults provide.  Adjust to keep sempling density
 % in psf plane the same, but increase space sampled.
 origSamples = wvfGet(wvf0,'spatial samples');
-newSamples = 301;
+newSamples = 601;
 wvf0 = wvfSet(wvf0,'spatial samples',newSamples);
 %wvf0 = wvfSet(wvf0,'ref pupil plane size',newSamples/origSamples*wvfGet(wvf0,'ref pupil plane size'));
 fprintf('Sampling pupil plane/psf with %d pixels\n',wvfGet(wvf0,'spatial samples'));
