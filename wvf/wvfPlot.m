@@ -42,9 +42,7 @@ function [uData, pData, fNum] = wvfPlot(wvfP,pType,varargin)
 %
 % See also:  wvfComputePSF, wvfLoadHuman, vcNewGraphWin
 %
-% 7/1/12  bw       Adjusted for new wavelength convention
-%
-% (c) Wavefront Toolbox Team 2012
+% (c) Wavefront Toolbox Team 2012 (bw)
 
 if ieNotDefined('wvfP'), error('Wavefront structure required.'); end
 if ieNotDefined('pType'), pType = '1dpsf'; end
@@ -56,7 +54,7 @@ pType = ieParamFormat(pType);
 if ~isempty(varargin)
     v = ieParamFormat(char(varargin{end}));
     switch v
-        case {'nowindow','nofigure','noplot'}
+        case {'nowindow','nofigure','noplot','nofig'}
         otherwise
             fNum = vcNewGraphWin;
     end
@@ -103,7 +101,7 @@ switch(pType)
             [unit, wList, pRange] = wvfReadArg(wvfP,varargin);
         end
         
-        samp = wvfGet(wvfP,'psf samples space',unit,wList);
+        samp = wvfGet(wvfP,'psf spatial samples',unit,wList);
         psf = wvfGet(wvfP,'psf',wList);
         if ~isempty(strfind(pType,'normalized'))
             psf = psf/max(psf(:));

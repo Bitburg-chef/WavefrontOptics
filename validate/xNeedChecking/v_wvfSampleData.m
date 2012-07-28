@@ -1,13 +1,13 @@
 %% v_wvfSampleData
 %
-% Compute psfs for the sample data
+% Compute psfs for the Hofer sample data
 %
 % HH provided Zernike coefficients measured in 9 subjects.  We compute the
 % psfs using these, and look at a slice through each of them.  We try
 % things various different ways.
 %
-% The computed PSFs are recentered, with their maximum in the center, so that we
-% see the real peak when we take the 1D slice.
+% The computed PSFs are recentered, with their maximum in the center, so
+% that we see the real peak when we take the 1D slice.
 %
 % This also optimizes the defocus to maximize the strehl ratio for each
 % subject, so you can see the (large) effect of doing that.
@@ -29,7 +29,7 @@
 % Note from HH: For real calculations, using a defocus increment smaller
 % than 0.25 Diopters would be wise.
 %
-% (c) Wavefront Toolbox Team, 2012
+% (c) Wavefront Toolbox Team, 2012 (bw)
 
 %% Initialize
 s_initISET
@@ -44,6 +44,8 @@ wList = wvfGet(wvfP,'wave');
 % Sample data
 sDataFile = fullfile(wvfRootPath,'data','sampleZernikeCoeffs.txt');
 theZernikeCoeffs = load(sDataFile);
+nSubInFile = length(theZernikeCoeffs)/65;
+theZernikeCoeffs = reshape(theZernikeCoeffs,nSubInFile,65)';
 
 whichSubjects = 1:2; nSubjects = length(whichSubjects);
 theZernikeCoeffs = theZernikeCoeffs(:,whichSubjects);
@@ -67,7 +69,6 @@ for ii = 1:nSubjects
     wvfP = wvfSet(wvfP,'zcoeffs',zeros(61,1));
     wvfP = wvfComputePSF(wvfP);
     % Diffraction limited
-    vcNewGraphWin;
     udataD = wvfPlot(wvfP,'1d psf angle','min',wList,maxMIN);
     hold on;
     
@@ -75,15 +76,13 @@ for ii = 1:nSubjects
     wvfP = wvfSet(wvfP,'zcoeffs',theZernikeCoeffs(:,ii));
     wvfP = wvfComputePSF(wvfP);
     
-    vcNewGraphWin;
-    [udataS, pData] = wvfPlot(wvfP,'1d psf angle','min',wList,maxMIN);
+    [udataS, pData] = wvfPlot(wvfP,'1d psf angle','min',wList,maxMIN,'no fig');
     set(pData,'color','b');
     hold on;
     
     strehlDirect = max(udataS.y(:))/max(udataD.y(:));
     fprintf('Strehl ratio with no defocus:  %.3f\n',strehlDirect);
     
-    vcNewGraphWin;
     wvfPlot(wvfP,'2d psf space','um',wList,20);
     
 end

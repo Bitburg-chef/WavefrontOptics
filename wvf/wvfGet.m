@@ -95,7 +95,7 @@ function val = wvfGet(wvf,parm,varargin)
 %
 % (c) Wavefront Toolbox Team 2011, 2012
 %
-% History
+% History (see git for more from bw).
 %   5/22/12 dhb      Improve comment about how arcminperpix is obtained.
 %   7/20/12 dhb      Get rid of weighting spectrum, replace with cone psf info structure
 %           dhb      Fix up areapix, areapixapod, scefrac and add comments.
@@ -470,7 +470,7 @@ switch parm
         end
         
         if isempty(varargin)
-            vak = wvfGet(wvf,'area pixapod') ./ wvfGet(wvf,'areapix');
+            val = wvfGet(wvf,'area pixapod') ./ wvfGet(wvf,'areapix');
         else
             wList = varargin{1};
             val = wvfGet(wvf,'area pixapod',wList) ./ wvfGet(wvf,'areapix',wList);

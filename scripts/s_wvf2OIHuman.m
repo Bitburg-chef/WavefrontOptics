@@ -17,8 +17,6 @@
 
 
 %% Initialize
-s = which('s_wvf2OIHuman');
-cd(fileparts(s));
 s_initISET
 maxUM = 10;
 
@@ -162,4 +160,5 @@ sensorMW = sensorCompute(sensor,oiMW);
 sensorMW = sensorSet(sensorMW,'name','MW calc');
 vcAddAndSelectObject(sensorMW); sensorWindow('scale',1);
 
+%% End
 

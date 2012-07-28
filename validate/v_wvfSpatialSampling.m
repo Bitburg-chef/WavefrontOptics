@@ -3,20 +3,23 @@
 % Checks consistency of results for a diffraction limited calculation with
 % different choices of spatial sampling parameters.
 %
-% There is an issue of normalization that we need to think about.
-% Normalize psf's so that they integrate to 1 by simple summing,
-% or take spatial sampling into account when normalizing?
+% There is an issue of normalization that we need to think about. Normalize
+% psf's so that they integrate to 1 by simple summing, or take spatial
+% sampling into account when normalizing?
 %
-% See also: wvfCreate, wvfGet, wvfSet, wvfComputePSF, wvfComputePupilFucntion
+% See also: wvfCreate, wvfGet, wvfSet, wvfComputePSF,
+% wvfComputePupilFucntion
 %
+% 7/27/12 bw   Now that session files are no longer written out, I am
+%              removing the early cd() in these scripts.  And checking
+%              various things.  And putting in vcNewGraphWin instead of
+%              figure.
 % 7/4/12  dhb  Wrote it.
 %
 % (c) Wavefront Toolbox Team, 2012
 
 %% Initialize
-s = which('v_wvfSpatialSampling');
-cd(fileparts(s));
-clear; close all;
+s_initISET
 
 %% Set up parameters structure
 wvf0 = wvfCreate;
@@ -54,12 +57,13 @@ onedPSF3 = AiryPattern(radians3,wvfGet(wvf3,'calc pupil size'),wvfGet(wvf3,'wave
 %
 % Curently normalized to max of 1 in plot.  If you don't normalize, you will see the issue
 % with spatial sampling.
-figure; clf; hold on
+vcNewGraphWin;
+hold on;
 plot(arcmin0,psfLine0/max(psfLine0(:)),'ro','MarkerSize',6,'MarkerFaceColor','r');
 plot(arcmin3,psfLine3/max(psfLine3(:)),'gx','MarkerSize',6,'MarkerFaceColor','k');
 plot(arcmin4,psfLine4/max(psfLine4(:)),'ko','MarkerSize',4,'MarkerFaceColor','k');
 plot(arcmin3,onedPSF3/max(onedPSF3),'b','LineWidth',1);
 
 
-
+%% End
 

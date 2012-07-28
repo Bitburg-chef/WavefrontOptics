@@ -18,7 +18,7 @@
 %
 % See also:  v_wvfDiffractionPSF, v_wvfWaveDefocus
 %
-% (c) Wavefront Toolbox Team, 2012
+% (c) Wavefront Toolbox Team, 2012 (bw)
 
 %% Initialize and set parameters
 s_initISET
@@ -44,7 +44,7 @@ wvfParams = wvfComputePSF(wvfP);
 f = vcNewGraphWin([],'tall');
 for ii=1:nWave
     subplot(nWave,1,ii)
-    [f,p] = wvfPlot(wvfParams,'1d psf space','um',wList(ii),maxUM);
+    [f,p] = wvfPlot(wvfParams,'1d psf space','um',wList(ii),maxUM,'no fig');
     title(sprintf('wave %d',wList(ii)));
 end
 
@@ -55,7 +55,7 @@ end
 vcNewGraphWin([],'tall');
 for ii=1:nWave
     subplot(nWave,1,ii)
-    wvfPlot(wvfParams,'image psf ','um',wList(ii),maxUM);
+    wvfPlot(wvfParams,'image psf ','um',wList(ii),maxUM,'no fig');
     title(sprintf('wave %d',wList(ii)));
 end
 

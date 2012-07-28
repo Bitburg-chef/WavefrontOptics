@@ -230,7 +230,7 @@ totalDegrees = (arcminutes(end)-arcminutes(1))/60;
 cyclesDegreePerPixel = 1/totalDegrees;
 cyclesdegree = cyclesDegreePerPixel*((1:wvfGet(wvfParams1,'spatial samples'))-whichRow);
 
-% Read in Autrusseau data for comparison
+%% Read in Autrusseau data for comparison
 %
 % The fields come in badly labeled, because I misunderstood
 % the graph when I digitzed it.  The mtf in the file is not
@@ -357,10 +357,21 @@ return
 %% TEST2.  Optimize focus and add to the plot.
 %
 % This takes a long time.
+
+
+%Should be using sets/gets
+
 wvfParams3 = wvf0;
 wvfParams3.coneWeights = [1 1 0];
 wvfParams3.criterionFraction = 0.9;
+
+% This takes a long time and produces an error that could be fixed by BW,
+% but he is too lazy.
+%  Error using wvfGet (line 590)
+%   Must explicitly compute PSF on wvf structure before getting it.  Use wvfComputePSF
+
 wvfParams3 = wvfComputeOptimizedConePSF(wvfParams3);
+
 lpsfo = psfCenter(wvfParams3.conepsf(:,:,1));
 mpsfo = psfCenter(wvfParams3.conepsf(:,:,2));
 spsfo = psfCenter(wvfParams3.conepsf(:,:,3));

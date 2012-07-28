@@ -16,7 +16,7 @@ cd(fileparts(s));
 s_initISET
 maxUM = 10;
 
-%% First build a diffraction limited case.
+%% Convert a diffraction limited PSF
 % Recall that we compare the diffraction limited case in
 % v_wvfDiffractionPSF.m and found agreement between WVF, ISET, and PTB.
 % Here we simply test whether we can convert a single wavelength
@@ -105,3 +105,4 @@ vcNewGraphWin;
 plot(uData.psf(:),test(:),'.');
 grid on
 
+%%

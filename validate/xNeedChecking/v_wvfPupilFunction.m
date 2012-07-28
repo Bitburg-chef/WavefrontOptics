@@ -11,7 +11,7 @@
 % Then we will hopefully convert the pupilfunction to the PSF in another,
 % simple script.
 %
-% (c) Stanford VISTA Team, 2012
+% (c) Stanford VISTA Team, 2012 (bw)
 
 %% 
 s_initISET
