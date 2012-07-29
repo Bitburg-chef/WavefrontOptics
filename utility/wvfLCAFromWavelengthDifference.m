@@ -1,14 +1,27 @@
-function lcaDiopters = wvfLCAFromWavelengthDifference(wl1NM,wl2NM)
-% lcaDiopters = wvfLCAFromWavelengthDifference(wl1NM,wl2NM)
+function lcaDiopters = wvfLCAFromWavelengthDifference(wl1NM,wl2NM,whichCalc,COMPARE)
+% lcaDiopters = wvfLCAFromWavelengthDifference(wl1NM,wl2NM,[whichCalc],[COMPARE])
 %
 % Longitudinal chromatic aberration (LCA), expressed in diopters, between
 % two wavelengths.
 %
-% If the image is in focus at wl1NM, add the answer to bring it into focus at
-% wl2NM.
-%
 % Either input argument may be a vector, but if both are vectors they need
 % to have the same dimensions.
+%
+% Optional argument whichCalc determines which of two numerical methods are used.
+% They are supposed to give the same answer, and do to reasonable approximation.
+% The differences are probably just numerical roundoff.
+%   hoferCode  -  The way Heidi Hofer wrote it in the code she provided us with.
+%   thibosPaper - The calculation as described in Thibos et al, 1992, "The
+%                chromatic eye: ...", Applied Optics, 31, pp 3594-3600.
+% The thibosPaper method is the default.
+%
+% If optional argument COMPARE is true, the routine prints out the maximum
+% absolute difference between the methods.
+%
+% If the image is in focus at wl1NM, this provides the refractive error
+% at wl2NM.  The sign convention matches that of Figure 6 the Thibos et al.%
+% paper, so that (e.g.):
+%   -1.7174 = wvfLCAFromWavelengthDifference(589,400,'thibosPaper');
 %
 % Here is what Heidi told wrote about her code:
 %     The LCA is the difference in the focusing power of the eye at different wavelengths.
@@ -32,7 +45,7 @@ function lcaDiopters = wvfLCAFromWavelengthDifference(wl1NM,wl2NM)
 %     index of refraction across the visible spectrum for the eye is not all that large,
 %     and very close to what you would expect if the eye were made of water.
 %     [The numbers in the first 2 equations are taken from a paper by Larry Thibos and colleagues
-%     (1992, Applied Optics, 31, pp.3594-3600) mainly capture effective index variation of the eye
+%     (1992, Applied Optics, 31, pp. 3594-3600) mainly capture effective index variation of the eye
 %     with wavelength - experimentally measured - which is very close to what has been measured for water.
 %     The first equation just sets the constant in the second equation so that the dioptric difference is
 %     zero at the nominal focus wavelength.
@@ -60,37 +73,68 @@ function lcaDiopters = wvfLCAFromWavelengthDifference(wl1NM,wl2NM)
 % 8/21/11  dhb  Pulled out from code supplied by Heidi Hofer.
 % 9/5/11   dhb  Rename.  Rewrite for wvfPrams i/o.
 % 5/29/12  dhb  Pulled out just the bit that does the computation of diopters
-% 7/24/12  dhb  Verify against Thibos paper formulae.  
+% 7/24/12  dhb  Verify against Thibos paper formulae. 
+% 7/29/12  dhb  Add optional args, make Thibos paper version default.  
 %
 % (c) Wavefront Toolbox Team 2011, 2012
 
-%% Here's the magic from Heidi's code
-constant = 1.8859 - (0.63346/(0.001*wl1NM-0.2141));
-lcaDiopters = 1.8859 - constant - (0.63346/(0.001*wl2NM-0.2141));
+%% Set which calculation to use
+if (nargin < 3 || isempty(whichCalc))
+    whichCalc = 'hoferCode';
+end
 
-%% Now do it following Thibos et al. 
-VERIFY = 0;
-if (VERIFY)
-    
-    % Constants from the top of page 3596
-    rMM = 5.55 ;          % mm
-    rM = rMM*1e-3;
-    nD = 1.333;
-    
-    % Constants from bottom of page 3596
-    a = 1.320535;
-    b = 0.004685;
-    c = 0.214102;
-    
-    % Get refractive indices
-    wl1UM = wl1NM*1e-3;
-    wl2UM = wl2NM*1e-3;
-    n1 = a + b/(wl1UM-c);
-    n2 = a + b/(wl2UM-c);
-    
-    % Use equation 1 and take the difference of the two deltas
-    % in diopters.
-    lcaDiopters1 = (n1 - n2)/(nD*rM);
+if (nargin < 4 || isempty(COMPARE))
+    COMPARE = 0;
+end
+
+%% Here's the magic from Heidi's code
+constant = 1.8859 - (0.63346./(0.001.*wl1NM-0.2141));
+lcaDioptersHoferCode = 1.8859 - constant - (0.63346./(0.001*wl2NM-0.2141));
+
+%% The Thibos paper method
+% Constants from the top of page 3596
+rMM = 5.55 ;          % mm
+rM = rMM*1e-3;
+nD = 1.333;
+
+% Constants from bottom of page 3596
+a = 1.320535;
+b = 0.004685;
+c = 0.214102;
+
+% Get refractive indices
+wl1UM = wl1NM*1e-3;
+wl2UM = wl2NM*1e-3;
+n1 = a + b./(wl1UM-c);
+n2 = a + b./(wl2UM-c);
+
+% Use equation 1 and take the difference of the two deltas
+% in diopters.
+lcaDioptersThibosPaper = (n1 - n2)./(nD*rM);
+
+switch (whichCalc)
+    case 'hoferCode'
+        lcaDiopters = lcaDioptersHoferCode;
+        
+    case 'thibosPaper'
+        lcaDiopters = lcaDioptersThibosPaper;    
+end
+
+
+
+%% Compare the two versions
+if (COMPARE)
+    maxDiff = max(abs(lcaDioptersHoferCode-lcaDioptersThibosPaper));
+    fprintf('Maximum LCA difference is %0.4g Diopters\n',maxDiff);  
 end
 
 return
+
+%% Verification code.  Select and execute
+wls = [400 450 500 570 700];
+wls1 = 570*ones(size(wls));
+lcaDiopters = wvfLCAFromWavelengthDifference(wls(1),wls,'hoferCode')
+lcaDiopters = wvfLCAFromWavelengthDifference(wls(1),wls,'thibosPaper')
+lcaDiopters = wvfLCAFromWavelengthDifference(wls1,wls,'hoferCode')
+lcaDiopters = wvfLCAFromWavelengthDifference(wls1,wls,'thibosPaper')
+lcaDiopters = wvfLCAFromWavelengthDifference(wls1,wls,[],true);
