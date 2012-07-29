@@ -147,6 +147,8 @@ if (~isfield(wvf,'pupilfunc') || ~isfield(wvf,'PUPILFUNCTION_STALE') || wvf.PUPI
         %
         % 7/24/12 dhb  Checked the formula out to c(15) against OSA table and didn't find
         %              any typos
+       
+        %fprintf('At wavlength %0.1f nm, adding LCA of %0.3f microns to j = 4 (defocus) coefficient\n',thisWave,lcaMicrons);
         norm_radius = (sqrt(xpos.^2+ypos.^2))/(measPupilSizeMM/2);
         theta = atan2(ypos,xpos);
         wavefrontAberrationsUM = ...
