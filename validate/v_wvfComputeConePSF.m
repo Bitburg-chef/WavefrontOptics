@@ -4,15 +4,20 @@
 % coefficients.
 %
 % The diffraction limited calcs seem to match up with their
-% Figure 2 pretty well, the MTFs agree well, and Figure 4B
-% is reproduced to good approximation.  Still need to check
-% Figure 4a.
+% Figure 2 pretty well, the MTFs agree well, and Figures 4A
+% and B are reproduced to good approximation. There are
+% small differenes in the max PSF between our calculation and
+% their Figure 4A/B.  These may be due to differences in how
+% the pupil/psf plane are sampled.  One of the S cone MTF
+% points is also off, but not by more than might be attributable
+% to digitization error of their Figure 11.
+%
+% This script actually checks many things, in that the agreement
+% between what's calculated here and Figure 4A/B checks relies on
+% many things being done in the same way.
 %
 % See also: wvfComputeConePSF, wvfComputePSF, wvfComputePupilFunction,
 %   sceGetParams, wvfGetDefocusFromWavelengthDifference
-%
-% The circular averaging is not a good idea for a single subject, but if
-% you want to obtain an average over subjects it might be good.
 %
 % 8/21/11  dhb  Wrote it.
 % 3/15/12  mdl  Edited to use wvfSet. Also updated to use fieldSampleSizeMMperPixel
@@ -21,9 +26,6 @@
 %               Added Autrusseau equal energy OTFs for comparison
 
 %% Initialize
-clear; close all;
-s = which('v_wvfComputeConePSF');
-cd(fileparts(s));
 s_initISET;
 
 %% Parameters
@@ -69,6 +71,9 @@ switch (dataSource)
         % indicate that they only used the first 15 (starting
         % at j = 0 coefficients, so we lop them off at 15
         % (j = 14).
+        %
+        % Note that the comparison to Figure 11 of their
+        % paper is not meaningful for this case.
         whichSubject = 1;
         load('IASstats60','sample_mean');
         theZernikeCoeffs = sample_mean;
@@ -105,10 +110,10 @@ wvf0 = wvfSet(wvf0,'calc cone psf info',conePsfInfo);
 % You can see in their figure that this is not big enough -- the 400 nm psf
 % for their standard observer (first panel in Figure 4b) wraps.
 %
-% With our default parameters, 601 samples corresoponds closely to 1 degree
+% With our default pupil plane parameters, 497 samples corresoponds closely to 1 degree
 % sampling.  The code below prints out what you get.
 origSamples = wvfGet(wvf0,'number spatial samples');
-newSamples = 601;
+newSamples = 497;
 wvf0 = wvfSet(wvf0,'number spatial samples',newSamples);
 fprintf('Sampling pupil plane/psf with %d pixels\n',wvfGet(wvf0,'number spatial samples'));
 fprintf('Pupil plane info\n');
@@ -120,20 +125,6 @@ fprintf('PSF plane info\n');
 for wavelength = [400 500 600 700];
     fprintf('\t%d nm, %0.1f minutes, %0.3f min/pixel\n',...
         wavelength,wvfGet(wvf0,'psf angle per sample','min',wavelength)*wvfGet(wvf0,'number spatial samples'),wvfGet(wvf0,'psf angle per sample','min',wavelength));
-end
-
-% This is a sanity check that our code yields constant sampling in the psf domain.
-% Also compute arcminutes per pixel.
-whichRow = wvfGet(wvfParams1,'middle row');
-for i = 1:length(wls)
-    if (wvfGet(wvfParams1,'psf arcmin per sample',wls(1)) ~= wvfGet(wvfParams1,'psf arcmin per sample',wls(i)))
-        error('Error in spatial sampling consistency across wavelengths');
-    end
-end
-arcminutes1 = wvfGet(wvfParams1,'psf arcmin per sample',wls(1))*((1:wvfGet(wvfParams1,'spatial samples'))-whichRow);
-arcminutes = wvfGet(wvfParams1,'psf angular samples','min',wls(1));
-if (any(arcminutes ~= arcminutes1))
-    error('Manual computation of angular samples does not agree with what wvfGet returns');
 end
 
 %% Include SCE if desired
@@ -154,6 +145,20 @@ wvfParams2 = wvf0;
 wvfParams2 = wvfSet(wvfParams2,'zcoeffs',zeros(65,1));
 wvfParams2 = wvfComputePSF(wvfParams2);
 conePsf2 = wvfGet(wvfParams2,'cone psf');
+
+% This bit is a sanity check that our code yields constant sampling in the psf domain.
+% Also compute arcminutes per pixel.
+whichRow = wvfGet(wvfParams1,'middle row');
+for i = 1:length(wls)
+    if (wvfGet(wvfParams1,'psf arcmin per sample',wls(1)) ~= wvfGet(wvfParams1,'psf arcmin per sample',wls(i)))
+        error('Error in spatial sampling consistency across wavelengths');
+    end
+end
+arcminutes1 = wvfGet(wvfParams1,'psf arcmin per sample',wls(1))*((1:wvfGet(wvfParams1,'spatial samples'))-whichRow);
+arcminutes = wvfGet(wvfParams1,'psf angular samples','min',wls(1));
+if (any(arcminutes ~= arcminutes1))
+    error('Manual computation of angular samples does not agree with what wvfGet returns');
+end
 
 %% Center and circularly average if desired
 if (CENTER)
@@ -320,19 +325,18 @@ totalDegrees = (arcminutes(end)-arcminutes(1))/60;
 cyclesDegreePerPixel = 1/totalDegrees;
 cyclesdegree = cyclesDegreePerPixel*((1:wvfGet(wvfParams1,'number spatial samples'))-whichRow);
 
-% Read in Autrusseau data for comparison
+% Read in Autrusseau MTF data for comparison
 %
-% The fields in our structure come in badly labeled, because we misunderstood
-% the graph when we digitzed it.  The mtf in the file is not
-% log mtf, it's just the straight mtf.
-%
-% AAutrussea et al. didn't use the Fourier transform
+% Autrussea et al. didn't use the Fourier transform
 % instead literally convolved the psf at each wavelength
 % with a sinusoidal stimulus at the same wavelength, and then summed
 % up the results over wavelength, weighting by the cone sensitivities.
 autrusseauFigure11 = ReadStructsFromText('autrusseauFigure11.txt');
 
-% Make a plot of the horizontal MTF
+% Make a plot of the vertical grating LMS MTFs (solid colored line, taken as
+% middle row of full MTFs) that we get, and compare to what Autrusseau et al. got.
+% Dashed colord line is horizontal grating MTFs.  Black lines are MTFs for 
+% diffraction plus defocus 
 theFig = figure; clf;
 position = get(gcf,'Position');
 position(3) = 1600;
@@ -344,7 +348,7 @@ onedLOTFD = abs(lotfd(whichRow,:));
 index = find(abs(cyclesdegree) < plotLimitFreq);
 plot(cyclesdegree(index),log10(onedLOTFH(index)),'r','LineWidth',2);
 plot(cyclesdegree(index),log10(onedLOTFV(index)),'r:','LineWidth',2);
-plot([autrusseauFigure11.sf_cpd],log10([autrusseauFigure11.log10_Lmtf_ees]),'ro','MarkerSize',8,'MarkerFaceColor','r');
+plot([autrusseauFigure11.sf_cpd],log10([autrusseauFigure11.Lmtf_ees]),'ro','MarkerSize',8,'MarkerFaceColor','r');
 plot(cyclesdegree(index),log10(onedLOTFD(index)),'k','LineWidth',1);
 xlim([0 plotLimitFreq]);
 ylim([-3 0]);
@@ -363,7 +367,7 @@ onedMOTFD = abs(motfd(whichRow,:));
 index = find(abs(cyclesdegree) < plotLimitFreq);
 plot(cyclesdegree(index),log10(onedMOTFH(index)),'g','LineWidth',2);
 plot(cyclesdegree(index),log10(onedMOTFV(index)),'g:','LineWidth',2);
-plot([autrusseauFigure11.sf_cpd],log10([autrusseauFigure11.log10_Mmtf_ees]),'go','MarkerSize',8,'MarkerFaceColor','g');
+plot([autrusseauFigure11.sf_cpd],log10([autrusseauFigure11.Mmtf_ees]),'go','MarkerSize',8,'MarkerFaceColor','g');
 plot(cyclesdegree(index),log10(onedMOTFD(index)),'k','LineWidth',1);
 xlim([0 plotLimitFreq]);
 ylim([-3 0]);
@@ -382,7 +386,7 @@ onedSOTFD = abs(sotfd(whichRow,:));
 index = find(abs(cyclesdegree) < plotLimitFreq);
 plot(cyclesdegree(index),log10(onedSOTFH(index)),'b','LineWidth',2);
 plot(cyclesdegree(index),log10(onedSOTFV(index)),'b:','LineWidth',2);
-plot([autrusseauFigure11.sf_cpd],log10([autrusseauFigure11.log10_Smtf_ees]),'bo','MarkerSize',8,'MarkerFaceColor','b');
+plot([autrusseauFigure11.sf_cpd],log10([autrusseauFigure11.Smtf_ees]),'bo','MarkerSize',8,'MarkerFaceColor','b');
 plot(cyclesdegree(index),log10(onedSOTFD(index)),'k','LineWidth',1);
 xlim([0 plotLimitFreq]);
 ylim([-3 0]);
@@ -397,44 +401,44 @@ drawnow;
 
 return
 
-%% TEST2.  Optimize focus and add to the plot.
-%
-% This takes a long time.
-
-
-%Should be using sets/gets
-
-wvfParams3 = wvf0;
-wvfParams3.coneWeights = [1 1 0];
-wvfParams3.criterionFraction = 0.9;
-
-% This takes a long time and produces an error that could be fixed by BW,
-% but he is too lazy.
-%  Error using wvfGet (line 590)
-%   Must explicitly compute PSF on wvf structure before getting it.  Use wvfComputePSF
-
-wvfParams3 = wvfComputeOptimizedConePSF(wvfParams3);
-
-lpsfo = psfCenter(wvfParams3.conepsf(:,:,1));
-mpsfo = psfCenter(wvfParams3.conepsf(:,:,2));
-spsfo = psfCenter(wvfParams3.conepsf(:,:,3));
-if (CIRCULARLYAVERAGE)
-    lpsfo = psfCircularlyAverage(lpsfo);
-    mpsfo = psfCircularlyAverage(mpsfo);
-    spsfo = psfCircularlyAverage(spsfo);
-end
-onedLPSFo = lpsfo(whichRow,:);
-onedMPSFo = mpsfo(whichRow,:);
-onedSPSFo = spsfo(whichRow,:);
-
-figure(theFig);
-subplot(1,3,1);
-plot(arcminutes(index),onedLPSFo(index),'r','LineWidth',4);
-subplot(1,3,2); hold on
-plot(arcminutes(index),onedMPSFo(index),'g','LineWidth',4);
-subplot(1,3,3); hold on
-plot(arcminutes(index),onedSPSFo(index),'b','LineWidth',4);
-drawnow;
+% %% TEST2.  Optimize focus and add to the plot.
+% %
+% % This takes a long time.
+% 
+% 
+% %Should be using sets/gets
+% 
+% wvfParams3 = wvf0;
+% wvfParams3.coneWeights = [1 1 0];
+% wvfParams3.criterionFraction = 0.9;
+% 
+% % This takes a long time and produces an error that could be fixed by BW,
+% % but he is too lazy.
+% %  Error using wvfGet (line 590)
+% %   Must explicitly compute PSF on wvf structure before getting it.  Use wvfComputePSF
+% 
+% wvfParams3 = wvfComputeOptimizedConePSF(wvfParams3);
+% 
+% lpsfo = psfCenter(wvfParams3.conepsf(:,:,1));
+% mpsfo = psfCenter(wvfParams3.conepsf(:,:,2));
+% spsfo = psfCenter(wvfParams3.conepsf(:,:,3));
+% if (CIRCULARLYAVERAGE)
+%     lpsfo = psfCircularlyAverage(lpsfo);
+%     mpsfo = psfCircularlyAverage(mpsfo);
+%     spsfo = psfCircularlyAverage(spsfo);
+% end
+% onedLPSFo = lpsfo(whichRow,:);
+% onedMPSFo = mpsfo(whichRow,:);
+% onedSPSFo = spsfo(whichRow,:);
+% 
+% figure(theFig);
+% subplot(1,3,1);
+% plot(arcminutes(index),onedLPSFo(index),'r','LineWidth',4);
+% subplot(1,3,2); hold on
+% plot(arcminutes(index),onedMPSFo(index),'g','LineWidth',4);
+% subplot(1,3,3); hold on
+% plot(arcminutes(index),onedSPSFo(index),'b','LineWidth',4);
+% drawnow;
 
 
 
