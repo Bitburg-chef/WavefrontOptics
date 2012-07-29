@@ -3,6 +3,8 @@
 % Checks consistency of results for a diffraction limited calculation with
 % different choices of spatial sampling parameters.
 %
+% If this is working, all of the points should fall on the lines in the graph.
+%
 % There is an issue of normalization that we need to think about. Normalize
 % psf's so that they integrate to 1 by simple summing, or take spatial
 % sampling into account when normalizing?
