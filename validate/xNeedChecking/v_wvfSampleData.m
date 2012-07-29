@@ -43,9 +43,7 @@ wList = wvfGet(wvfP,'wave');
 
 % Sample data
 sDataFile = fullfile(wvfRootPath,'data','sampleZernikeCoeffs.txt');
-theZernikeCoeffs = load(sDataFile);
-nSubInFile = length(theZernikeCoeffs)/65;
-theZernikeCoeffs = reshape(theZernikeCoeffs,nSubInFile,65)';
+theZernikeCoeffs = importdata(sDataFile);
 
 whichSubjects = 1:2; nSubjects = length(whichSubjects);
 theZernikeCoeffs = theZernikeCoeffs(:,whichSubjects);

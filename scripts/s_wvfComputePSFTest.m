@@ -241,7 +241,7 @@ wvfParams0.nominalFocusWl = 550;
 wvfParams0.defocusDiopters = 0;
 wvfParams0.fieldSampleSizeMMperPixel = 16.212/201;
 wvfParams0.sizeOfFieldMM = 16.212;
-theZernikeCoeffs = load('sampleZernikeCoeffs.txt');
+theZernikeCoeffs = importdata('sampleZernikeCoeffs.txt');
 DOSCE = 0;
 if (DOSCE)
     wvfParams0.sceParams = sceCreate(theWavelength,'berendshot');

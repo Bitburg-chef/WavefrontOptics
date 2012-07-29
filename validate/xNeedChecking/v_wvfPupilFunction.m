@@ -21,7 +21,7 @@ wvfParams0 = wvfCreate('measured pupil',6,'calculated pupil',3);
 
 % Sample data
 sDataFile = fullfile(wvfRootPath,'data','sampleZernikeCoeffs.txt');
-theZernikeCoeffs = load(sDataFile);
+theZernikeCoeffs = importdata(sDataFile);
 
 nSubjects = size(theZernikeCoeffs,2);
 

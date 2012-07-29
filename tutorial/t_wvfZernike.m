@@ -392,7 +392,7 @@ wvfHuman0 = wvfSet(wvfHuman0,'wavelength',theWavelengthNM);
 
 % Load in some measured data
 sDataFile = fullfile(wvfRootPath,'data','sampleZernikeCoeffs.txt');
-theZernikeCoeffs = load(sDataFile);
+theZernikeCoeffs = importdata(sDataFile);
 whichSubjects = [3 7];
 theZernikeCoeffs = theZernikeCoeffs(:,whichSubjects);
 nSubjects = size(theZernikeCoeffs,2);

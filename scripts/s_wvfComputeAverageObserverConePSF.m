@@ -28,7 +28,7 @@ weightingSpectrum = SplineSpd(S_D65,spd_D65,S);
 % Specify datafile for Zernike coefficients
 zernikeFile = 'sampleZernikeCoeffs.txt';
 measpupilMM = 6;
-theZernikeCoeffs = load(zernikeFile);
+theZernikeCoeffs = importdata(zernikeFile);
 
 wvfParams0 = wvfCreate;
 wvfParams0 = wvfSet(wvfParams0,'measured pupil',measpupilMM);
