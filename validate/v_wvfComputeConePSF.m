@@ -28,7 +28,9 @@ s_initISET;
 
 %% Parameters
 %
-% Did Autruesseau et al. incorporate a model of the SCE?
+% Autruesseau et al. did not incorporate a model of the SCE,
+% nor did they center or circularly average the PSFs.  These
+% switches let us play with those things if we want.
 DOSCE = 0;
 CIRCULARLYAVERAGE = 0;
 CENTER = 0;
@@ -49,11 +51,15 @@ switch (dataSource)
         % also for 6 mm. They use 570 nm as their
         % measured (in focus) wavelength.  [Their methods,
         % p. 2284].
+        %
+        % It appears that they do not zero the j = 4
+        % coefficient at their in focus wavelength.
+        % This is deduced by the fact that we get agreement
+        % with their calculations without zeroing it out.
         whichSubject = 1;
         dataFile = 'autrusseauStandardObserver.txt';
         theZernikeCoeffs = importdata(dataFile);
         theZernikeCoeffs = theZernikeCoeffs(2:15);
-        %theZernikeCoeffs(4) = 0;
         measPupilMM = 6;
         calcPupilMM = 6;
         measWavelength = 570;
@@ -61,12 +67,12 @@ switch (dataSource)
         % This is the mean data from the Thibos model
         % for a 6 mm pupil.  The methods of the Autrusseau
         % indicate that they only used the first 15 (starting
-        % at j = 0 coefficients.
+        % at j = 0 coefficients, so we lop them off at 15
+        % (j = 14).
         whichSubject = 1;
         load('IASstats60','sample_mean');
         theZernikeCoeffs = sample_mean;
         theZernikeCoeffs = theZernikeCoeffs(2:15);
-        %theZernikeCoeffs(4) = 0;
         measPupilMM = 6;
         calcPupilMM = 6;
         measWavelength = 570;
@@ -81,8 +87,7 @@ conePsfInfo.spdWeighting = ones(conePsfInfo.S(3),1);
 % Calculation wavelengths for PSF.  
 wls = SToWls([400 10 31]);
 
-%% TEST1: Try to reproduce Autrusseau et al. results.
-% No focus optimization.
+%% Reproduce Autrusseau et al. results.
 wvf0 = wvfCreate;
 
 % Set important parameters
@@ -94,24 +99,44 @@ wvf0 = wvfSet(wvf0,'calc wavelengths',wls);
 wvf0 = wvfSet(wvf0,'calc cone psf info',conePsfInfo);
 
 % The short wavelength PSFs get blurred enough that we need more pixels to
-% contain them than our defaults provide.  Adjust to keep sempling density
-% in psf plane the same, but increase space sampled.
-origSamples = wvfGet(wvf0,'spatial samples');
+% contain them than our defaults provide.  Adjust this to keep sempling density
+% in psf plane the same, but increase space sampled.  Autrusseau et al seem
+% to have used 1 degree as the extent in the psf domain (based on Figure 4).
+% You can see in their figure that this is not big enough -- the 400 nm psf
+% for their standard observer (first panel in Figure 4b) wraps.
+%
+% With our default parameters, 601 samples corresoponds closely to 1 degree
+% sampling.  The code below prints out what you get.
+origSamples = wvfGet(wvf0,'number spatial samples');
 newSamples = 601;
-wvf0 = wvfSet(wvf0,'spatial samples',newSamples);
-%wvf0 = wvfSet(wvf0,'ref pupil plane size',newSamples/origSamples*wvfGet(wvf0,'ref pupil plane size'));
-fprintf('Sampling pupil plane/psf with %d pixels\n',wvfGet(wvf0,'spatial samples'));
+wvf0 = wvfSet(wvf0,'number spatial samples',newSamples);
+fprintf('Sampling pupil plane/psf with %d pixels\n',wvfGet(wvf0,'number spatial samples'));
 fprintf('Pupil plane info\n');
 for wavelength = [400 500 600 700];
     fprintf('\t%d nm, %0.1f mm, %0.3f mm/pixel\n',...
-        wavelength,wvfGet(wvf0,'pupil plane size','mm',wavelength),wvfGet(wvf0,'pupil plane size','mm',wavelength)/wvfGet(wvf0,'spatial samples'));
+        wavelength,wvfGet(wvf0,'pupil plane size','mm',wavelength),wvfGet(wvf0,'pupil plane size','mm',wavelength)/wvfGet(wvf0,'number spatial samples'));
 end
 fprintf('PSF plane info\n');
 for wavelength = [400 500 600 700];
     fprintf('\t%d nm, %0.1f minutes, %0.3f min/pixel\n',...
-        wavelength,wvfGet(wvf0,'psf angle per sample','min',wavelength)*wvfGet(wvf0,'spatial samples'),wvfGet(wvf0,'psf angle per sample','min',wavelength));
+        wavelength,wvfGet(wvf0,'psf angle per sample','min',wavelength)*wvfGet(wvf0,'number spatial samples'),wvfGet(wvf0,'psf angle per sample','min',wavelength));
 end
 
+% This is a sanity check that our code yields constant sampling in the psf domain.
+% Also compute arcminutes per pixel.
+whichRow = wvfGet(wvfParams1,'middle row');
+for i = 1:length(wls)
+    if (wvfGet(wvfParams1,'psf arcmin per sample',wls(1)) ~= wvfGet(wvfParams1,'psf arcmin per sample',wls(i)))
+        error('Error in spatial sampling consistency across wavelengths');
+    end
+end
+arcminutes1 = wvfGet(wvfParams1,'psf arcmin per sample',wls(1))*((1:wvfGet(wvfParams1,'spatial samples'))-whichRow);
+arcminutes = wvfGet(wvfParams1,'psf angular samples','min',wls(1));
+if (any(arcminutes ~= arcminutes1))
+    error('Manual computation of angular samples does not agree with what wvfGet returns');
+end
+
+%% Include SCE if desired
 if (DOSCE == 1)
     sce = sceCreate(wls,'berendshot');
     wvf0 = wvfSet(wvf0,'sce params',sce);
@@ -120,7 +145,7 @@ else
     wvf0 = wvfSet(wvf0,'sce params',sce);
 end
 
-% Compute LMS psfs both for a subject and diffraction limited
+%% Compute LMS psfs both for a subject and diffraction limited
 wvfParams1 = wvf0;
 wvfParams1 = wvfComputePSF(wvfParams1);
 conePsf1 = wvfGet(wvfParams1,'cone psf');
@@ -130,6 +155,7 @@ wvfParams2 = wvfSet(wvfParams2,'zcoeffs',zeros(65,1));
 wvfParams2 = wvfComputePSF(wvfParams2);
 conePsf2 = wvfGet(wvfParams2,'cone psf');
 
+%% Center and circularly average if desired
 if (CENTER)
     lpsf = psfCenter(conePsf1(:,:,1));
     mpsf = psfCenter(conePsf1(:,:,2));
@@ -145,7 +171,6 @@ else
     mpsfd = conePsf2(:,:,2);
     spsfd = conePsf2(:,:,3);
 end
-
 if (CIRCULARLYAVERAGE)
     lpsf = psfCircularlyAverage(lpsf);
     mpsf = psfCircularlyAverage(mpsf);
@@ -155,15 +180,71 @@ if (CIRCULARLYAVERAGE)
     spsfd = psfCircularlyAverage(spsfd);
 end
 
-whichRow = wvfGet(wvfParams1,'middle row');
-for i = 1:length(wls)
-    if (wvfGet(wvfParams1,'psf arcmin per sample',wls(1)) ~= wvfGet(wvfParams1,'psf arcmin per sample',wls(i)))
-        error('Error in spatial sampling consistency across wavelengths');
-    end
-end
-arcminutes = wvfGet(wvfParams1,'psf arcmin per sample',wls(1))*((1:wvfGet(wvfParams1,'spatial samples'))-whichRow);
+%% Make a figure comparable to Autrusseau et al, Figure 2 (top row) and Figure 4b (bottom row).
+%
+% This shows diffraction limited and standard observer PSFs at different
+% wavelengths, given focus at 570.  If the angular extent of the PSF is 1 degree,
+% these should match up well with Figure 2 of Autresseau (diffraction limited)
+% and Figure 4.  Look at 4a if the computation is for the Thibos mean and Figure 4b 
+% if the computation is for the Autrusseau standard observer.
+%
+% Note that the 400 nm psf wraps at 400 nm in Figure 4b for the standard observer calculation.
+%
+% The figure here also shows the pupil function phase, just for grins.
+%
+% A useful figure to look at in comparing the figures generated here and in the paper
+% is the maximum of the psf.  This is reported in the Autrusseau figures and also 
+% in ours.
 
-% Make a plot through the peak of the returned PSFs.
+% Diffraction limited (Figure 2)
+wavelengths = [400 550 700];
+figure; clf;
+position = get(gcf,'Position');
+position(3) = 1600; position(4) = 800;
+set(gcf,'Position',position);
+for i = 1:length(wavelengths);
+    wavelength = wavelengths(i);
+    
+    subplot(2,length(wavelengths),i); hold on
+    [nil,p] = wvfPlot(wvfParams2,'image pupil phase','mm',wavelength,'no window');
+    
+    focusWl = wvfGet(wvfParams2,'measured wavelength');
+    subplot(2,length(wavelengths),i+length(wavelengths)); hold on
+    psf = wvfGet(wvfParams2,'psf',wavelength);
+    maxVal = max(psf(:));
+    % [nil,p] = wvfPlot(wvfParams2,'2d psf angle','min',wavelength,'no window');
+    [nil,p] = wvfPlot(wvfParams2,'image psf angle','min',wavelength,'no window');
+    h = get(p,'Parent');
+    view([0 90]); ylim([-30 30]); xlim([-30 30]); axis('square');
+    title(sprintf('%d nm, focus %d nm, max = %0.5f',wavelength,focusWl,maxVal));
+end
+
+% With aberrations (Figure 4)
+figure; clf;
+position = get(gcf,'Position');
+position(3) = 1600; position(4) = 800;
+set(gcf,'Position',position);
+for i = 1:length(wavelengths);
+    wavelength = wavelengths(i);
+    
+    subplot(2,length(wavelengths),i); hold on
+    [nil,p] = wvfPlot(wvfParams1,'image pupil phase','mm',wavelength,'no window');
+    %h = get(p,'Parent');
+    %view([0 90]); ylim([-30 30]); xlim([-30 30]); axis('square');
+    %title(sprintf('%d nm, focus %d nm, max = %0.5f',wavelength,focusWl,maxVal));
+
+    subplot(2,length(wavelengths),i+length(wavelengths)); hold on
+    psf = wvfGet(wvfParams1,'psf',wavelength);
+    maxVal = max(psf(:));
+    %[nil,p] = wvfPlot(wvfParams1,'2d psf angle','min',wavelength,'no window');
+    [nil,p] = wvfPlot(wvfParams1,'image psf angle','min',wavelength,'no window');
+    h = get(p,'Parent');
+    view([0 90]); ylim([-30 30]); xlim([-30 30]); axis('square');
+    title(sprintf('%d nm, focus %d nm, max = %0.5f',wavelength,focusWl,maxVal));
+end
+
+%% Make a plot through the peak of the returned LMS PSFs and compare
+% with diffraction limited + defocus
 theFig = figure; clf;
 position = get(gcf,'Position');
 position(3) = 1600;
@@ -213,10 +294,13 @@ drawnow;
 
 %% Take a look in frequency domain.
 %
-% I started using psf2otf, but it 
-% centers its output in a way I find
-% counterintuitive so I just went back 
-% to the straight fft.
+% Perhaps we should be using psf2otf, but it  centers its output in
+% a counterintuitive way and the fft seems like it should work just
+% fine.
+%
+% Autrusseau et al. appear to find the OTF by explicitly convolving
+% the PSF with vertical gratings of different spatial frequencies,
+% but that seems inefficient relative to believing the fft.
 lotf = fftshift(fft2(lpsf));
 motf = fftshift(fft2(mpsf));
 sotf = fftshift(fft2(spsf));
@@ -225,23 +309,27 @@ motfd = fftshift(fft2(mpsfd));
 sotfd = fftshift(fft2(spsfd));
 
 % Figure out the scale in the frequency domain.
-% THIS NEEDS DOUBLE CHECKING.
+% 
+% Logic is that one pixel in the frequency domain
+% is one cycle per image.  So find size of image
+% in degrees and use this to find the numbers
+% of cycles per degree corresponding to each pixel.
+% Then produce a variable that corresponds to 
+% cycles per degree.
 totalDegrees = (arcminutes(end)-arcminutes(1))/60;
 cyclesDegreePerPixel = 1/totalDegrees;
-cyclesdegree = cyclesDegreePerPixel*((1:wvfGet(wvfParams1,'spatial samples'))-whichRow);
+cyclesdegree = cyclesDegreePerPixel*((1:wvfGet(wvfParams1,'number spatial samples'))-whichRow);
 
-%% Read in Autrusseau data for comparison
+% Read in Autrusseau data for comparison
 %
-% The fields come in badly labeled, because I misunderstood
-% the graph when I digitzed it.  The mtf in the file is not
+% The fields in our structure come in badly labeled, because we misunderstood
+% the graph when we digitzed it.  The mtf in the file is not
 % log mtf, it's just the straight mtf.
 %
-% Note that Autrussea et al. didn't use the Fourier transform
+% AAutrussea et al. didn't use the Fourier transform
 % instead literally convolved the psf at each wavelength
 % with a sinusoidal stimulus at the same wavelength, and then summed
 % up the results over wavelength, weighting by the cone sensitivities.
-% I think what we do is equivalent, but we may have to code it up and
-% check.
 autrusseauFigure11 = ReadStructsFromText('autrusseauFigure11.txt');
 
 % Make a plot of the horizontal MTF
@@ -306,51 +394,6 @@ else
     title('S cone OTF');
 end
 drawnow;
-
-%% Make a figure comparable to Autrusseau et al, Figure 2
-% (top row) and Figure 4b (bottom row).
-%
-% This shows diffraction limited and standard observer PSFs at different
-% wavelengths, given focus at 570.
-
-wavelengths = [400 550 700];
-figure; clf;
-for i = 1:length(wavelengths);
-    wavelength = wavelengths(i);
-    
-    subplot(2,length(wavelengths),i); hold on
-    [nil,p] = wvfPlot(wvfParams2,'image pupil phase','mm',wavelength,'no window');
-    
-    focusWl = wvfGet(wvfParams2,'measured wavelength');
-    subplot(2,length(wavelengths),i+length(wavelengths)); hold on
-    psf = wvfGet(wvfParams2,'psf',wavelength);
-    maxVal = max(psf(:));
-    % [nil,p] = wvfPlot(wvfParams2,'2d psf angle','min',wavelength,'no window');
-    [nil,p] = wvfPlot(wvfParams2,'image psf angle','min',wavelength,'no window');
-    h = get(p,'Parent');
-    view([0 90]); ylim([-30 30]); xlim([-30 30]); axis('square');
-    title(sprintf('%d nm, focus %d nm, max = %0.5f',wavelength,focusWl,maxVal));
-end
-
-figure; clf;
-for i = 1:length(wavelengths);
-    wavelength = wavelengths(i);
-    
-    subplot(2,length(wavelengths),i); hold on
-    [nil,p] = wvfPlot(wvfParams1,'image pupil phase','mm',wavelength,'no window');
-    %h = get(p,'Parent');
-    %view([0 90]); ylim([-30 30]); xlim([-30 30]); axis('square');
-    %title(sprintf('%d nm, focus %d nm, max = %0.5f',wavelength,focusWl,maxVal));
-
-    subplot(2,length(wavelengths),i+length(wavelengths)); hold on
-    psf = wvfGet(wvfParams1,'psf',wavelength);
-    maxVal = max(psf(:));
-    %[nil,p] = wvfPlot(wvfParams1,'2d psf angle','min',wavelength,'no window');
-    [nil,p] = wvfPlot(wvfParams1,'image psf angle','min',wavelength,'no window');
-    h = get(p,'Parent');
-    view([0 90]); ylim([-30 30]); xlim([-30 30]); axis('square');
-    title(sprintf('%d nm, focus %d nm, max = %0.5f',wavelength,focusWl,maxVal));
-end
 
 return
 
