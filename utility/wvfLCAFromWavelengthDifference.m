@@ -22,6 +22,15 @@ function lcaDiopters = wvfLCAFromWavelengthDifference(wl1NM,wl2NM,whichCalc,COMP
 % at wl2NM.  The sign convention matches that of Figure 6 the Thibos et al.%
 % paper, so that (e.g.):
 %   -1.7174 = wvfLCAFromWavelengthDifference(589,400,'thibosPaper');
+% The intrepretation of this is as follows.  The eye has more power at shorter
+% wavelengths, because the refractive index of the lens increses relative to that
+% in a vacuum as the wavelength becomes shorter 
+% (see e.g., http://en.wikipedia.org/wiki/Dispersion_(optics)).
+%
+% Thus to bring the image into focus, we need to decrease the power of the eye.
+% The negative number that comes out of this routine tells us what we need to
+% do to the power to bring the light at wl2NM into focus (given that light
+% at wl1NM is in focus.)
 %
 % Here is what Heidi told wrote about her code:
 %     The LCA is the difference in the focusing power of the eye at different wavelengths.

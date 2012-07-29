@@ -3,6 +3,8 @@
 % Tests the monochromatic PSFs computed from Zernike coefficients. The
 % script compares the computations with those in PTB.
 %
+% If this is working, all of the curves/points in each lineplot figure should overlay.
+%
 % See also: wvfCreate, wvfGet, wvfSet, wvfComputePSF, wvfComputePupilFunction,
 %   wvfLCAFromWavelengthDifference
 %
@@ -21,13 +23,14 @@
 %              a bit of a tilt at windmills, since there are many other
 %              vset dependencies.
 % 7/20/12 dhb  Change iset comments to vset.
+% 7/29/12 dhb  Flip sign of explicit correction for LCA (by changing order of
+%              args to wvfLCAFromWavelengthDifference) to make this work again,
+%              and also to agree with the comments now in various routines about
+%              the sign conventions on defocus.
 %
 % (c) Wavefront Toolbox Team, 2012
 
 %% Initialize
-s = which('v_wvfDiffractionPSF');
-cd(fileparts(s));
-clear; close all;
 s_initISET;
 
 %% Compare pointspread function in wvf with psf in Psych Toolbox
@@ -145,7 +148,7 @@ end
 wList = 400;  
 wvf1 = wvf0;
 wvf1 = wvfSet(wvf1,'wave',wList);
-lcaDiopters = wvfLCAFromWavelengthDifference(wList,wvfGet(wvf1,'measured wl'));
+lcaDiopters = wvfLCAFromWavelengthDifference(wvfGet(wvf1,'measured wl'),wList);
 wvf1 = wvfSet(wvf1,'calc observer focus correction',lcaDiopters);
 wvf1 = wvfComputePSF(wvf1);
 

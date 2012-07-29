@@ -1,12 +1,18 @@
 function microns = wvfDefocusDioptersToMicrons(diopters,pupilSizeMM)
 % microns = wvfDefocusDioptersToMicrons(diopters,pupilSizeMM)
 %
-% Convert defocus expressed in microns to defocus expressed in microns.
+% Convert defocus expressed in diopters to defocus expressed in microns.
 % The latter is suitable for adding into the 4th Zernike coefficient.
 %
 % The pupil size should be that used to normalize the radius of the
 % Zernike coefficients, that is the size with respect to which the
 % meausurements were made.
+%
+% The sign convention is that a positive number in diopters leads
+% to a positive number in microns.  Some care is required when
+% using this routine with wvfLCAFromWavelengthDifference, which
+% has a sign convention in which increased power corresponds to
+% a negative refractive error in diopters.
 %
 % About this conversion, Heidi says:
 %    The last equation converts between the Zernike defocus coefficient
