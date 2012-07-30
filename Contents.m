@@ -30,8 +30,12 @@
 % directly or access its fields other than via wvfGet.
 %   utility/wvfComputeConePSF -               Compute the PSF seen by cones.
 %   utility/wvfDefocusDioptersToMicrons -     Convert diopters to microns for addition into j=4 Zernike coefficient.
+%   utility/wvfOSAIndexToVectorIndex -        Convert from OSA index (or aberration name) to the index into our stored coeffs vector.
+%   utiltiy/wvfOSAIndexToZernikeNM -          Convert from OSA index to standard Zernike two index scheme.
 %   utility/wvfLCAFromWavelengthDifference -  Compute longitudinal chromatic aberration (LCA) in diopters, from wavelength difference.
+%   utility/wvfLoadThibosVirtualEyes -        Load in parameters for Thibos et al.'s statistical model of human aberrations.
 %   utility/wvfWave2idx -                     Convert wvf wavelengths to indices.
+%   utility/wvfZernikeNMToOSAIndex -          Convert from Zernike two index scheme to OSA index.
 %
 % PSF MANIPULATION AND ANALYSIS (subdir psf).  Perform operations on psfs.  Not directly tied
 % to the wvf structure.
@@ -44,6 +48,20 @@
 % STILES-CRAWFORD EFFECT (subdir stilescrawford).  As the name says.
 %   sceCreate -                               Create Stiles-Crawford structure with various options as to data.
 %   sceGet -                                  Get info from Stiles-Crawford structure.
+%
+% EXTERNAL (subdir external).  Code we got from others.
+%   zernike -                                 Routines for computing Zernike polynomials.
+%   matlab -                                  Matlab toolbox routines that we need.
+%   thibosvirtualeyes -                       Thibos et al.'s statistical model of human aberrations.  Includes data and sample code.
+%
+% DATA (subdir data).  Data used in the toolbox
+%   autrusseauStandardObserver.txt -          Zernike coefficient data for the "standard observer" of Autrusseau, Thibos, & Shevell (2011),
+%                                             VisionResearch, 51, pp. 2282-2294, Table 1.  These start with the OSA j = 0 (piston).  The
+%                                             data are for a 6 mm pupil and a measurement wavelength of 570 nm.
+%   sampleZernikeCoeffs.txt -                 Zernike coefficient data for 9 subjects in OSA format, measured by Heidi Hofer.
+%                                             Data for each subject, 66 coefficients in a column. OSA indexing order, starting
+%                                             at j = 0.  The pupil size for the measurements was 6 mm for all subjects.
+%                                             Piston, tip, tilt, and defocus coefficients are set to zero.
 
 % (c) Wavefront Toolbox Team 2011, 2012
 %
@@ -59,12 +77,4 @@
 %   wvfComputeOptimizedConePSF -              Compute focus optimized cone psfs given Zernike coeffs, pupil, accom wl, and weighting spectrum
 %   wvfComputeOptimizedPSF -                  Compute focus optimized (at a specified wl) monochromatic PSFs, ginve Zernike coeffs, etc.
 %
-% Data
-%   autrusseauStandardObserver.txt -          Zernike coefficient data for the "standard observer" of Autrusseau, Thibos, & Shevell (2011),
-%                                             VisionResearch, 51, pp. 2282-2294, Table 1.  These seem to have defocus, tip, and tilt included
-%                                             so it is worth some checking to make sure the convention matches the code here.  Could their
-%                                             coeficient 0 correspond to our 3?
-%   sampleZernikeCoeffs.txt -                 Zernike coefficient data for 9 subjects in OSA format, measured by Heidi Hofer.
-%                                             Data for each subject, 65 coefficients in a column.  The pupil size for
-%                                             the measurements was 6 mm for all subjects.  Tip, tilt, and defocus
-%                                             coefficients are set to zero.
+
