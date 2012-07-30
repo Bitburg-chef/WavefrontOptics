@@ -98,13 +98,10 @@
 %
 % In this tutorial we will be working with up to 10 orders of Zernike
 % polynomials. Counted out, this represents 1+2+3+...+11 = 66 terms for
-% orders 0 through 10. We will actually treat this as 65 coefficients since
-% the 0th order term (j=0) is constant. Additionally, the 1st order terms
+% radial orders 0 through 10. The 0th order term (piston) doesn't affect
+% the PSF and we will leave it at 0. Additionally, the 1st order terms
 % (coeffs 1 and 2, known as tip and tilt) only serve to shift the PSF along
-% the x or y axis, and don't represent true aberrations. They will be left
-% at 0 for this tutorial, although they still make up the 65 coefficients,
-% unlike the j=0 term, which is removed from the index (which is also
-% convenient because Matlab indexes starting from 1!)
+% the x or y axiss. They will also be left at 0 for this tutorial.  
 
 %% Initialize
 s_initISET;
@@ -142,30 +139,38 @@ wList = wvfGet(wvf0,'wave');
 wvfPlot(wvf0,'2dpsf space normalized','um',wList,maxUM);
 
 %% Examine how the first non-zero Zernike coefficient contributes to the PSF.
-
-% The j = 3 (4th entry) in the Zernike vector is known as astigmatism with axis at 45 degrees.
 %
-% We start with the default structure , wvf0 created above, and set the
-% zcoeff column vector to be a new non-zero vector.
-zcoeffs = zeros(65,1);
-zcoeffs(4) = 0.75;                              % Just a non-zero weight
-wvf3 = wvfSet(wvf0,'zcoeffs',zcoeffs);
+% The j = 3 coefficient (4th entry in the Zernike vector is known as oblique astigmatism
+% (with axis at 45 degrees.)
+%
+% We start with the default structure , wvf0 created above, which has its
+% vector of zcoeffs set to 66 zeros.  Then we use wvfSet to poke in some
+% non-zero oblique astigmatism.
+%
+% Note that for low order coefficents with names, we wvfSet understands
+% the names.  See wvfOSAIndexToVectorIndex for a list
+% of available names.
+%
+% We could also just specify 3 to the set function, as that is
+% the corresponding OSA index.  This direct usage is illustrated by the
+% wvfGet call, and the same usage works for the wvfSet. (You can also
+% get via names for the low order terms.)
+oblique_astig = 0.75;                             
+wvf3 = wvfSet(wvf0,'zcoeffs',oblique_astig,{'oblique_astigmatism'});
+wvfGet(wvf3,'zcoeffs',3)
 
 % Look at the pupil function for astigmatism with axis at 45 degrees.
 %
 % We have used wvfComputePupilFunction separately here, but it is actually also
 % contained within wvfComputePSF, which we will use from now on.
-wvf3 = wvfComputePupilFunction(wvf3);
-
-% Now we plot the pupil function, which captures phase information about
-% the wavefront aberrations.
 %
 % We can see that the phase changes seem to be aligned with the + and - 45
-% degree axes. 
+% degree axes, which makes sense for oblique astigmatism. 
+wvf3 = wvfComputePupilFunction(wvf3);
 wvfPlot(wvf3,'2d pupil phase space','mm',wList,pupilfuncrangeMM);
 
-%% Plot a PSF
-
+%% Plot the PSF
+%
 % While the pupil functions are well specified by Zernike polynomials, it's
 % hard to get meaning from them. We'd much prefer to look at the PSF, which
 % gives us an idea of how the pupil will blur an image. 
@@ -182,16 +187,15 @@ wvf3 = wvfComputePSF(wvf3);
 % associated PSF will be.
 wvfPlot(wvf3, '2d psf space normalized','um',wList,maxUM);
 
-%% Examine effect of the j = 5 (6th entry), which is astigmatism
-% along the 0 or 90 degree axis.
+%% Examine effect of the j = 5 (6th entry), which is called vertical
+% astigmatism, along the 0 or 90 degree axis.  Again we begin with
+% the wvf0, which has a vector of zero zcoeffs in it by default.
 %
 % We can see that unlike the 3rd coefficient, this coefficient for
-% astigmatism is aligned to the x and y axes
-zcoeffs = zeros(65,1);                            
-zcoeffs(6) = 0.75;                              % Just a non-zero weight
-wvf5 = wvfSet(wvf0,'zcoeffs',zcoeffs);
+% astigmatism is aligned to the x and y axes.
+vertical_astig = 0.75;                         
+wvf5 = wvfSet(wvf0,'zcoeffs',vertical_astig,{'vertical_astigmatism'});
 wvf5 = wvfComputePSF(wvf5);
-
 wvfPlot(wvf5,'2d pupil phase space','mm',wList,maxMM);
 wvfPlot(wvf5,'2d psf space normalized','um',wList,maxUM);
 
