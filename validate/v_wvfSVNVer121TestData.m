@@ -20,7 +20,7 @@
 % addition, the y coordinate in Heidi's code ran in the opposite direction
 % from the y coordinate in our code.  Again, we think current
 % code matches the OSA conventions, based on a first principles reading of 
-% the code as well as our current agreement with the PSF pictures in Autrussea
+% the code as well as our current agreement with the PSF pictures in Autrusseau
 % et al.
 %
 % As of 7/29/12, it also appears that LCA was getting added in with the wrong
