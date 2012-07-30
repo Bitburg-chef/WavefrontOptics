@@ -143,31 +143,39 @@ if (~isfield(wvf,'pupilfunc') || ~isfield(wvf,'PUPILFUNCTION_STALE') || wvf.PUPI
         
         % Get Zernike coefficients and add in appropriate info to defocus
         % Need to make sure the c vector is long enough to contain defocus
-        % term, because we handle that specially and it's easiest just to
-        % make sure it is there.
+        % term, because we handle that specially and it's easy just to
+        % make sure it is there.  This wastes a little time when we just
+        % compute diffraction, but that is the least of our worries.
         c = wvfGet(wvf,'zcoeffs');
         if (length(c) < 5)
             c(length(c)+1:5) = 0;
         end
-        c(5) = c(5) + lcaMicrons+defocusCorrectionMicrons;
+        c(5) = c(5) + lcaMicrons + defocusCorrectionMicrons;
+        
         % fprintf('At wavlength %0.1f nm, adding LCA of %0.3f microns to j = 4 (defocus) coefficient\n',thisWave,lcaMicrons);
 
         % This loop uses the function zerfun to compute the Zernike polynomial of
         % each required order. That function normalizes a bit differently than
         % the OSA standard, with a factor of 1/sqrt(pi) that is not part of 
         % the OSA definition.  We correct by multiplying by the same factor.
+        %
+        % Also, we speed this up by not bothering to compute for c entries that are 0.
         wavefrontAberrationsUM = zeros(size(xpos));
-        for j = 1:length(c)
-            osaIndex = j-1;
-            [n,m] = wvfOSAIndexToZernikeNM(osaIndex);
-            wavefrontAberrationsUM(norm_radius_index) =  ...
-                wavefrontAberrationsUM(norm_radius_index) + ...
-                c(j)*sqrt(pi)*zernfun(n,m,norm_radius(norm_radius_index),theta(norm_radius_index),'norm');
+        for k = 1:length(c)
+            if (c(k) ~= 0)
+                osaIndex = k-1;
+                [n,m] = wvfOSAIndexToZernikeNM(osaIndex);
+                wavefrontAberrationsUM(norm_radius_index) =  ...
+                    wavefrontAberrationsUM(norm_radius_index) + ...
+                    c(k)*sqrt(pi)*zernfun(n,m,norm_radius(norm_radius_index),theta(norm_radius_index),'norm');
+            end
         end
         
         % This is the old brute force code for doing the computation.  The loop above
         % is more elegant and flexible.  This can go away after we're comfortable
-        % the new code is working rigth.
+        % the new code is working right.  Note that this code does not expect the
+        % c array to contain piston, so the indexing is one off from what we now
+        % are using.
         %
         % 7/24/12 dhb  Checked the formula out to c(15) against OSA table and didn't find
         %              any typos
