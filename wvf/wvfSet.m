@@ -140,8 +140,18 @@ end
 % We use the "j" single-index scheme of OSA standards
 switch parm
     case {'zcoeffs', 'zcoeff','zcoef'}
-        % Zernicke coefficients.
-        wvf.zcoeffs = val;
+        % Zernike coeffs
+        % wvfSet(wvf,'zcoeffs',val,idx);
+        % idx is optional, and can be a vector of j values
+        % or a string array of coefficient names (see wvfListToOSAIndex).
+        % Note that j values start at 0, and that is the convention followed
+        % here.  The length of idx must match that of val.
+        if (isempty(varargin))
+            wvf.zcoeffs = val;
+        else
+            idx = wvfOSAIndexToVectorIndex(vararggin(1));
+            wvf.zcoeffs(idx) = val;
+        end
         wvf.PUPILFUNCTION_STALE = true;
         DIDASET = true;
         

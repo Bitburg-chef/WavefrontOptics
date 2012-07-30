@@ -123,7 +123,20 @@ end
 %% Zernike coefficients and related
 switch parm
     case {'zcoeffs','zcoeff','zcoef'}
-        val = wvf.zcoeffs;
+        % Zernike coeffs
+        % wvfGet(wvf,'zcoeffs',idx);
+        % idx is optional, and can be a vector of j values
+        % or a string array of coefficient names (see wvfListToOSAIndex).
+        % Note that j values start at 0, and that is the convention followed
+        % here.  If idx is passed, the length of val matches that of idx.
+        % And, it is an error if you try to get a coefficient that has not
+        % been set.
+        if (isempty(varargin))
+            val = wvf.zcoeffs;
+        else
+            idx = wvfOSAIndexToIndex(vararggin(1));
+            val = wvf.zcoeffs(idx);
+        end
         DIDAGET = true;
         
     case {'pupilsizemeasured','measuredpupilsize', 'measuredpupil', 'measuredpupilmm', 'measuredpupildiameter'}
