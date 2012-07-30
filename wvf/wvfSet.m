@@ -137,21 +137,11 @@ end
 % Zernike coeffs 0,1,2 (piston, verticle tilt, horizontal tilt) are
 % typically 0 since they are either constant (piston) or only change the
 % point spread location, not quality, as measured in wavefront aberrations.
-% 65 coefficients represent the "j" single-index scheme of OSA standards
-% for 10 orders of terms (each order has order+1 number of terms).
-% 10 orders, including 0th order, should result in 66 total terms, but 0th
-% order term, coeff(0)/piston, is neglected, resulting in 65 terms.
-% Thus, sample data typically starts with coeff(3), which is +/-45 degree
-% astigmatism.
+% We use the "j" single-index scheme of OSA standards
 switch parm
     case {'zcoeffs', 'zcoeff','zcoef'}
-        % Zernicke coefficients.  This should be 65 terms, and we
-        % over-write the current field with the number that are in val,
-        % leaving any higher order ones alone.
-        if (length(val) > 65)
-            error('We do not handle more than 65 coefficients');
-        end
-        wvf.zcoeffs(1:length(val)) = val;
+        % Zernicke coefficients.
+        wvf.zcoeffs = val;
         wvf.PUPILFUNCTION_STALE = true;
         DIDASET = true;
         

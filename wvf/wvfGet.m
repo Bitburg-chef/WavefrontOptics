@@ -123,13 +123,7 @@ end
 %% Zernike coefficients and related
 switch parm
     case {'zcoeffs','zcoeff','zcoef'}
-        % wvfGet(wvf,'zcoeffs',wllist)
-        % wvfGet(wvf,'zcoeffs',4)
-        if isempty(varargin),   val = wvf.zcoeffs;
-        else
-            widx = wvfWave2idx(wvf,varargin{1});
-            val = wvf.zcoeffs(widx);
-        end
+        val = wvf.zcoeffs;
         DIDAGET = true;
         
     case {'pupilsizemeasured','measuredpupilsize', 'measuredpupil', 'measuredpupilmm', 'measuredpupildiameter'}
