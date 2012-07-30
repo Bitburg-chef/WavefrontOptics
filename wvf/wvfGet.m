@@ -134,7 +134,7 @@ switch parm
         if (isempty(varargin))
             val = wvf.zcoeffs;
         else
-            idx = wvfOSAIndexToIndex(vararggin(1));
+            idx = wvfOSAIndexToVectorIndex(varargin{1});
             val = wvf.zcoeffs(idx);
         end
         DIDAGET = true;

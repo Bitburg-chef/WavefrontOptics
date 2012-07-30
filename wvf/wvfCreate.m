@@ -21,7 +21,7 @@ wvf = wvfSet(wvf,'name','default');
 wvf = wvfSet(wvf,'type','wvf');
 
 %% Zernike coefficients and related
-wvf = wvfSet(wvf,'zcoeffs',0);
+wvf = wvfSet(wvf,'zcoeffs',zeros(66,1));
 wvf = wvfSet(wvf,'measured pupil',8);
 wvf = wvfSet(wvf,'measured wl',550);
 wvf = wvfSet(wvf,'measured optical axis',0);

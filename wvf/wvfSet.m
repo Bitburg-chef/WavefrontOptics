@@ -149,7 +149,7 @@ switch parm
         if (isempty(varargin))
             wvf.zcoeffs = val;
         else
-            idx = wvfOSAIndexToVectorIndex(vararggin(1));
+            idx = wvfOSAIndexToVectorIndex(varargin{1});
             wvf.zcoeffs(idx) = val;
         end
         wvf.PUPILFUNCTION_STALE = true;
