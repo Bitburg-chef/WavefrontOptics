@@ -622,7 +622,7 @@ switch parm
         if ~isempty(varargin), wList= varargin{1};
         else                   wList = wvfGet(wvf,'wave');
         end
-        zcoeffs = zeros(65,1);
+        zcoeffs = 0;
         wvfTemp = wvfSet(wvf,'zcoeffs',zcoeffs);
         wvfTemp = wvfSet(wvfTemp,'wave',wList(1));
         wvfTemp = wvfComputePSF(wvfTemp);

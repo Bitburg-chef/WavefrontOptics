@@ -31,7 +31,7 @@ switch (whichTypeOfSamples)
         
     case 'HoferMeasurements'
         zSamples = importdata('sampleZernikeCoeffs.txt');
-        if (size(zSamples,1) ~= 65 || size(zSamples,2) ~= 10)
+        if (size(zSamples,1) ~= 66 || size(zSamples,2) ~= 9)
             error('Surprising size for read in Hofer zSamples.')
         end
         N = size(zSamples,2);

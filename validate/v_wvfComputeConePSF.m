@@ -138,7 +138,7 @@ wvfParams1 = wvfComputePSF(wvfParams1);
 conePsf1 = wvfGet(wvfParams1,'cone psf');
 
 wvfParams2 = wvf0;
-wvfParams2 = wvfSet(wvfParams2,'zcoeffs',zeros(65,1));
+wvfParams2 = wvfSet(wvfParams2,'zcoeffs',0);
 wvfParams2 = wvfComputePSF(wvfParams2);
 conePsf2 = wvfGet(wvfParams2,'cone psf');
 

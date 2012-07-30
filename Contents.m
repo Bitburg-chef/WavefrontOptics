@@ -62,6 +62,10 @@
 %                                             Data for each subject, 66 coefficients in a column. OSA indexing order, starting
 %                                             at j = 0.  The pupil size for the measurements was 6 mm for all subjects.
 %                                             Piston, tip, tilt, and defocus coefficients are set to zero.
+%   ver121data -                              Directory .mat files output by an early version of the toolbox.  Used to validate
+%                                             that we still produce the answers that we used to, and document any differences due
+%                                             to bug fixes.  See v_wvfSVNVer121TestData.
+% DOCS (subdir docs).  Various documentation.  Mainly PDF of relevant papers.
 
 % (c) Wavefront Toolbox Team 2011, 2012
 %
