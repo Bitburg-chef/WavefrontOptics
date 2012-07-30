@@ -24,6 +24,6 @@ v_wvfPupilFunction
 v_wvfSpatialSampling
 
 %%
-v_wvfVSET
+% v_wvfVSET
 
 %% End
