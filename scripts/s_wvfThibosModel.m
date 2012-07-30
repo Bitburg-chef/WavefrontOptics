@@ -20,7 +20,7 @@
 % the Wavefront toolbox. This script calculates the PSF for example
 % subjects.
 %
-% See also:  VirtualEyesDemo and wvfLoadHuman 
+% See also:  VirtualEyesDemo and wvfLoadThibosVirtualEyes 
 %
 % Copyright Wavefront Toolbox Team, 2012
 
@@ -37,7 +37,7 @@ pupilMM = 4.5;
 % coefficients.  The covariance is summarized in the variable S.  The mean
 % values across a large sample of eyes measured by Thibos and gang are in
 % the variable sample_mean.
-[sample_mean S] = wvfLoadHuman(pupilMM);
+[sample_mean S] = wvfLoadThibosVirtualEyes(pupilMM);
 
 %% Plot the means and covariance (not)
 vcNewGraphWin([],'tall');

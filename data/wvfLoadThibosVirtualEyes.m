@@ -1,7 +1,7 @@
-function [sample_mean sample_cov] = wvfLoadHuman(pupilDiameterMM) %#ok<STOUT>
+function [sample_mean sample_cov] = wvfLoadThibosVirtualEyes(pupilDiameterMM) %#ok<STOUT>
 % Load  mean and covariance of Zernicke coefficients for human data
 %
-%   [sample_mean sample_cov] = wvfLoadHuman(pupilDiameterMM)
+%   [sample_mean sample_cov] = wvfLoadThibosVirtualEyes(pupilDiameterMM)
 %
 % Load statistical summary of the Zernicke polynomial coeffcients measured
 % in the human eye.  These come out in OSA order, including the j = 0
@@ -13,11 +13,11 @@ function [sample_mean sample_cov] = wvfLoadHuman(pupilDiameterMM) %#ok<STOUT>
 %   and Physiological Optics (2009).
 %
 % Concerning the program, the authors write:
-% Permission is granted to use this program for scientific research
-% purposes.  Commercial users should contact Indiana University for
-% licensing arrangements.
+%   Permission is granted to use this program for scientific research
+%   purposes.  Commercial users should contact Indiana University for
+%   licensing arrangements.
 %
-% There are no specific comments about the data.
+%   There are no specific comments about the data.
 %
 % Another relevant paper
 %  Autrusseau, Thibos and Shevell (2011)

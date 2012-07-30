@@ -91,7 +91,7 @@ function val = wvfGet(wvf,parm,varargin)
 %   z = wvfGet(wvfP,'zcoeffs');z(4) = 0.3; wvfP = wvfSet(wvfP,'zcoeffs',z);
 %   wvfP = wvfComputePSF(wvfP); wvfGet(wvfP,'strehl',1)
 %
-% See also: wvfComputePupilFunction, wvfLoadHuman
+% See also: wvfSet, wvfCreate, wvfComputePupilFunction, wvfComputePSF
 %
 % (c) Wavefront Toolbox Team 2011, 2012
 %

@@ -24,14 +24,14 @@ maxUM = 10;
 % This cell shows that the conversion for  WVF to ISET work well for one
 % wavelength.
 %
-% The data were collected by Thibos and are described in the wvfLoadHuman
+% The data were collected by Thibos and are described in the wvfLoadThibosVirtualEyes
 % function and reference therein.
 wave = 550; wave = wave(:);
 pupilMM = 3; 
 
 % Load human wvf
 % 
-zCoefs = wvfLoadHuman(pupilMM);
+zCoefs = wvfLoadThibosVirtualEyes(pupilMM);
 wvfP = wvfCreate('wave',wave,'zcoeffs',zCoefs,'name',sprintf('human-%d',pupilMM));
 wvfP = wvfComputePSF(wvfP);
 
@@ -72,7 +72,7 @@ wave = 500; wave = wave(:);
 pupilMM = 3; 
 
 % Load human wvf
-zCoefs = wvfLoadHuman(pupilMM);
+zCoefs = wvfLoadThibosVirtualEyes(pupilMM);
 wvfP = wvfCreate('wave',wave,'zcoeffs',zCoefs,'name',sprintf('human-%d',pupilMM));
 wvfP = wvfComputePSF(wvfP);
 
@@ -108,7 +108,7 @@ pupilMM = 3;
 thisWave = 550;
 
 % Load human wvf
-zCoefs = wvfLoadHuman(pupilMM);
+zCoefs = wvfLoadThibosVirtualEyes(pupilMM);
 wvfP = wvfCreate('wave',wave,'zcoeffs',zCoefs,'name',sprintf('human-%d',pupilMM));
 wvfP = wvfComputePSF(wvfP);
 

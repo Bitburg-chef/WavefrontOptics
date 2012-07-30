@@ -19,7 +19,7 @@ function oi = wvf2oi(wvfP, oType)
 %     Mouse --  Not yet implemented.
 %
 % Examples
-%  pupilMM = 3; zCoefs = wvfLoadHuman(pupilMM);
+%  pupilMM = 3; zCoefs = wvfLoadThibosVirtualEyes(pupilMM);
 %  wave = [400:10:700]';
 %  wvfP = wvfCreate('wave',wave,'zcoeffs',zCoefs,'name',sprintf('human-%d',pupilMM));
 %  oi = wvf2oi(wvfP,'human');

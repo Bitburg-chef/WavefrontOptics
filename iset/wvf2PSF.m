@@ -20,7 +20,7 @@ function [siData, wvfP] = wvf2PSF(wvfP)
 % with the function siSynthetic.  
 %
 % Example:
-%    pupilMM = 3; zCoefs = wvfLoadHuman(pupilMM);
+%    pupilMM = 3; zCoefs = wvfLoadThibosVirtualEyes(pupilMM);
 %    wave = [450:100:650]';
 %    wvfP = wvfCreate('wave',wave,'zcoeffs',zCoefs,'name',sprintf('human-%d',pupilMM));
 %

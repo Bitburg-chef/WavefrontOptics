@@ -24,7 +24,7 @@ whichTypeOfSamples = 'ThibosStatiscalModel';
 switch (whichTypeOfSamples)
     case 'ThibosStatiscalModel'
         N = 10;
-        [sample_mean S] = wvfLoadHuman(pupilMM);
+        [sample_mean S] = wvfLoadThibosVirtualEyes(pupilMM);
         zSamples = ieMvnrnd(sample_mean,S,N)';
         measPupilSizeMM = pupilMM;
         measWavelengthNM = 550;

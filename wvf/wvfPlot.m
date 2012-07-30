@@ -40,7 +40,7 @@ function [uData, pData, fNum] = wvfPlot(wvfP,pType,varargin)
 %    subplot(2,1,1), [u,p] = wvfPlot(wvfP,'1d psf space',unit,wave,'no window');
 %    subplot(2,1,2), wvfPlot(wvfP,'image psf',unit,wave,'no window');
 %
-% See also:  wvfComputePSF, wvfLoadHuman, vcNewGraphWin
+% See also:  wvfComputePSF, vcNewGraphWin
 %
 % (c) Wavefront Toolbox Team 2012 (bw)
 

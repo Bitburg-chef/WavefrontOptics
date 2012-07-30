@@ -10,7 +10,7 @@ scene = sceneCreate('gridlines');
 scene = sceneSet(scene,'fov',1);
 
 %% Create wavefront samp_mean human
-pupilMM = 4.5; zCoefs = wvfLoadHuman(pupilMM);
+pupilMM = 4.5; zCoefs = wvfLoadThibosVirtualEyes(pupilMM);
 wave = (400:10:700)';
 wvfP = wvfCreate('wave',wave,'zcoeffs',zCoefs,'name',sprintf('human-%d',pupilMM));
 % wvfP = wvfComputePSF(wvfP);
