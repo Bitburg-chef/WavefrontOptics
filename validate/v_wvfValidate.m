@@ -9,21 +9,10 @@
 v_wvfDiffractionPSF; pause(1)
 
 %%
-v_wvfWaveDefocus; pause(1)
+v_wvfSpatialSampling; pause(1)
 
 %%
-v_wvfStilesCrawford; pause(1)
+v_wvfSVNVer121TestData; pause(1)
 
 %%
-v_wvfSampleData; pause(1)
-
-%%
-v_wvfPupilFunction
-
-%%
-v_wvfSpatialSampling
-
-%%
-% v_wvfVSET
-
-%% End
+v_wvfComputeConePSF; pause(1)

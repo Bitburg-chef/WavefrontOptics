@@ -6,9 +6,11 @@
 %
 % VALIDATION SCRIPTS (subdir validate).  These test that various pieces of the toolboxes
 % do the right thing.
+%   validate/v_wvfComputeConePSF -            Check routines that compute LMS cone PSFs and compare with Autrusseau et al. calcs.
 %   validate/v_wvfDiffractionPSF -            Compare PSFs obtained with wavefront calcs to direct computation of diffraction limited PSFs
 %   validate/v_wvfSpatialSampling -           Compare PSFs with different spatial sampling parameters.
 %   validate/v_wvfSVNVer121TestData -         Compare PSFs computed by toolbox now to those computed long ago and far away.
+%   validate/v_wvfValidate -                  Run all the working validation routines.
 %
 % BASIC OPERATIONS (subdir wvf).  These are the core functions that know about the internals of the
 % wvf structure.  User code should generally use these and not rely on the specific
@@ -55,6 +57,8 @@
 %   thibosvirtualeyes -                       Thibos et al.'s statistical model of human aberrations.  Includes data and sample code.
 %
 % DATA (subdir data).  Data used in the toolbox
+%   autrusseauFigure11.tif -                  TIFF image of Figure 11 from Autrusseau et al., used to digitize autrusseauFigure11.txt
+%   autrusseauFigure11.txt -                  Digitized data from Figure 11 of Autrusseau et al.  Tab delimited text with column headers.
 %   autrusseauStandardObserver.txt -          Zernike coefficient data for the "standard observer" of Autrusseau, Thibos, & Shevell (2011),
 %                                             VisionResearch, 51, pp. 2282-2294, Table 1.  These start with the OSA j = 0 (piston).  The
 %                                             data are for a 6 mm pupil and a measurement wavelength of 570 nm.
@@ -65,7 +69,11 @@
 %   ver121data -                              Directory .mat files output by an early version of the toolbox.  Used to validate
 %                                             that we still produce the answers that we used to, and document any differences due
 %                                             to bug fixes.  See v_wvfSVNVer121TestData.
+%
 % DOCS (subdir docs).  Various documentation.  Mainly PDF of relevant papers.
+%
+% TOP LEVEL.
+%   wvfRootPath -                             Return path to the top level of the toolbox.
 
 % (c) Wavefront Toolbox Team 2011, 2012
 %
