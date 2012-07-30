@@ -27,6 +27,9 @@
 % sign in the ver 121 code. At least, it is getting added in with the opposite
 % sign in that code.
 %
+% As of 7/29/12, we have changed to pass the j=0 coefficient.  So we need to
+% handle that here too.
+%
 % 7/4/12  dhb  Wrote first draft.
 %
 % (c) Wavefront Toolbox Team, 2012
@@ -90,8 +93,9 @@ for i = 1:length(theFiles)
     diffracarcmin0 = wvfGet(wvf0,'samples angle','min',testData.theWavelength);
     arcminperpix0 = wvfGet(wvf0,'psf arcmin per sample',testData.theWavelength);
     
-    % Compute observer PSF our way.
-    wvf0 = wvfSet(wvf0,'zcoeffs',testData.theZcoeffs);
+    % Compute observer PSF our way.  We have changed so that we pass the
+    % j = 0 coefficient, so need to prepend that here.
+    wvf0 = wvfSet(wvf0,'zcoeffs',[0 ; testData.theZcoeffs]);
     wvf0 = wvfComputePSF(wvf0);
     psf0 = wvfGet(wvf0,'psf',testData.theWavelength);
     psfLine0 = psf0(wvfGet(wvf0,'middle row')+rowOffset,:);

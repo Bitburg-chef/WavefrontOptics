@@ -142,11 +142,14 @@ if (~isfield(wvf,'pupilfunc') || ~isfield(wvf,'PUPILFUNCTION_STALE') || wvf.PUPI
         norm_radius_index = norm_radius <= 1;
         
         % Get Zernike coefficients and add in appropriate info to defocus
+        % Need to make sure the c vector is long enough to contain defocus
+        % term, because we handle that specially and it's easiest just to
+        % make sure it is there.
         c = wvfGet(wvf,'zcoeffs');
         if (length(c) < 5)
             c(length(c)+1:5) = 0;
         end
-        c(4) = c(4) + lcaMicrons+defocusCorrectionMicrons;
+        c(5) = c(5) + lcaMicrons+defocusCorrectionMicrons;
         % fprintf('At wavlength %0.1f nm, adding LCA of %0.3f microns to j = 4 (defocus) coefficient\n',thisWave,lcaMicrons);
 
         % This loop uses the function zerfun to compute the Zernike polynomial of
@@ -155,7 +158,8 @@ if (~isfield(wvf,'pupilfunc') || ~isfield(wvf,'PUPILFUNCTION_STALE') || wvf.PUPI
         % the OSA definition.  We correct by multiplying by the same factor.
         wavefrontAberrationsUM = zeros(size(xpos));
         for j = 1:length(c)
-            [n,m] = wvfOSAIndexToZernikeNM(j);
+            osaIndex = j-1;
+            [n,m] = wvfOSAIndexToZernikeNM(osaIndex);
             wavefrontAberrationsUM(norm_radius_index) =  ...
                 wavefrontAberrationsUM(norm_radius_index) + ...
                 c(j)*sqrt(pi)*zernfun(n,m,norm_radius(norm_radius_index),theta(norm_radius_index),'norm');

@@ -44,9 +44,6 @@ dataSource = 'AutrusseauStandard';
 switch (dataSource)
     case 'AutrusseauStandard';
         % This is the Autrussea standard observer.
-        % I think their first coefficient is the
-        % j = 0 Zernike mode number, and we don't use
-        % this.  So we lop it off.
         %
         % Their coefficients are for a measured
         % pupil of 6 mm and that their calculations are
@@ -61,7 +58,6 @@ switch (dataSource)
         whichSubject = 1;
         dataFile = 'autrusseauStandardObserver.txt';
         theZernikeCoeffs = importdata(dataFile);
-        theZernikeCoeffs = theZernikeCoeffs(2:15);
         measPupilMM = 6;
         calcPupilMM = 6;
         measWavelength = 570;
@@ -77,7 +73,7 @@ switch (dataSource)
         whichSubject = 1;
         load('IASstats60','sample_mean');
         theZernikeCoeffs = sample_mean;
-        theZernikeCoeffs = theZernikeCoeffs(2:15);
+        theZernikeCoeffs = theZernikeCoeffs(1:15);
         measPupilMM = 6;
         calcPupilMM = 6;
         measWavelength = 570;

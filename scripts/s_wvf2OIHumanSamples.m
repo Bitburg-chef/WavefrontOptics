@@ -26,17 +26,12 @@ switch (whichTypeOfSamples)
         N = 10;
         [sample_mean S] = wvfLoadHuman(pupilMM);
         zSamples = ieMvnrnd(sample_mean,S,N)';
-        
-        % Thibos model has, I think, j = 0 term included
-        % Lop it off here.
-        zSamples = zSamples(2:end,:);
-        
         measPupilSizeMM = pupilMM;
         measWavelengthNM = 550;
         
     case 'HoferMeasurements'
         zSamples = importdata('sampleZernikeCoeffs.txt');
-        if (size(zSamples,1) ~= 65 || size(zSamples,2) ~= 9)
+        if (size(zSamples,1) ~= 65 || size(zSamples,2) ~= 10)
             error('Surprising size for read in Hofer zSamples.')
         end
         N = size(zSamples,2);

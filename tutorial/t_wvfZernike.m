@@ -106,12 +106,6 @@
 % unlike the j=0 term, which is removed from the index (which is also
 % convenient because Matlab indexes starting from 1!)
 
-%% Change to directory where this function lives and clear.  
-
-% The change forces the iset session file to end up in the directory with
-% the tutorial
-cd(fileparts(which('t_wvfZernike')));
-
 %% Initialize
 s_initISET;
 
@@ -149,13 +143,12 @@ wvfPlot(wvf0,'2dpsf space normalized','um',wList,maxUM);
 
 %% Examine how the first non-zero Zernike coefficient contributes to the PSF.
 
-% The 3rd term (or 4th term when counting the 0th order constant as in the
-% j indexing scheme) is known as astigmatism with axis at 45 degrees.
+% The j = 3 (4th entry) in the Zernike vector is known as astigmatism with axis at 45 degrees.
 %
 % We start with the default structure , wvf0 created above, and set the
 % zcoeff column vector to be a new non-zero vector.
 zcoeffs = zeros(65,1);
-zcoeffs(3) = 0.75;                              % Just a non-zero weight
+zcoeffs(4) = 0.75;                              % Just a non-zero weight
 wvf3 = wvfSet(wvf0,'zcoeffs',zcoeffs);
 
 % Look at the pupil function for astigmatism with axis at 45 degrees.
@@ -189,13 +182,13 @@ wvf3 = wvfComputePSF(wvf3);
 % associated PSF will be.
 wvfPlot(wvf3, '2d psf space normalized','um',wList,maxUM);
 
-%% Examine effect of  the 5th coeff (j index 6), which is astigmatism
+%% Examine effect of the j = 5 (6th entry), which is astigmatism
 % along the 0 or 90 degree axis.
 %
 % We can see that unlike the 3rd coefficient, this coefficient for
 % astigmatism is aligned to the x and y axes
 zcoeffs = zeros(65,1);                            
-zcoeffs(5) = 0.75;                              % Just a non-zero weight
+zcoeffs(6) = 0.75;                              % Just a non-zero weight
 wvf5 = wvfSet(wvf0,'zcoeffs',zcoeffs);
 wvf5 = wvfComputePSF(wvf5);
 
@@ -204,7 +197,7 @@ wvfPlot(wvf5,'2d psf space normalized','um',wList,maxUM);
 
 %% Go wild and make plots of various pupil functions and their respective
 % point-spread functions for different Zernike polynomials of 2nd and 3rd orders
-% (j index 3 through 9)
+% (OSA j indices 3 through 9)
 wvf0 = wvfCreate;
 wvf0 = wvfSet(wvf0,'calculated pupil',wvfGet(wvf0,'measured pupil','mm'));
 pupilfuncrangeMM = 4;
@@ -213,7 +206,7 @@ maxMM = 4;
 for ii = jindices
     vcNewGraphWin;
     zcoeffs = zeros(65,1);
-    zcoeffs(ii) = 0.75;
+    zcoeffs(ii+1) = 0.75;
     wvf = wvfSet(wvf0,'zcoeffs',zcoeffs);
     wvf = wvfComputePSF(wvf);
 
@@ -244,7 +237,7 @@ wvf0 = wvfSet(wvf0,'wavelength',550);
 % It turns out that all aberrations other than "Defocus" are known
 % to vary only slightly with wavelength. As a result, the Zernike
 % coefficients don't have to be modified, apart from one.
-% zcoeff(4) is the "Defocus" of a pupil function. It is what typical eyeglasses
+% zcoeff(5) is the "Defocus" of a pupil function. It is what typical eyeglasses
 % correct for using + or - diopters lenses. The wavefront toolbox combines
 % the longitudinal chromatic aberration (LCA) into this coefficient.
 wvf0 = wvfComputePSF(wvf0);
@@ -292,7 +285,7 @@ end
 % defocus value in the wvf structure is converted to microns and added to the
 % j=4 coefficient.)
 zcoeffs = zeros(65,1);
-zcoeffs(4) = wvfDefocusDioptersToMicrons(lcaDiopters,wvfGet(wvf2,'measured pupil size'));
+zcoeffs(5) = wvfDefocusDioptersToMicrons(lcaDiopters,wvfGet(wvf2,'measured pupil size'));
 wvf2 = wvfSet(wvf2,'zcoeffs',zcoeffs);
 wvf2 = wvfComputePSF(wvf2);
 wList = wvfGet(wvf2,'wave');
@@ -349,7 +342,7 @@ wvfPlot(wvf0SCE,'2d psf space','mm',[],maxMM,'no window');
 % Compare the above with how the SCE affects an aberrated PSF. Let's create a
 % PSF with moderate astigmatism along the xy axes.
 zcoeffs = zeros(65,1);
-zcoeffs(5) = 0.75;
+zcoeffs(6) = 0.75;
 wvf5 = wvfSet(wvf0,'zcoeffs',zcoeffs);
 wvf5 = wvfComputePSF(wvf5);
 vcNewGraphWin;
@@ -442,7 +435,7 @@ for ii = 1:nSubjects
     
     % Correct defocus and astigmatism
     zCoeffs = theZernikeCoeffs(:,ii);
-    zCoeffs(3:5) = 0;
+    zCoeffs(4:6) = 0;
     wvfHuman = wvfSet(wvfHuman0,'zcoeffs',zCoeffs);
     wvfHuman = wvfComputePSF(wvfHuman);
     
