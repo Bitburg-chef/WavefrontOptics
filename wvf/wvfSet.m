@@ -156,7 +156,7 @@ switch parm
         else
             idx = wvfOSAIndexToVectorIndex(varargin{1});
             maxidx = max(idx);
-            if (maxidx > length(wvf.zcoeffs)
+            if (maxidx > length(wvf.zcoeffs))
                 wvf.zcoeffs(length(wvf.zcoeffs)+1:maxidx) = 0;
             end
             wvf.zcoeffs(idx) = val;
