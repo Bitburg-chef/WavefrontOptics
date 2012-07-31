@@ -199,25 +199,42 @@ wvf5 = wvfComputePSF(wvf5);
 wvfPlot(wvf5,'2d pupil phase space','mm',wList,maxMM);
 wvfPlot(wvf5,'2d psf space normalized','um',wList,maxUM);
 
-%% Go wild and make plots of various pupil functions and their respective
-% point-spread functions for different Zernike polynomials of 2nd and 3rd orders
-% (OSA j indices 3 through 9)
+%% Make plots of various pupil functions and their respective
+% point-spread functions for different Zernike polynomials of 1st through
+% 3rd radial orders (OSA j indices 1 through 9).
+%
+% Each time through the loop we see the effect of wiggling one coefficient.
+%
+% In this loop, we plot the wavefront aberrations (measured in microns),
+% in addition to the pupil function phase (radians), and the PSF.
+%
+% The wavefront aberration plots we get match those
+%  http://www.traceytechnologies.com/resources_wf101.htm
+% except for the fact that their green is postive and our red is positive.
+% Note that there is considerable disagreement about the Zernikes in the
+% pictures on the web.  See comment in v_wvfZernikePolynomials for a more
+% expansive discussion.
 wvf0 = wvfCreate;
 wvf0 = wvfSet(wvf0,'calculated pupil',wvfGet(wvf0,'measured pupil','mm'));
 pupilfuncrangeMM = 4;
-jindices = 3:9;
+jindices = 1:9;
 maxMM = 4; 
 for ii = jindices
     vcNewGraphWin;
-    zcoeffs = zeros(65,1);
-    zcoeffs(ii+1) = 0.75;
-    wvf = wvfSet(wvf0,'zcoeffs',zcoeffs);
+    insertCoeff = 0.75;
+    wvf = wvfSet(wvf0,'zcoeffs',insertCoeff,ii);
     wvf = wvfComputePSF(wvf);
+    [n,m] = wvfOSAIndexToZernikeNM(ii);
 
-    subplot(2,1,1);
+    subplot(3,1,1);
+    wvfPlot(wvf,'2d wavefront aberrations space','mm',[],pupilfuncrangeMM,'no window');
+    title(sprintf('Wavefront aberrations for j = %d (n = %d, m = %d)',ii,n,m));
+
+    subplot(3,1,2);
     wvfPlot(wvf,'2d pupil phase space','mm',wList,pupilfuncrangeMM,'no window');
+    title(sprintf('Pupil function phase for j = %d (n = %d, m = %d)',ii,n,m));
 
-    subplot(2,1,2);
+    subplot(3,1,3);
     wvfPlot(wvf,'2d psf space','mm',wList,maxMM,'no window');
 end
 
@@ -235,65 +252,54 @@ end
 % wavelength for which the PSF is calculated to 550 nm (this is also the
 % default.  
 wvf0 = wvfCreate;
-wvf0 = wvfSet(wvf0,'measured wl',550); 
-wvf0 = wvfSet(wvf0,'wavelength',550); 
+wvf0 = wvfSet(wvf0,'measured wavelength',550); 
+wvf0 = wvfSet(wvf0,'calc wavelengths',550); 
 
 % It turns out that all aberrations other than "Defocus" are known
 % to vary only slightly with wavelength. As a result, the Zernike
-% coefficients don't have to be modified, apart from one.
-% zcoeff(5) is the "Defocus" of a pupil function. It is what typical eyeglasses
+% coefficients don't have to be modified, apart from one.  This
+% is the j = 0 "defocus" coefficient. It is what typical eyeglasses
 % correct for using + or - diopters lenses. The wavefront toolbox combines
-% the longitudinal chromatic aberration (LCA) into this coefficient.
+% the longitudinal chromatic aberration (LCA) into this coefficient when
+% it calculates the pupil function.  The LCA itself is computed based
+% on the difference between the measurement wavelength (for which the
+% defocus coefficient is specified) and the wavelength being calclated
+% for.
 wvf0 = wvfComputePSF(wvf0);
+wList = wvfGet(wvf0,'calc wavelengths');
 vcNewGraphWin;
 maxMM = 3; 
 wvfPlot(wvf0,'1dpsfspacenormalized','mm',wList,maxMM,'no window');
 hold on;
 
-% Keep the calculated wavelength at default 550 nm but add in defocus.
-% We calculate the defocus to be that which would bring 600 nm into
-% focus.  So basically, we're looking at the effect of LCA when the
-% light is at 550 nm, given nominal focus at 600 nm.
+% Change the calculated wavelength to 600.
 %
 % The new psf is wider due to the longitudinal chromatic aberration, even
 % though it's still just the diffraction-limited wavefront function (the
 % Zernike coefficients are still 0).
 theWavelength = 600;
 wvf1 = wvfCreate;
-wvf1 = wvfSet(wvf1,'wave',theWavelength);
-wList = wvfGet(wvf1,'wave');
-lcaDiopters = wvfLCAFromWavelengthDifference(theWavelength,wvfGet(wvf1,'measured wl'));
-wvf1 = wvfSet(wvf1,'calc observer focus correction',lcaDiopters);
-wvf1.PSF_STALE = 1;
+wvf1 = wvfSet(wvf1,'calc wavelengths',theWavelength);
+wList = wvfGet(wvf1,'calc wavelengths');
 wvf1 = wvfComputePSF(wvf1);
 wvfPlot(wvf1,'1dpsf space normalized','mm',wList,maxMM,'no window');
 
-%% Verify that the LCA effect is captured by only changing the defocus
-% coefficient of the Zernike expansion.
-%
-% Make a new wavefront which does not have the mismatched wavelengths.
-% Because these both default to 550 nm, they match here.
-wvf2 = wvfCreate;
-measuredWl = wvfGet(wvf2,'measured wavelength');
-calcWl = wvfGet(wvf2,'calc wavelengths');
-if (measuredWl ~= calcWl || measuredWl ~= 550)
-    error('Defaults for wvfCreate were changed in a way that breaks this code');
-end
-
-% Make our adjustment purely to the j=4 Zernike coefficient in microns.
-%
-% The two aberrated plots are identical. The defocus of a pupil can be
-% measured separately, whether using Zernike coeffs or in diopters, but any
-% chromatic aberration ends up in the j=4 coefficient at the end of the day.
-% (If you look at wvfComputePupilFunction, you can see the point where the
-% defocus value in the wvf structure is converted to microns and added to the
-% j=4 coefficient.)
-zcoeffs = zeros(65,1);
-zcoeffs(5) = wvfDefocusDioptersToMicrons(lcaDiopters,wvfGet(wvf2,'measured pupil size'));
-wvf2 = wvfSet(wvf2,'zcoeffs',zcoeffs);
+% To unpack this, we can do explicitly what is done inside the
+% pupil function calculation.  First we LCA from
+% the wavelength difference, then act as if the measured wavelength
+% (where there is no LCA) is the calculated wavelength.  We do
+% this by changing the measured wavelength specification.  Finally,
+% we add in the LCA to the defocus coefficient.
+wvf2 = wvf1;
+lcaDiopters = wvfLCAFromWavelengthDifference(wvfGet(wvf2,'measured wavelength','nm'),wvfGet(wvf2,'calc wavelengths','nm'));
+lcaMicrons = wvfDefocusDioptersToMicrons(-lcaDiopters,wvfGet(wvf2,'measured pupil size'));
+wvf2 = wvfSet(wvf2,'measured wavelength',wvfGet(wvf2,'calc wavelengths','nm'));
+wList = wvfGet(wvf2,'calc wavelengths');
+defocus = wvfGet(wvf2,'zcoeffs',{'defocus'});
+defocus = defocus + lcaMicrons;
+wvf2 = wvfSet(wvf2,'zcoeffs',lcaMicrons,{'defocus'});
 wvf2 = wvfComputePSF(wvf2);
-wList = wvfGet(wvf2,'wave');
-[udataS, pData] = wvfPlot(wvf2,'1dpsf space normalized','mm',wList,maxMM);
+[udataS, pData] = wvfPlot(wvf2,'1dpsf space normalized','mm',wList,maxMM,'no window');
 set(pData,'color','b','linewidth',2);
 
 %%  How cone geometry affects the PSF: the Stiles-Crawford effect (SCE)
