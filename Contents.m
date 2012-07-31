@@ -11,6 +11,7 @@
 %   validate/v_wvfSpatialSampling -           Compare PSFs with different spatial sampling parameters.
 %   validate/v_wvfSVNVer121TestData -         Compare PSFs computed by toolbox now to those computed long ago and far away.
 %   validate/v_wvfValidate -                  Run all the working validation routines.
+%   validate/v_wvfZernikePolynomials -        Take a look at our Zernike conventions.
 %
 % BASIC OPERATIONS (subdir wvf).  These are the core functions that know about the internals of the
 % wvf structure.  User code should generally use these and not rely on the specific

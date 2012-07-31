@@ -248,6 +248,7 @@ if (~isfield(wvf,'pupilfunc') || ~isfield(wvf,'PUPILFUNCTION_STALE') || wvf.PUPI
         % c(60) .*sqrt(11).* (252 .* norm_radius.^10 - 630 .* norm_radius.^8 + 560 .* norm_radius.^6 - 210 .* norm_radius.^4 + 30 .* norm_radius.^2 - 1);
 
         % Here is the phase of the pupil function, with unit amplitude everywhere
+        wavefrontaberrations{ii} = wavefrontAberrationsUM;
         pupilfuncphase = exp(-1i * 2 * pi * wavefrontAberrationsUM/waveUM(ii));
         
         % Set values outside the pupil we're calculating for to 0 amplitude
@@ -276,6 +277,7 @@ if (~isfield(wvf,'pupilfunc') || ~isfield(wvf,'PUPILFUNCTION_STALE') || wvf.PUPI
     end
     close(wBar)
     
+    wvf.wavefrontaberrations = wavefrontaberrations;
     wvf.pupilfunc = pupilfunc;
     wvf.areapix = areapix;
     wvf.areapixapod = areapixapod;

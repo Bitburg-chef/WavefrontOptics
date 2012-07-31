@@ -65,7 +65,8 @@ function val = wvfGet(wvf,parm,varargin)
 %  +  'cone sce fraction' - SCE fraction for cone psfs
 %
 % Pupil and sointspread function
-%  +  'pupil function' - The pupil function.  Must call wvfComputePupilFunction on wvf before get
+%  +  'wavefront aberrations' - The wavefront aberrations in microns.  Must call wvfComputePupilFunction on wvf before get (um)
+%  +  'pupil function' - The pupil function.  Must call wvfComputePupilFunction on wvf before get.
 %  +  'psf' - Point spread function.  Must call wvfComputePSF on wvf before get
 %  +  'psf centered' - Peak of PSF is at center of returned matrix
 %  +  '1d psf' - One dimensional horizontal (along row) slice through PSF centered on its max
@@ -555,6 +556,40 @@ end
 
 % Computed pupil functions and point spread functions
 switch parm
+    case {'wavefrontaberrations'}
+        % The wavefront aberrations are derived from Zernicke coefficients in the
+        % routine wvfComputePupilFunction If there are multiple
+        % wavelengths, then this is a cell array of matrices
+        % wvfGet(wvf,'wavefront aberrations',wList)
+        % This comes back in microns, and if I were a better person I would
+        % have provided unit passing and conversion.
+        
+        % Can't do the get unless it has already been computed and is not stale.
+        if (~isfield(wvf,'pupilfunc') || ...
+                ~isfield(wvf,'PUPILFUNCTION_STALE') || ...
+                wvf.PUPILFUNCTION_STALE)
+            error('Must compute wavefront aberrations before getting them.  Use wvfComputePupilFunction or wvfComputePSF.');
+        end
+        
+        % Return whole cell array of wavefront aberrations over wavelength if
+        % no argument passed.  If there is just one wavelength, we
+        % return the .wavefront aberrations as a matrix, rather than as a cell
+        % array with one entry.
+        if isempty(varargin)
+            if (length(wvf.wavefrontaberrations) == 1)
+                val = wvf.wavefrontaberrations{1};
+            else
+                val = wvf.wavefrontaberrations;
+            end
+        else
+            wList = varargin{1}; idx = wvfWave2idx(wvf,wList);
+            nWave = wvfGet(wvf,'nwave');
+            if idx > nWave, error('idx (%d) > nWave',idx,nWave);
+            else val = wvf.wavefrontaberrations{idx};
+            end
+        end
+        DIDAGET = true;
+        
     case {'pupilfunction','pupilfunc','pupfun'}
         % The pupil function is derived from Zernicke coefficients in the
         % routine wvfComputePupilFunction If there are multiple

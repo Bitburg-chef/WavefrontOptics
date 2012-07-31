@@ -345,6 +345,30 @@ switch(pType)
         uData.x = samp; uData.y = samp; uData.z = angle(pupilfunc);
         set(gcf,'userdata',uData);
         
+    case {'imagewavefrontaberrations','2dwavefrontaberrationsspace'}
+        %wvfPlot(wvfP,'2d pwavefront aberrationsspace space','mm',pRange)
+        %plots the 2d wavefront aberrations in microns for calculated pupil
+        if ~isempty(varargin)
+            [unit, wList, pRange] = wvfReadArg(wvfP,varargin);
+        end
+        
+        samp      = wvfGet(wvfP,'pupil spatial samples',unit,wList);
+        wavefront = wvfGet(wvfP,'wavefront aberrations',wList);
+        
+        % Extract within the range
+        if ~isempty(pRange)
+            index = (abs(samp) < pRange);
+            samp = samp(index);
+            wavefront = wavefront(index,index);
+        end
+        
+        pData = imagesc(samp,samp,wavefront,[-max(abs(wavefront(:))) max(abs(wavefront(:)))]);
+        s = sprintf('Position (%s)',unit);
+        xlabel(s); ylabel(s);
+        zlabel('Amplitude'); title('Wavefront Aberrations (microns)'); colorbar;
+        axis image;
+        uData.x = samp; uData.y = samp; uData.z = wavefront;
+        set(gcf,'userdata',uData);
         
     otherwise
         error('Unknown plot type %s\n',pType);
