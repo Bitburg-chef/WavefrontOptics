@@ -2,9 +2,10 @@
 %
 % Assemble validation routines for wavefront toolbox
 %
-%
-% (c) Wavefront Toolbox Team, 2012 (bw)
+% (c) Wavefront Toolbox Team, 2012
 
+%% 
+v_wvfZernikePolynomials; pause(1);
 %%
 v_wvfDiffractionPSF; pause(1)
 
