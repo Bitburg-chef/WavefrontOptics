@@ -141,15 +141,24 @@ end
 switch parm
     case {'zcoeffs', 'zcoeff','zcoef'}
         % Zernike coeffs
-        % wvfSet(wvf,'zcoeffs',val,idx);
+        % wvfSet(wvf,'zcoeffs',val,jIndex);
         % idx is optional, and can be a vector of j values
         % or a string array of coefficient names (see wvfListToOSAIndex).
         % Note that j values start at 0, and that is the convention followed
-        % here.  The length of idx must match that of val.
+        % here.
+        %
+        % The length of jIndex must match that of val, if it is passed.
+        % If the current vector of zcoeffs is shorter than required by
+        % jIndex, the vector is padded out with zeros prior to the
+        % insertion of the passed coefficients.
         if (isempty(varargin))
             wvf.zcoeffs = val;
         else
             idx = wvfOSAIndexToVectorIndex(varargin{1});
+            maxidx = max(idx);
+            if (maxidx > length(wvf.zcoeffs)
+                wvf.zcoeffs(length(wvf.zcoeffs)+1:maxidx) = 0;
+            end
             wvf.zcoeffs(idx) = val;
         end
         wvf.PUPILFUNCTION_STALE = true;
