@@ -136,7 +136,12 @@ switch parm
             val = wvf.zcoeffs;
         else
             idx = wvfOSAIndexToVectorIndex(varargin{1});
-            val = wvf.zcoeffs(idx);
+            tempcoeffs = wvf.zcoeffs;
+            maxidx = max(idx);
+            if (maxidx > length(wvf.zcoeffs))
+                tempcoeffs(length(tempcoeffs)+1:maxidx) = 0;
+            end
+            val = tempcoeffs(idx);
         end
         DIDAGET = true;
         
