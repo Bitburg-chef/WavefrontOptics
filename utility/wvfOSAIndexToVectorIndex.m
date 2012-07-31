@@ -16,7 +16,7 @@ function [vectorIndex,jIndex] = wvfOSAIndexToVectorIndex(jIndex)
 %     j   name
 %
 %     0  'piston'
-%     1  'vertical_tilt','tip'
+%     1  'vertical_tilt'
 %     2  'horizontal_tilt'
 %     3  'oblique_astigmatism'
 %     4  'defocus'
@@ -32,13 +32,16 @@ function [vectorIndex,jIndex] = wvfOSAIndexToVectorIndex(jIndex)
 %     14 'vertical_quadrafoil'
 %
 % See also wvfOSAIndexToZernikeNM, wvfZernikeNMToOSAIndex, zernfun
+%
+% I would add 'tip' as a synonym for one of the two tilts below, if I
+% knew which one it was.
 
 if (iscell(jIndex))
     for i = 1:length(jIndex)
         switch (jIndex{i})
             case 'piston'
                 n(i) = 0; m(i) = 0;
-            case {'vertical_tilt','tip'}
+            case {'vertical_tilt'}
                 n(i) = 1; m(i) = -1;
             case 'horizontal_tilt'
                 n(i) = 1; m(i) = 1;
