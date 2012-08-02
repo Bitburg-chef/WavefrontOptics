@@ -9,14 +9,9 @@
 %   http://www.telescope-optics.net/monochromatic_eye_aberrations.htm (red is positive)
 %   http://www.traceytechnologies.com/resources_wf101.htm (green is positive)
 %
-% Even given the color reversals, the three sets don't agree.  There is some talk
-% on the wikipedia page that their picture may be wrong for roughly half of the
-% coefficients, and this view is consisten with our calculations.
-%
-% We match the picture at the telescope-optics page, except for defocus where
-% we are negative in the center and postive at the edge, whereas they are positive in the center
-% and negative at the edge.  (This picture is also off in terms of the piston, which should be
-% red and not green.)
+% Even given the color reversals, the three sets don't agree.  I suspect that the
+% differences have to do with the coordinate system convention chosen (z into the
+% (eye or out of the eye, x horizontal or vertical, etc.).
 %
 % We do match what is at http://www.traceytechnologies.com/resources_wf101.htm, once you
 % flip the sign of the color coding in the pictures (and map their green to our blue).
