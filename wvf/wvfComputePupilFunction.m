@@ -20,7 +20,12 @@ function wvf = wvfComputePupilFunction(wvf)
 % These functions are calculated for 10 orders of Zernike coeffcients specified to
 % the OSA standard, with the convention that we assume that the coefficient for
 % j = 0 is 0, and that the first entry of the passed coefficients corresonds to
-% j = 1.  Adding in the j = 0 term does not change the psf.
+% j = 1.  Adding in the j = 0 term does not change the psf.  The spatial coordinate
+% system is also OSA standard.
+%
+% Note that this system is the same for both left and right eyes. If the biology
+% is left-right reflection symmetric, one might want to left-right flip the
+% coordinates when computing for the left eye (see OSA document).
 %
 % Includes SCE (Stiles-Crawford Effect) if specified.
 % The SCE is modeled as an apodization filter (a spatially-varying amplitude
