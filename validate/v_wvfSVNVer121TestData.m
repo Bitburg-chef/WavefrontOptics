@@ -61,7 +61,7 @@ theFiles = {...
     };
 
 for i = 1:length(theFiles)
-    testData = load(fullfile('validationData','SVNVer121',theFiles{i}));
+    testData = load(fullfile(wvfRootPath,'data','ver121data',theFiles{i}));
     
     %% Set up parameters structure to match old code, for diffraction limited computation
     wvf0 = wvfCreate;
