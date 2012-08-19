@@ -33,6 +33,9 @@ s_initISET;
 % Autruesseau et al. did not incorporate a model of the SCE,
 % nor did they center or circularly average the PSFs.  These
 % switches let us play with those things if we want.
+%
+% Note that the Autrusseau paper does not account for the SCE.
+% This actually matters enough to be easily visible on the graphs.
 DOSCE = 0;
 CIRCULARLYAVERAGE = 0;
 CENTER = 0;
@@ -88,7 +91,7 @@ conePsfInfo.spdWeighting = ones(conePsfInfo.S(3),1);
 % Calculation wavelengths for PSF.  
 wls = SToWls([400 10 31]);
 
-%% Reproduce Autrusseau et al. results.
+%% Initialize wvf structure
 wvf0 = wvfCreate;
 
 % Set important parameters
@@ -125,7 +128,7 @@ end
 
 %% Include SCE if desired
 if (DOSCE == 1)
-    sce = sceCreate(wls,'berendschot_data');
+    sce = sceCreate(wls,'berendschot_data','centered');
     wvf0 = wvfSet(wvf0,'sce params',sce);
 else
     sce = sceCreate(wls,'none');
