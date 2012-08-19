@@ -330,6 +330,8 @@ subplot(2,2,2);
 wvfPlot(wvf0,'2d pupil phase space','mm',[],pupilfuncrangeMM,'no window');
 subplot(2,2,3:4);
 wvfPlot(wvf0,'2d psf space','mm',[],maxMM,'no window');
+sce1DFig = vcNewGraphWin; hold on
+wvfPlot(wvf0,'1d psf space','mm',[],maxMM,'no window');
 
 % To this unaberrated pupil function, we add the Stiles-Crawford
 % parameters, with peakedness taken from Berendschot et al. 2001 (see sceCreate for
@@ -348,12 +350,13 @@ subplot(2,2,2);
 wvfPlot(wvf0SCE,'2d pupil phase space','mm',[],pupilfuncrangeMM,'no window');
 subplot(2,2,3:4);
 wvfPlot(wvf0SCE,'2d psf space','mm',[],maxMM,'no window');
+figure(sce1DFig);
+[udataS, pData] = wvfPlot(wvf0SCE,'1d psf space','mm',[],maxMM,'no window');
+set(pData,'color','b','linewidth',1);
 
 % Compare the above with how the SCE affects an aberrated PSF. Let's create a
 % PSF with moderate astigmatism along the xy axes.
-zcoeffs = zeros(65,1);
-zcoeffs(6) = 0.75;
-wvf5 = wvfSet(wvf0,'zcoeffs',zcoeffs);
+wvf5 = wvfSet(wvf0,'zcoeffs',0.75,{'vertical_astigmatism'});
 wvf5 = wvfComputePSF(wvf5);
 vcNewGraphWin;
 subplot(2,2,1);
@@ -362,6 +365,8 @@ subplot(2,2,2);
 wvfPlot(wvf5,'2d pupil phase space','mm',[],pupilfuncrangeMM,'no window');
 subplot(2,2,3:4);
 wvfPlot(wvf5,'2d psf space','mm',[],maxMM,'no window');
+sce1DFig2 = vcNewGraphWin; hold on
+wvfPlot(wvf5,'1d psf space','mm',[],maxMM,'no window');
 
 % Add SCE to the aberrated pupil function.
 %
@@ -377,6 +382,9 @@ subplot(2,2,2);
 wvfPlot(wvf5SCE,'2d pupil phase space','mm',[],pupilfuncrangeMM,'no window');
 subplot(2,2,3:4);
 wvfPlot(wvf5SCE,'2d psf space','mm',[],maxMM,'no window');
+figure(sce1DFig2);
+[udataS, pData] = wvfPlot(wvf5SCE,'1d psf space','mm',[],maxMM,'no window');
+set(pData,'color','b','linewidth',1);
 
 %% Wavefront measurements of human eyes and the effects of single-vision
 % corrective eyeglasses 
