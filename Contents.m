@@ -9,6 +9,7 @@
 %   validate/v_wvfComputeConePSF -            Check routines that compute LMS cone PSFs and compare with Autrusseau et al. calcs.
 %   validate/v_wvfDiffractionPSF -            Compare PSFs obtained with wavefront calcs to direct computation of diffraction limited PSFs
 %   validate/v_wvfSpatialSampling -           Compare PSFs with different spatial sampling parameters.
+%   validate/v_wvfStilesCrawford -            Compute PSFs with and without SCE.
 %   validate/v_wvfSVNVer121TestData -         Compare PSFs computed by toolbox now to those computed long ago and far away.
 %   validate/v_wvfValidate -                  Run all the working validation routines.
 %   validate/v_wvfZernikePolynomials -        Take a look at our Zernike conventions.

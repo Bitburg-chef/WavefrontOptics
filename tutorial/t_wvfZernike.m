@@ -32,15 +32,8 @@
 % See:
 %  http://white.stanford.edu/teach/index.php/Wavefront_optics_toolbox
 %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
-% Class:     Psych 221/EE 362
-% Tutorial:  Wavefront Toolbox - Zernike Polynomials
-% Author:    BW, MDL, KP
-% Purpose:   
-%
 % History:
-%   3/12/2012	  Created.
+%   3/12/2012	  Created.  baw, mdl, kp
 %   4/29/12  dhb  Tried to tighten vertical spacing
 %                 and apply uniform convention.  Some editing of
 %                 text for clarity.
