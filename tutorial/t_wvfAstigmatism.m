@@ -15,8 +15,6 @@ maxMIN = 2;
 maxMM  = 1;
 maxUM  = 20;
 
-%% Calculate point spread for wavelength defocus
-
 %% Set up default parameters structure with diffraction limited default
 wvfP = wvfCreate;
 wvfParams = wvfComputePSF(wvfP);
@@ -25,19 +23,19 @@ z4 = -0.5:0.5:0.5; z5 = -0.5:0.5:0.5;
 [Z4,Z5] = meshgrid(z4,z5);
 Zvals = [Z4(:), Z5(:)];
 
-%% Make the plot
+%% Alter defocus and astigmatism, and make a plot of the psf for
+% each case.
 vcNewGraphWin;
 wList = wvfGet(wvfParams,'wave');
 for ii=1:size(Zvals,1)
-    z(4) = Zvals(ii,1); z(5) = Zvals(ii,2);
-    wvfParams = wvfSet(wvfParams,'zcoeffs',z);
+    wvfParams = wvfSet(wvfParams,'zcoeffs',Zvals(ii,:),{'defocus' 'vertical_astigmatism'});
     wvfParams = wvfComputePSF(wvfParams);
     
     % Don't open a new window with each plot.  Let them accumulate in the
     % subplots.
     subplot(3,3,ii)
     wvfPlot(wvfParams,'2d psf space','um',wList,maxUM,'nowindow');
-    title(sprintf('W4 = %.1f W5 == %.1f\n',z(4),z(5)));
+    title(sprintf('Defocus = %.1f Astig == %.1f\n',Zvals(ii,1),Zvals(ii,2)));
 end
 
 
