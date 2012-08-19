@@ -55,7 +55,7 @@ pupilF = wvfGet(wvfParams,'pupil function',theWavelength);
 vcNewGraphWin;  imagesc(angle(pupilF))
 
 % Add a SCE
-wvfParams = wvfSet(wvfParams,'sce params',sceCreate(theWavelength,'berendshot'));
+wvfParams = wvfSet(wvfParams,'sce params',sceCreate(theWavelength,'berendschot_data'));
 wvfParams = wvfSet(wvfParams,'wave',theWavelength);
 wvfParams  = wvfComputePupilFunction(wvfParams);
 pupilF = wvfGet(wvfParams,'pupil function',theWavelength);

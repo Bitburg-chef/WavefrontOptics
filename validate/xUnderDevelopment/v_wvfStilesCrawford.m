@@ -17,7 +17,7 @@ theWavelength = 550;
 
 %%
 wvfParams = wvfCreate;
-sceP = sceCreate(theWavelength,'berendshot');
+sceP = sceCreate(theWavelength,'berendschot_data');
 
 %% No Stiles Crawford effect
 wvfParams = wvfSet(wvfParams,'sce params',[]);

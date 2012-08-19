@@ -45,7 +45,7 @@ whichRow = floor(wvfGet(wvfParams0,'npixels')/2) + 1;
 plotLimit = 2;
 DOSCE = 1;
 if (DOSCE)
-    wvfParams0 = wvfSet(wvfParams0,'sceparams',sceCreate(wls,'berendshot'));
+    wvfParams0 = wvfSet(wvfParams0,'sceparams',sceCreate(wls,'berendschot_datac'));
 else
     wvfParams0 = wvfSet(wvfParams0,'sceparams',sceCreate(wls,'none'));
 end

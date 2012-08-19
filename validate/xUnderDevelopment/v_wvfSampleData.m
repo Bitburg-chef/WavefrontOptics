@@ -55,7 +55,7 @@ nCols = ceil(nSubjects/nRows);
 % Stiles Crawford
 DOSCE = 0;
 sceWavelength = 550;
-if (DOSCE), wvfP.sceParams = sceCreate(sceWavelength,'berendshot');
+if (DOSCE), wvfP.sceParams = sceCreate(sceWavelength,'berendschot_data');
 else        wvfP.sceParams = sceCreate(sceWavelength,'none');
 end
 

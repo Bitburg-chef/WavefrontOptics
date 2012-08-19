@@ -332,14 +332,14 @@ subplot(2,2,3:4);
 wvfPlot(wvf0,'2d psf space','mm',[],maxMM,'no window');
 
 % To this unaberrated pupil function, we add the Stiles-Crawford
-% parameters, as measured by Berendshot et al. (see sceCreate for
+% parameters, with peakedness taken from Berendschot et al. 2001 (see sceCreate for
 % details). This adds a decaying exponential amplitude to the pupil
 % function, causing less light to be transmitted to the retina.
 %
 % Compare the diffraction-limited PSF without SCE to the one with SCE. What
 % are the differences? Is the amplitude different? Why? Is the width of the
 % PSF different? Why?
-wvf0SCE = wvfSet(wvf0,'sceParams',sceCreate(wvfGet(wvf0,'wave'),'berendshot'));
+wvf0SCE = wvfSet(wvf0,'sceParams',sceCreate(wvfGet(wvf0,'wave'),'berendschot_data'));
 wvf0SCE = wvfComputePSF(wvf0SCE);
 vcNewGraphWin;
 subplot(2,2,1);
@@ -368,7 +368,7 @@ wvfPlot(wvf5,'2d psf space','mm',[],maxMM,'no window');
 % Compare the two aberrated PSFs. How do their peak amplitudes compare?
 % How do their widths compare? How did the symmetry of the PSF change?
 % Which PSF would create a "better image" on the retina?
-wvf5SCE = wvfSet(wvf5,'sceParams',sceCreate(wvfGet(wvf5,'wave'),'berendshot'));
+wvf5SCE = wvfSet(wvf5,'sceParams',sceCreate(wvfGet(wvf5,'wave'),'berendschot_data'));
 wvf5SCE = wvfComputePSF(wvf5SCE);
 vcNewGraphWin;
 subplot(2,2,1);
@@ -403,7 +403,7 @@ nRows = ceil(sqrt(nSubjects));
 nCols = ceil(nSubjects/nRows);
 
 % Stiles Crawford
-wvfHuman0 = wvfSet(wvfHuman0,'sceParams',sceCreate(wvfGet(wvfHuman0,'wave'),'berendshot'));
+wvfHuman0 = wvfSet(wvfHuman0,'sceParams',sceCreate(wvfGet(wvfHuman0,'wave'),'berendschot_data'));
 
 % Plot subject PSFs, one by one
 for ii = 1:nSubjects

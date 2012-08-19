@@ -125,7 +125,7 @@ end
 
 %% Include SCE if desired
 if (DOSCE == 1)
-    sce = sceCreate(wls,'berendshot');
+    sce = sceCreate(wls,'berendschot_data');
     wvf0 = wvfSet(wvf0,'sce params',sce);
 else
     sce = sceCreate(wls,'none');

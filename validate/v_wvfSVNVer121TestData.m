@@ -72,7 +72,7 @@ for i = 1:length(theFiles)
     wvf0 = wvfSet(wvf0,'calc pupil size',testData.calcpupilMM);
     wvf0 = wvfSet(wvf0,'calc wavelengths',testData.theWavelength);
     if (testData.DOSCE == 1)
-        sce = sceCreate(testData.theWavelength,'berendshot');
+        sce = sceCreate(testData.theWavelength,'berendschot_data');
         wvf0 = wvfSet(wvf0,'sce params',sce);
     else
         sce = sceCreate(testData.theWavelength,'none');

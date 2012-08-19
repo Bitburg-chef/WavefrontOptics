@@ -186,7 +186,7 @@ wvfParams0.nominalFocusWl = 550;
 wvfParams0.defocusDiopters = 0;
 wvfParams0.fieldSampleSizeMMperPixel = 16.212/201;
 wvfParams0.sizeOfFieldMM = 16.212;
-wvfParams0.sceParams = sceCreate(theWavelength,'berendshot');
+wvfParams0.sceParams = sceCreate(theWavelength,'berendschot_data');
 
 figure; clf; hold on
 wvfParams1 = wvfParams0;
@@ -244,7 +244,7 @@ wvfParams0.sizeOfFieldMM = 16.212;
 theZernikeCoeffs = importdata('sampleZernikeCoeffs.txt');
 DOSCE = 0;
 if (DOSCE)
-    wvfParams0.sceParams = sceCreate(theWavelength,'berendshot');
+    wvfParams0.sceParams = sceCreate(theWavelength,'berendschot_data');
 else
     wvfParams0.sceParams = sceCreate(theWavelength,'none');
 end
