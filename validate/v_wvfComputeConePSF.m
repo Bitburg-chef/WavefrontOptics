@@ -199,10 +199,10 @@ end
 
 % Diffraction limited (Figure 2)
 wavelengths = [400 550 700];
-figure; clf;
-position = get(gcf,'Position');
-position(3) = 1600; position(4) = 800;
-set(gcf,'Position',position);
+vcNewGraphWin([],'wide');
+% position = get(gcf,'Position');
+% position(3) = 1600; position(4) = 800;
+% set(gcf,'Position',position);
 for i = 1:length(wavelengths);
     wavelength = wavelengths(i);
     
@@ -221,10 +221,10 @@ for i = 1:length(wavelengths);
 end
 
 % With aberrations (Figure 4)
-figure; clf;
-position = get(gcf,'Position');
-position(3) = 1600; position(4) = 800;
-set(gcf,'Position',position);
+vcNewGraphWin([],'wide');
+% position = get(gcf,'Position');
+% position(3) = 1600; position(4) = 800;
+% set(gcf,'Position',position);
 for i = 1:length(wavelengths);
     wavelength = wavelengths(i);
     
@@ -244,12 +244,15 @@ for i = 1:length(wavelengths);
     title(sprintf('%d nm, focus %d nm, max = %0.5f',wavelength,focusWl,maxVal));
 end
 
-%% Make a plot through the peak of the returned LMS PSFs and compare
-% with diffraction limited + defocus
-theFig = figure; clf;
-position = get(gcf,'Position');
-position(3) = 1600;
-set(gcf,'Position',position);
+%% Make a plot through the peak of the returned LMS PSFs 
+% Compare with diffraction limited + defocus
+
+% The position setting was a bit specific to some monitor.  I tried to make
+% vcNewGraphWin do the right thing.
+theFig = vcNewGraphWin([],'wide'); 
+% position = get(gcf,'Position');
+% position(3) = 1600;
+% set(gcf,'Position',position);
 subplot(1,3,1); hold on
 onedLPSF = lpsf(whichRow,:);
 onedLPSFD = lpsfd(whichRow,:);
