@@ -34,7 +34,7 @@ function wvf = wvfSet(wvf,parm,val,varargin)
 %   'type' - Type of this object, should always be 'wvf'
 %
 %  Zernike coefficients and measurement related
-%   'zcoeffs' - Zernike coefficients
+%   'zcoeffs' - Zernike coefficients, OSA standard numbering/coords
 %   'measured pupil size' - Pupil size for wavefront aberration meaurements (mm)
 %   'measured wl' - Wavefront aberration measurement wavelength (nm)
 %   'measured optical axis' - Measured optical axis (deg)
@@ -143,7 +143,7 @@ switch parm
         % Zernike coeffs
         % wvfSet(wvf,'zcoeffs',val,jIndex);
         % idx is optional, and can be a vector of j values
-        % or a string array of coefficient names (see wvfListToOSAIndex).
+        % or a string array of coefficient names (see wvfOSAIndexToVectorIndex).
         % Note that j values start at 0, and that is the convention followed
         % here.
         %
