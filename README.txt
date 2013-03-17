@@ -5,5 +5,4 @@ The toolbox can be coordinated with the Visual Systems Engineering Toolbox (VSET
 (c) Wavefront Optics Toolbox Team 2012, David Brainard, Heidi Hofer, Brian Wandell.
 
 
-** End README.txt
 
